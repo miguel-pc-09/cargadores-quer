@@ -1,0 +1,23 @@
+:root {
+  --color-fondo: #071427;
+  --color-fondo-secundario: #0a1a30;
+  --color-superficie: #112544;
+
+  --color-principal: #1ea7ff;
+  --color-principal-hover: #43b6ff;
+
+  --color-verde: #6ee7b7;
+  --color-blanco: #ffffff;
+
+  --color-texto: rgba(255, 255, 255, 0.86);
+  --color-texto-suave: rgba(255, 255, 255, 0.62);
+
+  --color-borde: rgba(255, 255, 255, 0.1);
+  --color-error: #ff7b7b;
+
+  --sombra-tarjeta: 0 20px 50px rgba(0, 0, 0, 0.3);
+
+  --radio-pequeno: 10px;
+  --radio-medio: 16px;
+  --radio-grande: 24px;
+}

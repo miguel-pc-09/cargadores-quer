@@ -1,0 +1,404 @@
+.detalle-cargador-page {
+  width: 100%;
+  max-width: 920px;
+}
+
+.detalle-cargador-page__volver {
+  width: fit-content;
+  margin-bottom: 22px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--color-texto-suave);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.detalle-cargador-page__volver:hover {
+  color: var(--color-principal);
+  transform: translateX(-2px);
+}
+
+.detalle-cargador-page__cabecera {
+  margin-bottom: 22px;
+}
+
+.detalle-cargador-page__etiqueta {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--color-verde);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.11em;
+}
+
+.detalle-cargador-page__cabecera h1 {
+  margin: 0;
+  color: var(--color-blanco);
+  font-size: clamp(28px, 4vw, 36px);
+  line-height: 1.15;
+}
+
+.detalle-cargador-page__cabecera p {
+  margin: 9px 0 0;
+  color: var(--color-texto-suave);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+/* Estado de conexión */
+
+.estado-conexion {
+  margin-bottom: 24px;
+  padding: 20px;
+  border: 1px solid;
+  border-radius: var(--radio-medio);
+  box-shadow: var(--sombra-tarjeta);
+}
+
+.estado-conexion--conectado {
+  border-color: rgba(110, 231, 183, 0.3);
+  background: rgba(110, 231, 183, 0.08);
+}
+
+.estado-conexion--desconectado {
+  border-color: rgba(255, 123, 123, 0.35);
+  background: rgba(255, 123, 123, 0.08);
+}
+
+.estado-conexion--mantenimiento {
+  border-color: rgba(255, 184, 77, 0.35);
+  background: rgba(255, 184, 77, 0.08);
+}
+
+.estado-conexion__cabecera {
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+}
+
+.estado-conexion__icono {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.estado-conexion--conectado .estado-conexion__icono {
+  color: var(--color-verde);
+  background: rgba(110, 231, 183, 0.14);
+}
+
+.estado-conexion--desconectado .estado-conexion__icono {
+  color: var(--color-error);
+  background: rgba(255, 123, 123, 0.14);
+}
+
+.estado-conexion--mantenimiento .estado-conexion__icono {
+  color: #ffb84d;
+  background: rgba(255, 184, 77, 0.14);
+}
+
+.estado-conexion__cabecera h2 {
+  margin: 1px 0 5px;
+  color: var(--color-blanco);
+  font-size: 18px;
+}
+
+.estado-conexion__cabecera p {
+  margin: 0;
+  color: var(--color-texto);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.estado-conexion__datos {
+  margin-top: 17px;
+  padding-top: 15px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 6px;
+  border-top: 1px solid var(--color-borde);
+  text-align: left;
+}
+
+.estado-conexion__datos span {
+  color: var(--color-texto-suave);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* Tomas */
+
+.detalle-cargador-page__tomas {
+  padding: 22px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-medio);
+  background: rgba(17, 37, 68, 0.68);
+  box-shadow: var(--sombra-tarjeta);
+}
+
+.detalle-cargador-page__tomas-cabecera {
+  margin-bottom: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 18px;
+}
+
+.detalle-cargador-page__tomas-cabecera h2 {
+  margin: 0;
+  color: var(--color-blanco);
+  font-size: 21px;
+}
+
+.detalle-cargador-page__contador {
+  color: var(--color-texto-suave);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.detalle-cargador-page__tomas-listado {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px;
+}
+
+/* Tarjeta de toma */
+
+.toma-detalle {
+  min-width: 0;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--color-borde);
+  border-radius: 14px;
+  background: rgba(17, 37, 68, 0.88);
+}
+
+.toma-detalle__cabecera {
+  margin-bottom: 17px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.toma-detalle__etiqueta {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--color-texto-suave);
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.toma-detalle__cabecera h3 {
+  margin: 0;
+  color: var(--color-blanco);
+  font-size: 18px;
+}
+
+.toma-detalle__informacion {
+  margin-bottom: 15px;
+  padding: 14px 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid var(--color-borde);
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.toma-detalle__informacion > div {
+  min-width: 0;
+  padding: 0 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  border-left: 1px solid var(--color-borde);
+}
+
+.toma-detalle__informacion > div:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.toma-detalle__informacion span,
+.toma-detalle__carga-activa span {
+  color: var(--color-texto-suave);
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.toma-detalle__informacion strong {
+  overflow-wrap: anywhere;
+  color: var(--color-blanco);
+  font-size: 14px;
+}
+
+.toma-detalle__disponibilidad {
+  margin-bottom: 15px;
+  padding: 11px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 184, 77, 0.24);
+  border-radius: 10px;
+  color: #ffca76;
+  background: rgba(255, 184, 77, 0.08);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.toma-detalle__carga-activa {
+  margin-bottom: 15px;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  border: 1px solid rgba(30, 167, 255, 0.24);
+  border-radius: 11px;
+  background: rgba(30, 167, 255, 0.08);
+}
+
+.toma-detalle__carga-activa > div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.toma-detalle__carga-activa strong {
+  color: var(--color-blanco);
+  font-size: 15px;
+}
+
+.toma-detalle__fuera-servicio {
+  margin: 0 0 15px;
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  color: var(--color-texto-suave);
+  background: rgba(255, 255, 255, 0.04);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.toma-detalle__boton {
+  width: 100%;
+  min-height: 43px;
+  margin-top: auto;
+  padding: 0 14px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(30, 167, 255, 0.32);
+  border-radius: 11px;
+  color: var(--color-principal);
+  background: rgba(30, 167, 255, 0.08);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 800;
+  transition:
+    border-color 0.2s ease,
+    color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.toma-detalle__boton:hover {
+  border-color: rgba(30, 167, 255, 0.55);
+  color: var(--color-blanco);
+  background: rgba(30, 167, 255, 0.14);
+  transform: translateY(-1px);
+}
+
+.toma-detalle__boton--mi-carga {
+  border-color: rgba(110, 231, 183, 0.35);
+  color: var(--color-verde);
+  background: rgba(110, 231, 183, 0.09);
+}
+
+.toma-detalle__boton--mi-carga:hover {
+  border-color: rgba(110, 231, 183, 0.55);
+  background: rgba(110, 231, 183, 0.14);
+}
+
+@media (max-width: 850px) {
+  .detalle-cargador-page__tomas-listado {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .detalle-cargador-page__volver {
+    margin-bottom: 18px;
+  }
+
+  .detalle-cargador-page__cabecera {
+    margin-bottom: 18px;
+  }
+
+  .detalle-cargador-page__cabecera p {
+    font-size: 14px;
+  }
+
+  .estado-conexion {
+    padding: 17px;
+  }
+
+  .estado-conexion__datos {
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .detalle-cargador-page__tomas {
+    padding: 16px;
+  }
+
+  .detalle-cargador-page__tomas-cabecera {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .toma-detalle {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 420px) {
+  .toma-detalle__cabecera {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .toma-detalle__informacion {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .toma-detalle__informacion > div {
+    padding: 0;
+    border-left: 0;
+  }
+
+  .toma-detalle__carga-activa {
+    grid-template-columns: 1fr;
+  }
+}
