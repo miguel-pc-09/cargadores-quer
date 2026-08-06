@@ -1,0 +1,558 @@
+.reserva-toma {
+  width: 100%;
+  max-width: 1120px;
+}
+
+.reserva-toma__volver {
+  width: fit-content;
+  margin-bottom: 22px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--color-texto-suave);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+  transition:
+    color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.reserva-toma__volver:hover {
+  color: var(--color-principal);
+  transform: translateX(-2px);
+}
+
+.reserva-toma__cabecera {
+  margin-bottom: 24px;
+}
+
+.reserva-toma__etiqueta {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--color-verde);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.11em;
+}
+
+.reserva-toma__cabecera h1 {
+  margin: 0;
+  color: var(--color-blanco);
+  font-size: clamp(28px, 4vw, 36px);
+  line-height: 1.15;
+}
+
+.reserva-toma__cabecera p {
+  max-width: 660px;
+  margin: 9px 0 0;
+  color: var(--color-texto-suave);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.reserva-toma__contenido {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.75fr);
+  align-items: start;
+  gap: 20px;
+}
+
+.reserva-toma__formulario,
+.reserva-toma__lateral {
+  min-width: 0;
+}
+
+.reserva-toma__formulario {
+  display: grid;
+  gap: 16px;
+}
+
+.reserva-toma__bloque,
+.reserva-toma__resumen {
+  padding: 22px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-medio);
+  background: rgba(17, 37, 68, 0.72);
+  box-shadow: var(--sombra-tarjeta);
+}
+
+.reserva-toma__bloque-cabecera {
+  margin-bottom: 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+}
+
+.reserva-toma__paso {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border: 1px solid rgba(30, 167, 255, 0.3);
+  border-radius: 10px;
+  color: var(--color-principal);
+  background: rgba(30, 167, 255, 0.09);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.reserva-toma__bloque h2,
+.reserva-toma__resumen h2 {
+  margin: 0;
+  color: var(--color-blanco);
+  font-size: 19px;
+}
+
+.reserva-toma__bloque-cabecera p {
+  margin: 5px 0 0;
+  color: var(--color-texto-suave);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.reserva-toma__dias {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.reserva-toma__dia,
+.reserva-toma__hora {
+  border: 1px solid var(--color-borde);
+  color: var(--color-texto);
+  background: rgba(7, 20, 39, 0.45);
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.reserva-toma__dia:hover,
+.reserva-toma__hora:hover {
+  border-color: rgba(30, 167, 255, 0.4);
+  transform: translateY(-1px);
+}
+
+.reserva-toma__dia {
+  min-width: 0;
+  min-height: 84px;
+  padding: 10px 7px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 3px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.reserva-toma__dia span {
+  color: var(--color-texto-suave);
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.reserva-toma__dia strong {
+  color: var(--color-blanco);
+  font-size: 13px;
+}
+
+.reserva-toma__dia small {
+  color: var(--color-texto-suave);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.reserva-toma__dia--activo,
+.reserva-toma__hora--activa {
+  border-color: rgba(30, 167, 255, 0.65);
+  background: rgba(30, 167, 255, 0.13);
+  box-shadow: inset 0 0 0 1px rgba(30, 167, 255, 0.12);
+}
+
+.reserva-toma__dia--activo span,
+.reserva-toma__dia--activo strong,
+.reserva-toma__dia--activo small,
+.reserva-toma__hora--activa {
+  color: var(--color-principal);
+}
+
+.reserva-toma__horas {
+  max-height: 216px;
+  padding-right: 4px;
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 8px;
+  overflow-y: auto;
+}
+
+.reserva-toma__hora {
+  min-height: 42px;
+  padding: 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.reserva-toma__sin-horarios,
+.reserva-toma__error {
+  margin: 0;
+  padding: 13px 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.reserva-toma__sin-horarios {
+  border: 1px solid rgba(255, 184, 77, 0.25);
+  color: #ffca76;
+  background: rgba(255, 184, 77, 0.08);
+}
+
+.reserva-toma__duracion-control {
+  min-height: 94px;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr) 48px;
+  align-items: center;
+  gap: 15px;
+  border: 1px solid var(--color-borde);
+  border-radius: 13px;
+  background: rgba(7, 20, 39, 0.4);
+}
+
+.reserva-toma__duracion-control button {
+  width: 48px;
+  height: 48px;
+  border: 1px solid rgba(30, 167, 255, 0.35);
+  border-radius: 12px;
+  color: var(--color-principal);
+  background: rgba(30, 167, 255, 0.09);
+  font-size: 25px;
+  font-weight: 700;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.reserva-toma__duracion-control button:hover:not(:disabled) {
+  border-color: var(--color-principal);
+  background: rgba(30, 167, 255, 0.16);
+  transform: translateY(-1px);
+}
+
+.reserva-toma__duracion-control button:disabled {
+  cursor: not-allowed;
+  opacity: 0.35;
+}
+
+.reserva-toma__duracion-control div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  text-align: center;
+}
+
+.reserva-toma__duracion-control strong {
+  color: var(--color-blanco);
+  font-size: 22px;
+}
+
+.reserva-toma__duracion-control span {
+  color: var(--color-texto-suave);
+  font-size: 11px;
+}
+
+.reserva-toma__lateral {
+  position: sticky;
+  top: 24px;
+  display: grid;
+  gap: 12px;
+}
+
+.reserva-toma__resumen h2 {
+  margin-bottom: 17px;
+}
+
+.reserva-toma__resumen-ubicacion {
+  margin-bottom: 17px;
+  padding: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  border: 1px solid rgba(110, 231, 183, 0.22);
+  border-radius: 11px;
+  background: rgba(110, 231, 183, 0.07);
+}
+
+.reserva-toma__resumen-ubicacion > span {
+  color: var(--color-verde);
+  font-size: 22px;
+}
+
+.reserva-toma__resumen-ubicacion strong {
+  color: var(--color-blanco);
+  font-size: 14px;
+}
+
+.reserva-toma__resumen-ubicacion p {
+  margin: 4px 0 0;
+  color: var(--color-texto-suave);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.reserva-toma__resumen-datos {
+  margin: 0;
+}
+
+.reserva-toma__resumen-datos > div {
+  padding: 12px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.reserva-toma__resumen-datos dt {
+  color: var(--color-texto-suave);
+  font-size: 11px;
+}
+
+.reserva-toma__resumen-datos dd {
+  margin: 0;
+  color: var(--color-blanco);
+  font-size: 12px;
+  font-weight: 800;
+  text-align: right;
+  text-transform: capitalize;
+}
+
+.reserva-toma__aviso {
+  margin: 16px 0 0;
+  color: var(--color-texto-suave);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.reserva-toma__confirmar {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 18px;
+  border: 1px solid var(--color-principal);
+  border-radius: 12px;
+  color: #03101e;
+  background: var(--color-principal);
+  font-size: 13px;
+  font-weight: 900;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.reserva-toma__confirmar:hover:not(:disabled) {
+  background: var(--color-principal-hover);
+  transform: translateY(-1px);
+}
+
+.reserva-toma__confirmar:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.reserva-toma__condiciones {
+  margin: -2px 8px 0;
+  color: var(--color-texto-suave);
+  font-size: 10px;
+  line-height: 1.45;
+  text-align: center;
+}
+
+.reserva-toma__confirmacion {
+  padding: 13px 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border: 1px solid rgba(110, 231, 183, 0.3);
+  border-radius: 11px;
+  color: var(--color-verde);
+  background: rgba(110, 231, 183, 0.09);
+}
+
+.reserva-toma__confirmacion > span {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: rgba(110, 231, 183, 0.14);
+  font-weight: 900;
+}
+
+.reserva-toma__confirmacion strong {
+  font-size: 12px;
+}
+
+.reserva-toma__confirmacion p {
+  margin: 3px 0 0;
+  color: var(--color-texto);
+  font-size: 11px;
+}
+
+.reserva-toma__error {
+  border: 1px solid rgba(255, 123, 123, 0.3);
+  color: var(--color-error);
+  background: rgba(255, 123, 123, 0.08);
+}
+
+@media (max-width: 980px) {
+  .reserva-toma__contenido {
+    grid-template-columns: 1fr;
+  }
+
+  .reserva-toma__lateral {
+    position: static;
+  }
+}
+
+@media (max-width: 700px) {
+  .reserva-toma__horas {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .reserva-toma__volver {
+    margin-bottom: 18px;
+  }
+
+  .reserva-toma__cabecera p {
+    font-size: 14px;
+  }
+
+  .reserva-toma__bloque,
+  .reserva-toma__resumen {
+    padding: 16px;
+  }
+
+  .reserva-toma__dias {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .reserva-toma__dia {
+    min-width: 0;
+    min-height: 76px;
+    padding: 9px 4px;
+  }
+
+  .reserva-toma__dia span {
+    font-size: 8px;
+  }
+
+  .reserva-toma__dia strong {
+    font-size: 11px;
+  }
+
+  .reserva-toma__dia small {
+    font-size: 12px;
+  }
+
+  .reserva-toma__horas {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .reserva-toma__duracion-control {
+    grid-template-columns: 44px minmax(0, 1fr) 44px;
+    gap: 9px;
+  }
+
+  .reserva-toma__duracion-control button {
+    width: 44px;
+    height: 44px;
+  }
+
+  .reserva-toma__duracion-control strong {
+    font-size: 18px;
+  }
+}
+/* Estados de las franjas horarias */
+
+.reserva-toma__hora:disabled {
+  cursor: not-allowed;
+}
+
+.reserva-toma__hora--no-disponible {
+  border-color: rgba(148, 163, 184, 0.1);
+  color: rgba(203, 213, 225, 0.28);
+  background: rgba(7, 20, 39, 0.2);
+  text-decoration: line-through;
+  box-shadow: none;
+  opacity: 1;
+}
+
+.reserva-toma__hora--no-disponible:hover {
+  border-color: rgba(148, 163, 184, 0.1);
+  background: rgba(7, 20, 39, 0.2);
+  transform: none;
+}
+
+.reserva-toma__hora--pasada {
+  color: rgba(203, 213, 225, 0.25);
+}
+
+.reserva-toma__hora--reservada {
+  border-color: rgba(255, 184, 77, 0.16);
+  color: rgba(255, 202, 118, 0.38);
+  background: rgba(255, 184, 77, 0.035);
+}
+
+.reserva-toma__leyenda-horas {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 18px;
+}
+
+.reserva-toma__leyenda-horas span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-texto-suave);
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.reserva-toma__leyenda-indicador {
+  width: 9px;
+  height: 9px;
+  display: inline-block;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.reserva-toma__leyenda-indicador--disponible {
+  border: 1px solid var(--color-borde);
+  background: rgba(7, 20, 39, 0.45);
+}
+
+.reserva-toma__leyenda-indicador--seleccionada {
+  border: 1px solid var(--color-principal);
+  background: var(--color-principal);
+}
+
+.reserva-toma__leyenda-indicador--bloqueada {
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(148, 163, 184, 0.25);
+}
