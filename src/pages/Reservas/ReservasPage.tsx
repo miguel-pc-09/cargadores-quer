@@ -328,7 +328,7 @@ function ReservasPage() {
 
                   <div className="mis-reservas__acciones">
                     <Link
-                      to={`/panel/cargadores/${reserva.cargadorId}`}
+                      to={`/panel/cargadores/${reserva.cargadorId}?reservaId=${reserva.id}`}
                       className="mis-reservas__accion mis-reservas__accion--principal"
                     >
                       Ver cargador

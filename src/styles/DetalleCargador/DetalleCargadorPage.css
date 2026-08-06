@@ -497,6 +497,17 @@
   background: rgba(110, 231, 183, 0.14);
 }
 
+.detalle-cargador-page__reserva-error {
+  margin: 0 0 20px;
+  padding: 13px 15px;
+  border: 1px solid rgba(255, 123, 123, 0.3);
+  border-radius: 11px;
+  color: var(--color-error);
+  background: rgba(255, 123, 123, 0.08);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
 @media (max-width: 850px) {
   .detalle-cargador-page__tomas-listado {
     grid-template-columns: 1fr;

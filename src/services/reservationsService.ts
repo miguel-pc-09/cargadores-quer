@@ -73,10 +73,6 @@ function normalizarReserva(reserva: Partial<Reserva>): Reserva | null {
     return null;
   }
 
-  /*
-   * Esto permite conservar las reservas antiguas que ya
-   * estaban guardadas antes de añadir fechaFin.
-   */
   const datosFin = calcularFechaHoraFin(
     reserva.fecha,
     reserva.horaInicio,
@@ -88,6 +84,7 @@ function normalizarReserva(reserva: Partial<Reserva>): Reserva | null {
     usuarioId: reserva.usuarioId,
     cargadorId: reserva.cargadorId,
     tomaId: reserva.tomaId,
+
     fecha: reserva.fecha,
     horaInicio: reserva.horaInicio,
     duracionMinutos: reserva.duracionMinutos,
@@ -99,6 +96,10 @@ function normalizarReserva(reserva: Partial<Reserva>): Reserva | null {
 
     estado: reserva.estado ?? "confirmada",
   };
+}
+
+function guardarReservas(reservas: Reserva[]) {
+  localStorage.setItem(CLAVE_RESERVAS, JSON.stringify(reservas));
 }
 
 function leerReservasGuardadas(): Reserva[] {
@@ -119,20 +120,12 @@ function leerReservasGuardadas(): Reserva[] {
       .map((reserva) => normalizarReserva(reserva as Partial<Reserva>))
       .filter((reserva): reserva is Reserva => reserva !== null);
 
-    /*
-     * Guardamos otra vez para migrar automáticamente
-     * las reservas antiguas que no tenían fechaFin.
-     */
     guardarReservas(reservasNormalizadas);
 
     return reservasNormalizadas;
   } catch {
     return [];
   }
-}
-
-function guardarReservas(reservas: Reserva[]) {
-  localStorage.setItem(CLAVE_RESERVAS, JSON.stringify(reservas));
 }
 
 function obtenerInicioReserva(reserva: Reserva) {
@@ -143,21 +136,50 @@ function obtenerFinReserva(reserva: Reserva) {
   return crearFechaHora(reserva.fechaFin, reserva.horaFin);
 }
 
+function reservasSeSolapan(
+  inicioA: Date,
+  finA: Date,
+  inicioB: Date,
+  finB: Date,
+) {
+  return (
+    inicioA.getTime() < finB.getTime() && finA.getTime() > inicioB.getTime()
+  );
+}
+
 function calcularEstadoActual(reserva: Reserva): EstadoReserva {
-  if (reserva.estado === "cancelada") {
-    return "cancelada";
+  if (
+    reserva.estado === "cancelada" ||
+    reserva.estado === "finalizada" ||
+    reserva.estado === "caducada"
+  ) {
+    return reserva.estado;
   }
 
   const ahora = new Date();
-  const fechaHoraInicio = obtenerInicioReserva(reserva);
   const fechaHoraFin = obtenerFinReserva(reserva);
 
-  if (ahora >= fechaHoraInicio && ahora < fechaHoraFin) {
+  /*
+   * Una reserva solamente pasa a activa cuando el usuario
+   * pulsa el botón "Iniciar carga".
+   */
+  if (reserva.estado === "activa") {
+    if (ahora.getTime() >= fechaHoraFin.getTime()) {
+      return "finalizada";
+    }
+
     return "activa";
   }
 
-  if (ahora >= fechaHoraFin) {
-    return "finalizada";
+  /*
+   * Si la reserva termina sin que se haya iniciado una carga,
+   * queda caducada, no finalizada.
+   */
+  if (
+    reserva.estado === "confirmada" &&
+    ahora.getTime() >= fechaHoraFin.getTime()
+  ) {
+    return "caducada";
   }
 
   return "confirmada";
@@ -196,14 +218,11 @@ function convertirReservaConFechas(reserva: Reserva): ReservaConFechas {
   };
 }
 
-function reservasSeSolapan(
-  inicioA: Date,
-  finA: Date,
-  inicioB: Date,
-  finB: Date,
-) {
+function reservaSigueVigente(reserva: Reserva) {
   return (
-    inicioA.getTime() < finB.getTime() && finA.getTime() > inicioB.getTime()
+    reserva.estado !== "cancelada" &&
+    reserva.estado !== "finalizada" &&
+    reserva.estado !== "caducada"
   );
 }
 
@@ -211,6 +230,21 @@ export async function obtenerReservas(): Promise<Reserva[]> {
   await esperar(RETARDO_SIMULADO_MS);
 
   return actualizarEstados(leerReservasGuardadas());
+}
+
+export async function obtenerReservaPorId(
+  reservaId: string,
+  usuarioId?: string,
+): Promise<Reserva | null> {
+  const reservas = await obtenerReservas();
+
+  const reservaEncontrada = reservas.find(
+    (reserva) =>
+      reserva.id === reservaId &&
+      (!usuarioId || reserva.usuarioId === usuarioId),
+  );
+
+  return reservaEncontrada ?? null;
 }
 
 export async function obtenerReservasUsuario(
@@ -237,9 +271,7 @@ export async function obtenerReservasToma(
     (reserva) =>
       reserva.cargadorId === cargadorId &&
       reserva.tomaId === tomaId &&
-      reserva.estado !== "cancelada" &&
-      reserva.estado !== "finalizada" &&
-      reserva.estado !== "caducada",
+      reservaSigueVigente(reserva),
   );
 }
 
@@ -261,13 +293,16 @@ export async function crearReserva(
     datosReserva.duracionMinutos,
   );
 
-  const reservaSolapada = reservas.find((reserva) => {
+  /*
+   * Primera comprobación:
+   * la toma no puede estar reservada por ningún usuario
+   * durante ese horario.
+   */
+  const reservaSolapadaEnToma = reservas.find((reserva) => {
     if (
       reserva.cargadorId !== datosReserva.cargadorId ||
       reserva.tomaId !== datosReserva.tomaId ||
-      reserva.estado === "cancelada" ||
-      reserva.estado === "finalizada" ||
-      reserva.estado === "caducada"
+      !reservaSigueVigente(reserva)
     ) {
       return false;
     }
@@ -280,9 +315,36 @@ export async function crearReserva(
     );
   });
 
-  if (reservaSolapada) {
+  if (reservaSolapadaEnToma) {
     throw new Error(
-      `La toma ya está reservada desde las ${reservaSolapada.horaInicio} hasta las ${reservaSolapada.horaFin}.`,
+      `Esta toma ya está reservada desde las ${reservaSolapadaEnToma.horaInicio} hasta las ${reservaSolapadaEnToma.horaFin}.`,
+    );
+  }
+
+  /*
+   * Segunda comprobación:
+   * un mismo usuario no puede tener dos reservas
+   * simultáneas, aunque sean cargadores o tomas distintas.
+   */
+  const reservaSolapadaDelUsuario = reservas.find((reserva) => {
+    if (
+      reserva.usuarioId !== datosReserva.usuarioId ||
+      !reservaSigueVigente(reserva)
+    ) {
+      return false;
+    }
+
+    return reservasSeSolapan(
+      fechaHoraInicio,
+      datosFin.fechaHoraFin,
+      obtenerInicioReserva(reserva),
+      obtenerFinReserva(reserva),
+    );
+  });
+
+  if (reservaSolapadaDelUsuario) {
+    throw new Error(
+      `Ya tienes otra reserva entre las ${reservaSolapadaDelUsuario.horaInicio} y las ${reservaSolapadaDelUsuario.horaFin}. No puedes reservar dos tomas al mismo tiempo.`,
     );
   }
 
@@ -309,7 +371,7 @@ export async function cancelarReserva(
 ): Promise<Reserva> {
   await esperar(RETARDO_SIMULADO_MS);
 
-  const reservas = leerReservasGuardadas();
+  const reservas = actualizarEstados(leerReservasGuardadas());
 
   const reservaEncontrada = reservas.find(
     (reserva) => reserva.id === reservaId && reserva.usuarioId === usuarioId,
@@ -321,7 +383,8 @@ export async function cancelarReserva(
 
   if (
     reservaEncontrada.estado === "activa" ||
-    reservaEncontrada.estado === "finalizada"
+    reservaEncontrada.estado === "finalizada" ||
+    reservaEncontrada.estado === "caducada"
   ) {
     throw new Error("Esta reserva ya no puede cancelarse.");
   }
@@ -340,6 +403,82 @@ export async function cancelarReserva(
   return reservaCancelada;
 }
 
+export async function marcarReservaComoActiva(
+  reservaId: string,
+  usuarioId: string,
+): Promise<Reserva> {
+  await esperar(RETARDO_SIMULADO_MS);
+
+  const reservas = actualizarEstados(leerReservasGuardadas());
+
+  const reservaEncontrada = reservas.find(
+    (reserva) => reserva.id === reservaId && reserva.usuarioId === usuarioId,
+  );
+
+  if (!reservaEncontrada) {
+    throw new Error("No se ha encontrado la reserva.");
+  }
+
+  if (reservaEncontrada.estado !== "confirmada") {
+    throw new Error("Esta reserva no puede iniciarse.");
+  }
+
+  const ahora = new Date();
+  const inicio = obtenerInicioReserva(reservaEncontrada);
+  const fin = obtenerFinReserva(reservaEncontrada);
+
+  if (ahora.getTime() < inicio.getTime() || ahora.getTime() >= fin.getTime()) {
+    throw new Error("La reserva todavía no está dentro de su horario.");
+  }
+
+  const reservaActiva: Reserva = {
+    ...reservaEncontrada,
+    estado: "activa",
+  };
+
+  const reservasActualizadas = reservas.map((reserva) =>
+    reserva.id === reservaId ? reservaActiva : reserva,
+  );
+
+  guardarReservas(reservasActualizadas);
+
+  return reservaActiva;
+}
+
+export async function marcarReservaComoFinalizada(
+  reservaId: string,
+  usuarioId: string,
+): Promise<Reserva> {
+  await esperar(RETARDO_SIMULADO_MS);
+
+  const reservas = leerReservasGuardadas();
+
+  const reservaEncontrada = reservas.find(
+    (reserva) => reserva.id === reservaId && reserva.usuarioId === usuarioId,
+  );
+
+  if (!reservaEncontrada) {
+    throw new Error("No se ha encontrado la reserva.");
+  }
+
+  if (reservaEncontrada.estado !== "activa") {
+    throw new Error("Esta reserva no tiene una carga activa.");
+  }
+
+  const reservaFinalizada: Reserva = {
+    ...reservaEncontrada,
+    estado: "finalizada",
+  };
+
+  const reservasActualizadas = reservas.map((reserva) =>
+    reserva.id === reservaId ? reservaFinalizada : reserva,
+  );
+
+  guardarReservas(reservasActualizadas);
+
+  return reservaFinalizada;
+}
+
 export async function obtenerReservaActivaDelCargador(
   usuarioId: string,
   cargadorId: string,
@@ -351,10 +490,7 @@ export async function obtenerReservaActivaDelCargador(
   const reservaEncontrada = reservas
     .filter(
       (reserva) =>
-        reserva.cargadorId === cargadorId &&
-        reserva.estado !== "cancelada" &&
-        reserva.estado !== "finalizada" &&
-        reserva.estado !== "caducada",
+        reserva.cargadorId === cargadorId && reservaSigueVigente(reserva),
     )
     .map(convertirReservaConFechas)
     .find((reserva) => reserva.fechaHoraFin.getTime() > ahora.getTime());
@@ -363,11 +499,7 @@ export async function obtenerReservaActivaDelCargador(
 }
 
 export function puedeIniciarCarga(reserva: Reserva, fechaActual = new Date()) {
-  if (
-    reserva.estado === "cancelada" ||
-    reserva.estado === "finalizada" ||
-    reserva.estado === "caducada"
-  ) {
+  if (reserva.estado !== "confirmada") {
     return false;
   }
 
@@ -375,7 +507,10 @@ export function puedeIniciarCarga(reserva: Reserva, fechaActual = new Date()) {
 
   const fechaHoraFin = obtenerFinReserva(reserva);
 
-  return fechaActual >= fechaHoraInicio && fechaActual < fechaHoraFin;
+  return (
+    fechaActual.getTime() >= fechaHoraInicio.getTime() &&
+    fechaActual.getTime() < fechaHoraFin.getTime()
+  );
 }
 
 export function obtenerFechaHoraInicio(reserva: Reserva) {
