@@ -139,6 +139,166 @@
   line-height: 1.4;
 }
 
+/* Reserva del usuario */
+
+.detalle-cargador-page__reserva {
+  margin-bottom: 24px;
+  padding: 22px;
+  border: 1px solid rgba(30, 167, 255, 0.28);
+  border-radius: var(--radio-medio);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(30, 167, 255, 0.11),
+      rgba(17, 37, 68, 0.78)
+    );
+  box-shadow: var(--sombra-tarjeta);
+}
+
+.detalle-cargador-page__reserva--cargando {
+  min-height: 110px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+}
+
+.detalle-cargador-page__reserva--cargando p {
+  margin: 0;
+  color: var(--color-texto-suave);
+  font-size: 12px;
+}
+
+.detalle-cargador-page__reserva-spinner {
+  width: 25px;
+  height: 25px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: var(--color-principal);
+  border-radius: 50%;
+  animation: detalle-reserva-girar 0.8s linear infinite;
+}
+
+@keyframes detalle-reserva-girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.detalle-cargador-page__reserva-cabecera {
+  margin-bottom: 18px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.detalle-cargador-page__reserva-cabecera h2 {
+  margin: 0;
+  color: var(--color-blanco);
+  font-size: 20px;
+}
+
+.detalle-cargador-page__reserva-estado {
+  min-height: 28px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  border: 1px solid rgba(30, 167, 255, 0.3);
+  border-radius: 999px;
+  color: var(--color-principal);
+  background: rgba(30, 167, 255, 0.09);
+  font-size: 9px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.detalle-cargador-page__reserva-estado--disponible {
+  border-color: rgba(110, 231, 183, 0.35);
+  color: var(--color-verde);
+  background: rgba(110, 231, 183, 0.09);
+}
+
+.detalle-cargador-page__reserva-datos {
+  margin-bottom: 18px;
+  padding: 14px 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--color-borde);
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.detalle-cargador-page__reserva-datos > div {
+  min-width: 0;
+  padding: 0 15px;
+  border-left: 1px solid var(--color-borde);
+}
+
+.detalle-cargador-page__reserva-datos > div:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.detalle-cargador-page__reserva-datos span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--color-texto-suave);
+  font-size: 9px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.detalle-cargador-page__reserva-datos strong {
+  display: block;
+  color: var(--color-blanco);
+  font-size: 12px;
+  line-height: 1.5;
+  text-transform: capitalize;
+}
+
+.detalle-cargador-page__iniciar-carga {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 18px;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid var(--color-verde);
+  border-radius: 12px;
+  color: #031712;
+  background: var(--color-verde);
+  font-size: 13px;
+  font-weight: 900;
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.detalle-cargador-page__iniciar-carga:hover:not(:disabled) {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+}
+
+.detalle-cargador-page__iniciar-carga:disabled {
+  cursor: not-allowed;
+  border-color: var(--color-borde);
+  color: var(--color-texto-suave);
+  background: rgba(255, 255, 255, 0.05);
+  opacity: 0.65;
+}
+
+.detalle-cargador-page__reserva-mensaje {
+  margin: 11px 0 0;
+  color: var(--color-texto-suave);
+  font-size: 11px;
+  line-height: 1.5;
+  text-align: center;
+}
+
 /* Tomas */
 
 .detalle-cargador-page__tomas {
@@ -365,6 +525,26 @@
     justify-content: flex-start;
     align-items: center;
     gap: 6px;
+  }
+
+  .detalle-cargador-page__reserva {
+    padding: 17px;
+  }
+
+  .detalle-cargador-page__reserva-cabecera {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .detalle-cargador-page__reserva-datos {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .detalle-cargador-page__reserva-datos > div {
+    padding: 0;
+    border-left: 0;
   }
 
   .detalle-cargador-page__tomas {
