@@ -1,0 +1,685 @@
+.perfil {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* =========================================================
+   CABECERA
+   ========================================================= */
+
+.perfil__cabecera {
+  margin-bottom: 26px;
+}
+
+.perfil__cabecera h1 {
+  margin: 0;
+  color: var(--color-blanco);
+  font-size: clamp(32px, 4vw, 42px);
+  line-height: 1.15;
+}
+
+/* =========================================================
+   MENSAJE GENERAL
+   ========================================================= */
+
+.perfil__mensaje {
+  margin-bottom: 20px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  border: 1px solid rgba(110, 231, 183, 0.3);
+  border-radius: 13px;
+  color: var(--color-verde);
+  background: rgba(110, 231, 183, 0.08);
+}
+
+.perfil__mensaje--aviso {
+  border-color: rgba(255, 184, 77, 0.42);
+  color: #ffca76;
+  background: rgba(255, 184, 77, 0.08);
+}
+
+.perfil__mensaje > span {
+  width: 31px;
+  height: 31px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.08);
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.perfil__mensaje p {
+  margin: 3px 0 0;
+  flex: 1;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.perfil__mensaje button {
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  font-size: 24px;
+  line-height: 1;
+}
+
+/* =========================================================
+   CONTENIDO
+   ========================================================= */
+
+.perfil__contenido {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 20px;
+}
+
+.perfil__bloque {
+  width: 100%;
+  min-width: 0;
+  padding: 26px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-medio);
+  background: rgba(17, 37, 68, 0.76);
+  box-shadow: var(--sombra-tarjeta);
+}
+
+.perfil__bloque-cabecera {
+  margin-bottom: 22px;
+}
+
+.perfil__bloque-cabecera--vehiculo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 18px;
+}
+
+.perfil__etiqueta {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--color-verde);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.perfil__bloque-cabecera h2 {
+  margin: 0;
+  color: var(--color-blanco);
+  font-size: 24px;
+  line-height: 1.25;
+}
+
+/* =========================================================
+   DATOS
+   ========================================================= */
+
+.perfil__datos {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  border-top: 1px solid var(--color-borde);
+  border-left: 1px solid var(--color-borde);
+}
+
+.perfil__dato {
+  min-width: 0;
+  padding: 18px;
+  border-right: 1px solid var(--color-borde);
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.perfil__dato > span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--color-texto-suave);
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.perfil__dato > strong {
+  display: block;
+  overflow: hidden;
+  color: var(--color-blanco);
+  font-size: 15px;
+  line-height: 1.45;
+  text-overflow: ellipsis;
+}
+
+/* =========================================================
+   ESTADOS
+   ========================================================= */
+
+.perfil__estado,
+.perfil__validacion {
+  width: fit-content;
+  min-height: 36px;
+  padding: 0 15px;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 13px !important;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.perfil__estado--correcto,
+.perfil__validacion--validado {
+  border-color: rgba(110, 231, 183, 0.35);
+  color: var(--color-verde) !important;
+  background: rgba(110, 231, 183, 0.1);
+}
+
+.perfil__validacion--pendiente {
+  border-color: rgba(255, 184, 77, 0.46);
+  color: #ffca76;
+  background: rgba(255, 184, 77, 0.1);
+}
+
+/* =========================================================
+   VEHÍCULO
+   ========================================================= */
+
+.perfil__vehiculo {
+  margin-bottom: 20px;
+  padding: 19px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid rgba(30, 167, 255, 0.3);
+  border-radius: 13px;
+  background: rgba(30, 167, 255, 0.08);
+}
+
+.perfil__vehiculo-icono {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 13px;
+  color: #03101e;
+  background: var(--color-principal);
+  font-size: 23px;
+}
+
+.perfil__vehiculo-info {
+  min-width: 0;
+}
+
+.perfil__vehiculo-info strong {
+  display: block;
+  color: var(--color-blanco);
+  font-size: 18px;
+  line-height: 1.3;
+}
+
+.perfil__vehiculo-info span {
+  display: block;
+  margin-top: 5px;
+  color: var(--color-texto-suave);
+  font-size: 12px;
+}
+
+/* =========================================================
+   AVISO DE VALIDACIÓN
+   ========================================================= */
+
+.perfil__aviso-validacion {
+  margin-bottom: 20px;
+  padding: 17px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  border: 1px solid rgba(255, 184, 77, 0.42);
+  border-radius: 12px;
+  background: rgba(255, 184, 77, 0.08);
+}
+
+.perfil__aviso-validacion-icono {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 10px;
+  color: #ffca76;
+  background: rgba(255, 184, 77, 0.14);
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.perfil__aviso-validacion strong {
+  display: block;
+  color: #ffca76;
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.perfil__aviso-validacion p {
+  margin: 6px 0 0;
+  color: var(--color-texto-suave);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+/* =========================================================
+   FORMULARIO VEHÍCULO
+   ========================================================= */
+
+.perfil__formulario-vehiculo {
+  margin-top: 20px;
+  padding: 20px;
+  border: 1px solid rgba(30, 167, 255, 0.28);
+  border-radius: 13px;
+  background: rgba(7, 20, 39, 0.24);
+}
+
+.perfil__formulario-cabecera {
+  margin-bottom: 20px;
+}
+
+.perfil__formulario-cabecera h3 {
+  margin: 0;
+  color: var(--color-blanco);
+  font-size: 20px;
+}
+
+.perfil__formulario-cabecera p {
+  margin: 8px 0 0;
+  color: var(--color-texto-suave);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.perfil__formulario-fila {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.perfil__campo {
+  margin-bottom: 14px;
+  display: block;
+}
+
+.perfil__campo > span {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--color-texto-suave);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.perfil__campo input,
+.perfil__campo select {
+  width: 100%;
+  min-height: 48px;
+  padding: 0 14px;
+  border: 1px solid var(--color-borde);
+  border-radius: 10px;
+  outline: none;
+  color: var(--color-blanco);
+  background: rgba(17, 37, 68, 0.84);
+  font: inherit;
+  font-size: 14px;
+}
+
+.perfil__campo input:focus,
+.perfil__campo select:focus {
+  border-color: var(--color-principal);
+}
+
+.perfil__advertencia-cambio {
+  margin-top: 4px;
+  padding: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  border: 1px solid rgba(255, 184, 77, 0.32);
+  border-radius: 10px;
+  color: #ffca76;
+  background: rgba(255, 184, 77, 0.06);
+}
+
+.perfil__advertencia-cambio > span {
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.perfil__advertencia-cambio p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.perfil__formulario-acciones {
+  margin-top: 17px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 11px;
+}
+
+/* =========================================================
+   NOTIFICACIONES
+   ========================================================= */
+
+.perfil__preferencias {
+  display: grid;
+  gap: 12px;
+}
+
+.perfil__preferencia {
+  padding: 17px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  border: 1px solid var(--color-borde);
+  border-radius: 12px;
+  background: rgba(7, 20, 39, 0.22);
+}
+
+.perfil__preferencia div {
+  min-width: 0;
+}
+
+.perfil__preferencia strong {
+  display: block;
+  color: var(--color-blanco);
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.perfil__preferencia span {
+  display: block;
+  margin-top: 5px;
+  color: var(--color-texto-suave);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.perfil__preferencia input {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  accent-color: var(--color-verde);
+}
+
+/* =========================================================
+   PENALIZACIONES
+   ========================================================= */
+
+.perfil__estado-cuenta {
+  padding: 18px;
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  border: 1px solid rgba(110, 231, 183, 0.3);
+  border-radius: 12px;
+  background: rgba(110, 231, 183, 0.08);
+}
+
+.perfil__estado-cuenta-icono {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 11px;
+  color: #031712;
+  background: var(--color-verde);
+  font-size: 19px;
+  font-weight: 900;
+}
+
+.perfil__estado-cuenta strong {
+  display: block;
+  color: var(--color-blanco);
+  font-size: 15px;
+}
+
+.perfil__estado-cuenta p {
+  margin: 6px 0 0;
+  color: var(--color-texto-suave);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+/* =========================================================
+   BOTONES
+   ========================================================= */
+
+.perfil__boton-secundario,
+.perfil__boton-peligro,
+.perfil__boton-principal,
+.perfil__boton-cancelar {
+  min-height: 48px;
+  padding: 0 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.perfil__boton-secundario {
+  width: 100%;
+  margin-top: 20px;
+  border: 1px solid rgba(30, 167, 255, 0.36);
+  color: var(--color-principal);
+  background: rgba(30, 167, 255, 0.08);
+}
+
+.perfil__boton-principal {
+  border: 1px solid var(--color-principal);
+  color: #03101e;
+  background: var(--color-principal);
+}
+
+.perfil__boton-cancelar {
+  border: 1px solid var(--color-borde);
+  color: var(--color-texto);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.perfil__boton-peligro {
+  width: 100%;
+  border: 1px solid rgba(255, 123, 123, 0.35);
+  color: var(--color-error);
+  background: rgba(255, 123, 123, 0.08);
+}
+
+/* =========================================================
+   SEGURIDAD
+   ========================================================= */
+
+.perfil__acciones-seguridad {
+  display: grid;
+  gap: 12px;
+}
+
+.perfil__acciones-seguridad
+  .perfil__boton-secundario,
+.perfil__acciones-seguridad
+  .perfil__boton-peligro {
+  margin-top: 0;
+}
+
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .perfil {
+    max-width: 760px;
+  }
+
+  .perfil__bloque {
+    padding: 22px;
+  }
+}
+
+/* =========================================================
+   MÓVIL
+   ========================================================= */
+
+@media (max-width: 620px) {
+  .perfil {
+    max-width: none;
+  }
+
+  .perfil__cabecera {
+    margin-bottom: 22px;
+  }
+
+  .perfil__cabecera h1 {
+    font-size: 32px;
+  }
+
+  .perfil__contenido {
+    gap: 15px;
+  }
+
+  .perfil__bloque {
+    padding: 18px;
+  }
+
+  .perfil__bloque-cabecera {
+    margin-bottom: 18px;
+  }
+
+  .perfil__etiqueta {
+    font-size: 10px;
+  }
+
+  .perfil__bloque-cabecera h2 {
+    font-size: 21px;
+  }
+
+  .perfil__datos {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .perfil__dato {
+    padding: 14px 12px;
+  }
+
+  .perfil__dato > span {
+    font-size: 9px;
+  }
+
+  .perfil__dato > strong {
+    font-size: 13px;
+  }
+
+  .perfil__validacion {
+    min-height: 34px;
+    padding-inline: 13px;
+    font-size: 12px !important;
+  }
+
+  .perfil__mensaje {
+    padding: 14px;
+  }
+
+  .perfil__mensaje p {
+    font-size: 13px;
+  }
+
+  .perfil__aviso-validacion {
+    padding: 14px;
+  }
+
+  .perfil__aviso-validacion strong {
+    font-size: 14px;
+  }
+
+  .perfil__aviso-validacion p {
+    font-size: 12px;
+  }
+
+  .perfil__vehiculo {
+    padding: 15px;
+  }
+
+  .perfil__vehiculo-info strong {
+    font-size: 16px;
+  }
+
+  .perfil__vehiculo-info span {
+    font-size: 11px;
+  }
+
+  .perfil__preferencia {
+    padding: 14px;
+  }
+
+  .perfil__preferencia strong {
+    font-size: 14px;
+  }
+
+  .perfil__preferencia span {
+    font-size: 11px;
+  }
+
+  .perfil__estado-cuenta strong {
+    font-size: 14px;
+  }
+
+  .perfil__estado-cuenta p {
+    font-size: 11px;
+  }
+
+  .perfil__boton-secundario,
+  .perfil__boton-peligro,
+  .perfil__boton-principal,
+  .perfil__boton-cancelar {
+    min-height: 46px;
+    font-size: 12px;
+  }
+}
+
+/* =========================================================
+   MÓVIL ESTRECHO
+   ========================================================= */
+
+@media (max-width: 440px) {
+  .perfil__bloque-cabecera--vehiculo {
+    align-items: flex-start;
+  }
+
+  .perfil__datos {
+    grid-template-columns: 1fr;
+  }
+
+  .perfil__datos--vehiculo {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .perfil__formulario-fila {
+    grid-template-columns: 1fr;
+  }
+
+  .perfil__formulario-acciones {
+    grid-template-columns: 1fr;
+  }
+
+  .perfil__validacion {
+    flex-shrink: 0;
+    font-size: 10px !important;
+  }
+}
