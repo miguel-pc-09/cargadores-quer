@@ -20,6 +20,11 @@ import {
   obtenerReservaPorId,
   puedeIniciarCarga,
 } from "../../services/reservationsService";
+import {
+  obtenerVehiculoUsuario,
+  puedeUsuarioIniciarCarga,
+} from "../../services/usersService";
+
 import type { Reserva } from "../../types/reservation";
 
 import "../../styles/DetalleCargador/DetalleCargadorPage.css";
@@ -97,6 +102,10 @@ function DetalleCargadorPage() {
 
   const [ahora, setAhora] = useState(new Date());
 
+  const vehiculo = obtenerVehiculoUsuario();
+
+  const vehiculoValidado = puedeUsuarioIniciarCarga();
+
   const cargador = cargadoresSimulados.find(
     (cargadorActual) => cargadorActual.id === cargadorId,
   );
@@ -119,6 +128,7 @@ function DetalleCargadorPage() {
 
           if (!reservaExacta || reservaExacta.cargadorId !== cargadorId) {
             setReservaUsuario(null);
+
             setMensajeError("No se ha encontrado la reserva seleccionada.");
 
             return;
@@ -137,6 +147,7 @@ function DetalleCargadorPage() {
         setReservaUsuario(siguienteReserva);
       } catch {
         setReservaUsuario(null);
+
         setMensajeError("No hemos podido consultar tus reservas.");
       } finally {
         setCargandoReserva(false);
@@ -174,9 +185,11 @@ function DetalleCargadorPage() {
     ? obtenerFechaHoraFin(reservaUsuario)
     : null;
 
-  const puedeComenzar = reservaUsuario
+  const puedeComenzarPorHorario = reservaUsuario
     ? puedeIniciarCarga(reservaUsuario, ahora)
     : false;
+
+  const puedeComenzarCarga = puedeComenzarPorHorario && vehiculoValidado;
 
   const reservaHaFinalizado =
     fechaHoraFin !== null && ahora.getTime() >= fechaHoraFin.getTime();
@@ -200,7 +213,7 @@ function DetalleCargadorPage() {
       !reservaUsuario ||
       !tomaReservada ||
       !fechaHoraFin ||
-      !puedeComenzar ||
+      !puedeComenzarCarga ||
       iniciandoCarga
     ) {
       return;
@@ -217,11 +230,17 @@ function DetalleCargadorPage() {
 
       const nuevaCarga = await iniciarCarga({
         usuarioId: USUARIO_ACTUAL_ID,
+
         reservaId: reservaActivaActualizada.id,
+
         cargadorId: reservaActivaActualizada.cargadorId,
+
         tomaId: reservaActivaActualizada.tomaId,
+
         fechaHoraInicio: new Date().toISOString(),
+
         fechaHoraFinPrevista: fechaHoraFin.toISOString(),
+
         potenciaMaximaKw: tomaReservada.potenciaMaximaKw,
       });
 
@@ -293,7 +312,7 @@ function DetalleCargadorPage() {
 
             <span
               className={`detalle-cargador-page__reserva-estado${
-                puedeComenzar
+                puedeComenzarCarga
                   ? " detalle-cargador-page__reserva-estado--disponible"
                   : ""
               }`}
@@ -306,9 +325,11 @@ function DetalleCargadorPage() {
                     ? "Finalizada"
                     : reservaActiva
                       ? "Carga activa"
-                      : puedeComenzar
-                        ? "Lista para iniciar"
-                        : "Próxima"}
+                      : puedeComenzarPorHorario && !vehiculoValidado
+                        ? "Vehículo pendiente"
+                        : puedeComenzarCarga
+                          ? "Lista para iniciar"
+                          : "Próxima"}
             </span>
           </header>
 
@@ -336,10 +357,39 @@ function DetalleCargadorPage() {
 
           {!reservaCancelada && !reservaCaducada && !reservaFinalizada && (
             <>
+              {puedeComenzarPorHorario &&
+                !vehiculoValidado &&
+                !reservaActiva && (
+                  <div className="detalle-cargador-page__vehiculo-bloqueado">
+                    <div className="detalle-cargador-page__vehiculo-bloqueado-icono">
+                      !
+                    </div>
+
+                    <div className="detalle-cargador-page__vehiculo-bloqueado-contenido">
+                      <strong>Vehículo pendiente de validación</strong>
+
+                      <p>
+                        No puedes iniciar una carga con{" "}
+                        <strong>{vehiculo.marcaModelo}</strong> hasta que el
+                        Ayuntamiento valide el cambio de vehículo.
+                      </p>
+
+                      <Link
+                        to="/panel/perfil"
+                        className="detalle-cargador-page__vehiculo-bloqueado-enlace"
+                      >
+                        Ver estado en mi perfil
+                      </Link>
+                    </div>
+                  </div>
+                )}
+
               <button
                 type="button"
                 className="detalle-cargador-page__iniciar-carga"
-                disabled={!puedeComenzar || reservaActiva || iniciandoCarga}
+                disabled={
+                  !puedeComenzarCarga || reservaActiva || iniciandoCarga
+                }
                 onClick={() => void iniciarCargaUsuario()}
               >
                 <span aria-hidden="true">⚡</span>
@@ -349,23 +399,27 @@ function DetalleCargadorPage() {
                     ? "Iniciando carga..."
                     : reservaActiva
                       ? "Carga en curso"
-                      : "Iniciar carga"}
+                      : !vehiculoValidado && puedeComenzarPorHorario
+                        ? "Vehículo pendiente de validación"
+                        : "Iniciar carga"}
                 </span>
               </button>
 
               <p className="detalle-cargador-page__reserva-mensaje">
                 {reservaActiva
                   ? "Ya existe una carga activa para esta reserva."
-                  : puedeComenzar
-                    ? `Puedes iniciar la carga hasta las ${reservaUsuario.horaFin}.`
-                    : reservaHaFinalizado
-                      ? "El horario de esta reserva ya ha finalizado."
-                      : `Podrás iniciar la carga el ${formatearFechaHora(
-                          fechaHoraInicio,
-                        )}. Faltan ${obtenerTiempoRestante(
-                          fechaHoraInicio,
-                          ahora,
-                        )}.`}
+                  : puedeComenzarPorHorario && !vehiculoValidado
+                    ? "Tu reserva sigue siendo válida, pero necesitas que el vehículo sea aprobado antes de iniciar la carga."
+                    : puedeComenzarCarga
+                      ? `Puedes iniciar la carga hasta las ${reservaUsuario.horaFin}.`
+                      : reservaHaFinalizado
+                        ? "El horario de esta reserva ya ha finalizado."
+                        : `Podrás iniciar la carga el ${formatearFechaHora(
+                            fechaHoraInicio,
+                          )}. Faltan ${obtenerTiempoRestante(
+                            fechaHoraInicio,
+                            ahora,
+                          )}.`}
               </p>
             </>
           )}

@@ -508,6 +508,82 @@
   line-height: 1.5;
 }
 
+/* =========================================================
+   VEHÍCULO PENDIENTE DE VALIDACIÓN
+   ========================================================= */
+
+.detalle-cargador-page__vehiculo-bloqueado {
+  margin-bottom: 15px;
+  padding: 15px;
+  display: flex;
+  align-items: flex-start;
+  gap: 13px;
+  border: 1px solid rgba(255, 184, 77, 0.38);
+  border-radius: 12px;
+  background: rgba(255, 184, 77, 0.08);
+}
+
+.detalle-cargador-page__vehiculo-bloqueado-icono {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: 10px;
+  color: #ffca76;
+  background: rgba(255, 184, 77, 0.14);
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.detalle-cargador-page__vehiculo-bloqueado-contenido {
+  min-width: 0;
+  flex: 1;
+}
+
+.detalle-cargador-page__vehiculo-bloqueado-contenido > strong {
+  display: block;
+  color: #ffca76;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.detalle-cargador-page__vehiculo-bloqueado-contenido p {
+  margin: 5px 0 0;
+  color: var(--color-texto-suave);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.detalle-cargador-page__vehiculo-bloqueado-enlace {
+  margin-top: 9px;
+  display: inline-flex;
+  color: var(--color-principal);
+  font-size: 12px;
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.detalle-cargador-page__vehiculo-bloqueado-enlace:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 620px) {
+  .detalle-cargador-page__vehiculo-bloqueado {
+    padding: 13px;
+  }
+
+  .detalle-cargador-page__vehiculo-bloqueado-contenido > strong {
+    font-size: 13px;
+  }
+
+  .detalle-cargador-page__vehiculo-bloqueado-contenido p,
+  .detalle-cargador-page__vehiculo-bloqueado-enlace {
+    font-size: 11px;
+  }
+}
+
 @media (max-width: 850px) {
   .detalle-cargador-page__tomas-listado {
     grid-template-columns: 1fr;

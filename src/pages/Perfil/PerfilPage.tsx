@@ -1,40 +1,13 @@
-import { type FormEvent, useEffect, useState } from "react";
+import { type FormEvent, useState } from "react";
+
+import {
+  guardarVehiculoUsuario,
+  obtenerVehiculoUsuario,
+} from "../../services/usersService";
+
+import type { DatosVehiculo, TipoVehiculo } from "../../types/user";
 
 import "../../styles/Perfil/PerfilPage.css";
-
-type TipoVehiculo = "electrico" | "hibrido-enchufable";
-
-type EstadoValidacionVehiculo = "validado" | "pendiente";
-
-interface DatosVehiculo {
-  marcaModelo: string;
-  matricula: string;
-  tipo: TipoVehiculo;
-  estadoValidacion: EstadoValidacionVehiculo;
-}
-
-const CLAVE_VEHICULO = "cargaquer_perfil_vehiculo";
-
-const VEHICULO_INICIAL: DatosVehiculo = {
-  marcaModelo: "Hyundai Kona Eléctrico",
-  matricula: "0000 AAA",
-  tipo: "electrico",
-  estadoValidacion: "validado",
-};
-
-function obtenerVehiculoGuardado(): DatosVehiculo {
-  try {
-    const vehiculoGuardado = localStorage.getItem(CLAVE_VEHICULO);
-
-    if (!vehiculoGuardado) {
-      return VEHICULO_INICIAL;
-    }
-
-    return JSON.parse(vehiculoGuardado) as DatosVehiculo;
-  } catch {
-    return VEHICULO_INICIAL;
-  }
-}
 
 function obtenerTextoTipoVehiculo(tipo: TipoVehiculo) {
   if (tipo === "electrico") {
@@ -46,7 +19,7 @@ function obtenerTextoTipoVehiculo(tipo: TipoVehiculo) {
 
 function PerfilPage() {
   const [vehiculo, setVehiculo] = useState<DatosVehiculo>(
-    obtenerVehiculoGuardado,
+    obtenerVehiculoUsuario,
   );
 
   const [editandoVehiculo, setEditandoVehiculo] = useState(false);
@@ -67,10 +40,6 @@ function PerfilPage() {
   const [notificacionesCorreo, setNotificacionesCorreo] = useState(true);
 
   const [mensajePerfil, setMensajePerfil] = useState("");
-
-  useEffect(() => {
-    localStorage.setItem(CLAVE_VEHICULO, JSON.stringify(vehiculo));
-  }, [vehiculo]);
 
   const abrirEdicionVehiculo = () => {
     setMarcaModeloTemporal(vehiculo.marcaModelo);
@@ -114,12 +83,19 @@ function PerfilPage() {
       return;
     }
 
-    setVehiculo({
+    const vehiculoActualizado: DatosVehiculo = {
       marcaModelo: marcaModeloLimpio,
+
       matricula: matriculaLimpia,
+
       tipo: tipoTemporal,
+
       estadoValidacion: "pendiente",
-    });
+    };
+
+    guardarVehiculoUsuario(vehiculoActualizado);
+
+    setVehiculo(vehiculoActualizado);
 
     setEditandoVehiculo(false);
 
@@ -137,14 +113,14 @@ function PerfilPage() {
       {mensajePerfil && (
         <div
           className={`perfil__mensaje ${
-            vehiculo.estadoValidacion === "pendiente"
+            vehiculo.estadoValidacion !== "validado"
               ? "perfil__mensaje--aviso"
               : ""
           }`}
           role="status"
         >
           <span aria-hidden="true">
-            {vehiculo.estadoValidacion === "pendiente" ? "!" : "✓"}
+            {vehiculo.estadoValidacion === "validado" ? "✓" : "!"}
           </span>
 
           <p>{mensajePerfil}</p>
@@ -217,7 +193,9 @@ function PerfilPage() {
             >
               {vehiculo.estadoValidacion === "validado"
                 ? "✓ Verificado"
-                : "◷ Pendiente"}
+                : vehiculo.estadoValidacion === "pendiente"
+                  ? "◷ Pendiente"
+                  : "✕ Rechazado"}
             </span>
           </header>
 
@@ -236,6 +214,26 @@ function PerfilPage() {
                 <p>
                   El Ayuntamiento debe comprobar los nuevos datos antes de
                   permitir nuevas cargas.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {vehiculo.estadoValidacion === "rechazado" && (
+            <div className="perfil__aviso-validacion">
+              <span
+                className="perfil__aviso-validacion-icono"
+                aria-hidden="true"
+              >
+                !
+              </span>
+
+              <div>
+                <strong>Vehículo no validado</strong>
+
+                <p>
+                  La solicitud de cambio no ha sido aprobada. Revisa los datos
+                  del vehículo o contacta con el Ayuntamiento.
                 </p>
               </div>
             </div>
