@@ -21,13 +21,13 @@ function crearFechaHora(fecha: string, hora: string) {
 function formatearFechaHora(fecha: string, hora: string) {
   const fechaHora = crearFechaHora(fecha, hora);
 
-  const fechaFormateada = new Intl.DateTimeFormat("es-ES", {
+  return new Intl.DateTimeFormat("es-ES", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   }).format(fechaHora);
-
-  return `${fechaFormateada}, ${hora}`;
 }
 
 function formatearDuracion(minutosTotales: number) {
@@ -62,13 +62,8 @@ function obtenerDatosCargador(reserva: Reserva) {
     (cargadorActual) => cargadorActual.id === reserva.cargadorId,
   );
 
-  const toma = cargador?.tomas.find(
-    (tomaActual) => tomaActual.id === reserva.tomaId,
-  );
-
   return {
     nombreCargador: cargador?.nombre ?? "Cargador no disponible",
-    nombreToma: toma?.nombre ?? "Toma no disponible",
   };
 }
 
@@ -76,12 +71,15 @@ function ReservasPage() {
   const [reservas, setReservas] = useState<Reserva[]>([]);
   const [pestanaActiva, setPestanaActiva] =
     useState<PestanaReservas>("activas");
+
   const [cargando, setCargando] = useState(true);
   const [mensajeError, setMensajeError] = useState("");
   const [mensajeExito, setMensajeExito] = useState("");
+
   const [reservaPendienteCancelar, setReservaPendienteCancelar] = useState<
     string | null
   >(null);
+
   const [cancelandoId, setCancelandoId] = useState<string | null>(null);
 
   const cargarReservas = async () => {
@@ -167,6 +165,7 @@ function ReservasPage() {
 
       setReservas(reservasActualizadas);
       setReservaPendienteCancelar(null);
+
       setMensajeExito("La reserva se ha cancelado correctamente.");
     } catch (error) {
       setMensajeError(
@@ -182,14 +181,7 @@ function ReservasPage() {
   return (
     <section className="mis-reservas">
       <header className="mis-reservas__cabecera">
-        <span className="mis-reservas__etiqueta">Gestión de reservas</span>
-
         <h1>Mis reservas</h1>
-
-        <p>
-          Consulta tus próximas reservas y revisa el historial de reservas
-          anteriores.
-        </p>
       </header>
 
       <div
@@ -206,7 +198,7 @@ function ReservasPage() {
           }`}
           onClick={() => setPestanaActiva("activas")}
         >
-          Próximas y activas
+          Activas
           <span>{reservasActivas.length}</span>
         </button>
 
@@ -229,6 +221,7 @@ function ReservasPage() {
       {mensajeExito && (
         <div className="mis-reservas__mensaje-exito" role="status">
           <span aria-hidden="true">✓</span>
+
           <p>{mensajeExito}</p>
         </div>
       )}
@@ -236,6 +229,7 @@ function ReservasPage() {
       {mensajeError && (
         <div className="mis-reservas__mensaje-error" role="alert">
           <span aria-hidden="true">!</span>
+
           <p>{mensajeError}</p>
         </div>
       )}
@@ -243,6 +237,7 @@ function ReservasPage() {
       {cargando ? (
         <div className="mis-reservas__cargando" role="status">
           <span className="mis-reservas__spinner" aria-hidden="true" />
+
           <p>Cargando tus reservas...</p>
         </div>
       ) : reservasMostradas.length === 0 ? (
@@ -270,115 +265,132 @@ function ReservasPage() {
           )}
         </div>
       ) : (
-        <div className="mis-reservas__tabla">
-          <div className="mis-reservas__fila mis-reservas__fila--cabecera">
-            <span>Inicio</span>
-            <span>Fin</span>
-            <span>Cargador</span>
-            <span>Duración</span>
-            <span>Estado</span>
-            <span aria-hidden="true" />
-          </div>
+        <section
+          className="mis-reservas__historial"
+          aria-label={
+            pestanaActiva === "activas"
+              ? "Reservas próximas y activas"
+              : "Histórico de reservas"
+          }
+        >
+          <table className="mis-reservas__tabla">
+            <thead>
+              <tr>
+                <th>Inicio</th>
+                <th>Fin</th>
+                <th>Cargador</th>
+                <th>Duración</th>
+                <th>Estado</th>
 
-          {reservasMostradas.map((reserva) => {
-            const datosCargador = obtenerDatosCargador(reserva);
-            const puedeCancelar = reserva.estado === "confirmada";
-            const estaConfirmandoCancelacion =
-              reservaPendienteCancelar === reserva.id;
-            const estaCancelando = cancelandoId === reserva.id;
+                {pestanaActiva === "activas" && <th aria-label="Acciones" />}
+              </tr>
+            </thead>
 
-            return (
-              <article key={reserva.id} className="mis-reservas__registro">
-                <div className="mis-reservas__fila">
-                  <div className="mis-reservas__celda">
-                    <span>Inicio</span>
-                    <strong>
-                      {formatearFechaHora(reserva.fecha, reserva.horaInicio)}
-                    </strong>
-                  </div>
+            <tbody>
+              {reservasMostradas.map((reserva) => {
+                const datosCargador = obtenerDatosCargador(reserva);
 
-                  <div className="mis-reservas__celda">
-                    <span>Fin</span>
-                    <strong>
-                      {formatearFechaHora(reserva.fechaFin, reserva.horaFin)}
-                    </strong>
-                  </div>
+                const puedeCancelar = reserva.estado === "confirmada";
 
-                  <div className="mis-reservas__celda mis-reservas__celda--cargador">
-                    <span>Cargador</span>
-                    <strong>{datosCargador.nombreCargador}</strong>
-                    <small>{datosCargador.nombreToma}</small>
-                  </div>
+                const estaConfirmandoCancelacion =
+                  reservaPendienteCancelar === reserva.id;
 
-                  <div className="mis-reservas__celda">
-                    <span>Duración</span>
-                    <strong>
-                      {formatearDuracion(reserva.duracionMinutos)}
-                    </strong>
-                  </div>
+                const estaCancelando = cancelandoId === reserva.id;
 
-                  <div className="mis-reservas__celda">
-                    <span>Estado</span>
-                    <strong
-                      className={`mis-reservas__estado mis-reservas__estado--${reserva.estado}`}
-                    >
-                      {obtenerTextoEstado(reserva.estado)}
-                    </strong>
-                  </div>
+                return (
+                  <>
+                    <tr key={reserva.id}>
+                      <td>
+                        {formatearFechaHora(reserva.fecha, reserva.horaInicio)}
+                      </td>
 
-                  <div className="mis-reservas__acciones">
-                    <Link
-                      to={`/panel/cargadores/${reserva.cargadorId}?reservaId=${reserva.id}`}
-                      className="mis-reservas__accion mis-reservas__accion--principal"
-                    >
-                      Ver cargador
-                    </Link>
+                      <td>
+                        {formatearFechaHora(reserva.fechaFin, reserva.horaFin)}
+                      </td>
 
-                    {puedeCancelar && (
-                      <button
-                        type="button"
-                        className="mis-reservas__accion mis-reservas__accion--cancelar"
-                        onClick={() => solicitarCancelacion(reserva.id)}
+                      <td>
+                        <Link
+                          to={`/panel/cargadores/${reserva.cargadorId}?reservaId=${reserva.id}`}
+                          className="mis-reservas__enlace-cargador"
+                        >
+                          {datosCargador.nombreCargador}
+                        </Link>
+                      </td>
+
+                      <td className="mis-reservas__duracion">
+                        {formatearDuracion(reserva.duracionMinutos)}
+                      </td>
+
+                      <td>
+                        <span
+                          className={`mis-reservas__estado mis-reservas__estado--${reserva.estado}`}
+                        >
+                          {obtenerTextoEstado(reserva.estado)}
+                        </span>
+                      </td>
+
+                      {pestanaActiva === "activas" && (
+                        <td className="mis-reservas__acciones">
+                          {puedeCancelar && (
+                            <button
+                              type="button"
+                              className="mis-reservas__cancelar"
+                              onClick={() => solicitarCancelacion(reserva.id)}
+                            >
+                              Cancelar
+                            </button>
+                          )}
+                        </td>
+                      )}
+                    </tr>
+
+                    {estaConfirmandoCancelacion && (
+                      <tr
+                        key={`${reserva.id}-confirmacion`}
+                        className="mis-reservas__fila-confirmacion"
                       >
-                        Cancelar
-                      </button>
+                        <td colSpan={pestanaActiva === "activas" ? 6 : 5}>
+                          <div className="mis-reservas__confirmacion">
+                            <div>
+                              <strong>¿Cancelar esta reserva?</strong>
+
+                              <p>
+                                La franja volverá a quedar disponible para otros
+                                usuarios.
+                              </p>
+                            </div>
+
+                            <div className="mis-reservas__confirmacion-acciones">
+                              <button
+                                type="button"
+                                disabled={estaCancelando}
+                                onClick={cerrarConfirmacionCancelacion}
+                              >
+                                Volver
+                              </button>
+
+                              <button
+                                type="button"
+                                disabled={estaCancelando}
+                                onClick={() =>
+                                  void confirmarCancelacion(reserva.id)
+                                }
+                              >
+                                {estaCancelando
+                                  ? "Cancelando..."
+                                  : "Sí, cancelar"}
+                              </button>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
                     )}
-                  </div>
-                </div>
-
-                {estaConfirmandoCancelacion && (
-                  <div className="mis-reservas__confirmar-cancelacion">
-                    <div>
-                      <strong>¿Cancelar esta reserva?</strong>
-                      <p>
-                        La franja volverá a quedar disponible para otros
-                        usuarios.
-                      </p>
-                    </div>
-
-                    <div className="mis-reservas__confirmar-acciones">
-                      <button
-                        type="button"
-                        disabled={estaCancelando}
-                        onClick={cerrarConfirmacionCancelacion}
-                      >
-                        Volver
-                      </button>
-
-                      <button
-                        type="button"
-                        disabled={estaCancelando}
-                        onClick={() => void confirmarCancelacion(reserva.id)}
-                      >
-                        {estaCancelando ? "Cancelando..." : "Sí, cancelar"}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </article>
-            );
-          })}
-        </div>
+                  </>
+                );
+              })}
+            </tbody>
+          </table>
+        </section>
       )}
     </section>
   );

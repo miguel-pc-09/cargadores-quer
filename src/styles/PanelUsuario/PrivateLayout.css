@@ -278,7 +278,9 @@
   }
 
   .barra-superior__nombre {
-    display: none;
+    display: inline-block;
+    max-width: 110px;
+    font-size: 12px;
   }
 }
 
@@ -327,10 +329,27 @@
     display: none;
   }
 
-  .barra-superior__avatar,
-  .barra-superior__nombre {
-    display: none;
-  }
+  .barra-superior__avatar {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  font-size: 11px;
+}
+
+.barra-superior__nombre {
+  display: inline-block;
+  max-width: 90px;
+  overflow: hidden;
+  color: var(--color-texto);
+  font-size: 11px;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.barra-superior__usuario {
+  gap: 7px;
+}
 
   .barra-superior__salir {
     width: 40px;
