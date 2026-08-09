@@ -1,263 +1,179 @@
-import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { type FormEvent, useState } from "react";
+
+import { Link, Navigate, useNavigate } from "react-router-dom";
+
+import useAuth from "../../hooks/useAuth";
 
 import "../../styles/Login/LoginPage.css";
-
-type TipoAviso = "error" | "usuario-no-existe" | null;
 
 function LoginPage() {
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
-  const [contrasena, setContrasena] = useState("");
-  const [mostrarContrasena, setMostrarContrasena] = useState(false);
-  const [recordarme, setRecordarme] = useState(false);
+  const { autenticado, esAdministrador, iniciarSesion, cargandoSesion } =
+    useAuth();
 
-  const [mensajeAviso, setMensajeAviso] = useState("");
-  const [tipoAviso, setTipoAviso] = useState<TipoAviso>(null);
+  const [email, setEmail] = useState("");
+
+  const [contrasena, setContrasena] = useState("");
+
+  const [error, setError] = useState("");
+
   const [enviando, setEnviando] = useState(false);
 
-  async function iniciarSesion(evento: FormEvent<HTMLFormElement>) {
+  const enviarFormulario = async (evento: FormEvent<HTMLFormElement>) => {
     evento.preventDefault();
 
-    limpiarAviso();
+    if (enviando) {
+      return;
+    }
 
-    const emailLimpio = email.trim();
+    setError("");
+
+    const emailLimpio = email.trim().toLowerCase();
+
     const contrasenaLimpia = contrasena.trim();
 
-    if (!emailLimpio && !contrasenaLimpia) {
-      mostrarError("Debes introducir el correo electrónico y la contraseña.");
+    if (!emailLimpio || !contrasenaLimpia) {
+      setError("Introduce tu correo electrónico y contraseña.");
+
       return;
     }
 
-    if (!emailLimpio) {
-      mostrarError("Debes introducir el correo electrónico.");
-      return;
-    }
-
-    if (!validarEmail(emailLimpio)) {
-      mostrarError("El correo electrónico no tiene un formato válido.");
-      return;
-    }
-
-    if (!contrasenaLimpia) {
-      mostrarError("Debes introducir la contraseña.");
-      return;
-    }
-
-    if (contrasenaLimpia.length < 8) {
-      mostrarError("La contraseña debe contener al menos 8 caracteres.");
-      return;
-    }
+    setEnviando(true);
 
     try {
-      setEnviando(true);
-
-      /*
-       * Simulación temporal.
-       *
-       * Cuando conectemos Supabase, aquí se comprobarán
-       * realmente el correo y la contraseña.
-       */
-      await new Promise((resolve) => {
-        window.setTimeout(resolve, 700);
+      const usuario = await iniciarSesion({
+        email: emailLimpio,
+        contrasena: contrasenaLimpia,
       });
 
-      /* setTipoAviso("usuario-no-existe");
-      setMensajeAviso(
-        "No existe ningún usuario registrado con esos datos. Puedes solicitar el alta en el servicio.",
-      ); */
+      if (usuario.rol === "administrador") {
+        navigate("/administracion", {
+          replace: true,
+        });
 
-      navigate("/panel");
-    } catch (errorInicioSesion) {
-      console.error("Error al iniciar sesión:", errorInicioSesion);
+        return;
+      }
 
-      mostrarError("No se ha podido iniciar sesión. Inténtalo de nuevo.");
+      navigate("/panel", {
+        replace: true,
+      });
+    } catch (errorInicio) {
+      setError(
+        errorInicio instanceof Error
+          ? errorInicio.message
+          : "No se ha podido iniciar sesión.",
+      );
     } finally {
       setEnviando(false);
     }
+  };
+
+  if (cargandoSesion) {
+    return (
+      <main className="login">
+        <section className="login__contenedor">
+          <div className="login__cargando">
+            <span className="login__spinner" />
+
+            <p>Comprobando sesión...</p>
+          </div>
+        </section>
+      </main>
+    );
   }
 
-  function mostrarError(mensaje: string) {
-    setTipoAviso("error");
-    setMensajeAviso(mensaje);
-  }
-
-  function limpiarAviso() {
-    setTipoAviso(null);
-    setMensajeAviso("");
-  }
-
-  function cambiarEmail(valor: string) {
-    setEmail(valor);
-
-    if (tipoAviso) {
-      limpiarAviso();
-    }
-  }
-
-  function cambiarContrasena(valor: string) {
-    setContrasena(valor);
-
-    if (tipoAviso) {
-      limpiarAviso();
-    }
+  if (autenticado) {
+    return (
+      <Navigate to={esAdministrador ? "/administracion" : "/panel"} replace />
+    );
   }
 
   return (
     <main className="login">
-      <section className="login__contenido">
-        <header className="login__cabecera">
-          <div className="login__marca">
-            <span className="login__icono" aria-hidden="true">
-              ⚡
-            </span>
-
-            <div>
-              <span className="login__ayuntamiento">Ayuntamiento de Quer</span>
-
-              <strong className="login__nombre">CargaQuer</strong>
-            </div>
+      <section className="login__contenedor">
+        <header className="login__marca">
+          <div className="login__logo" aria-hidden="true">
+            ⚡
           </div>
 
-          <p className="login__descripcion">
-            Gestión de cargadores eléctricos municipales
-          </p>
+          <div>
+            <span className="login__marca-etiqueta">
+              Servicio de recarga eléctrica
+            </span>
+
+            <strong>CargaQuer</strong>
+          </div>
         </header>
 
         <section className="login__tarjeta">
-          <div className="login__titulo">
-            <span>Acceso de usuarios</span>
+          <header className="login__cabecera">
+            <span className="login__etiqueta">Acceso</span>
 
             <h1>Iniciar sesión</h1>
 
-            <p>
-              Accede para consultar los cargadores, tus reservas y el historial
-              de cargas.
-            </p>
-          </div>
+            <p>Accede a tu cuenta para gestionar tus reservas y cargas.</p>
+          </header>
 
-          <form
-            className="login__formulario"
-            noValidate
-            onSubmit={iniciarSesion}
-          >
-            {tipoAviso && (
-              <div
-                className={`login__aviso login__aviso--${tipoAviso}`}
-                role="alert"
-              >
-                <div className="login__aviso-contenido">
-                  <strong>
-                    {tipoAviso === "usuario-no-existe"
-                      ? "Usuario no encontrado"
-                      : "Revisa los datos"}
-                  </strong>
+          <form className="login__formulario" onSubmit={enviarFormulario}>
+            <label className="login__campo">
+              <span>Correo electrónico</span>
 
-                  <p>{mensajeAviso}</p>
-                </div>
+              <input
+                type="email"
+                autoComplete="email"
+                placeholder="usuario@email.com"
+                value={email}
+                onChange={(evento) => setEmail(evento.target.value)}
+                disabled={enviando}
+              />
+            </label>
 
-                {tipoAviso === "usuario-no-existe" && (
-                  <button
-                    type="button"
-                    className="login__aviso-boton"
-                    onClick={() => navigate("/registro")}
-                  >
-                    Solicitar registro
-                  </button>
-                )}
+            <label className="login__campo">
+              <span>Contraseña</span>
+
+              <input
+                type="password"
+                autoComplete="current-password"
+                placeholder="Tu contraseña"
+                value={contrasena}
+                onChange={(evento) => setContrasena(evento.target.value)}
+                disabled={enviando}
+              />
+            </label>
+
+            {error && (
+              <div className="login__error" role="alert">
+                <span aria-hidden="true">!</span>
+
+                <p>{error}</p>
               </div>
             )}
 
-            <div className="login__campo">
-              <label htmlFor="email">Email</label>
-
-              <input
-                id="email"
-                name="email"
-                type="email"
-                value={email}
-                placeholder="usuario@email.com"
-                autoComplete="email"
-                inputMode="email"
-                aria-invalid={tipoAviso === "error" ? "true" : "false"}
-                onChange={(evento) => cambiarEmail(evento.target.value)}
-              />
-            </div>
-
-            <div className="login__campo">
-              <label htmlFor="contrasena">Contraseña</label>
-
-              <div className="login__contrasena">
-                <input
-                  id="contrasena"
-                  name="contrasena"
-                  type={mostrarContrasena ? "text" : "password"}
-                  value={contrasena}
-                  placeholder="Introduce tu contraseña"
-                  autoComplete="current-password"
-                  aria-invalid={tipoAviso === "error" ? "true" : "false"}
-                  onChange={(evento) => cambiarContrasena(evento.target.value)}
-                />
-
-                <button
-                  type="button"
-                  className="login__mostrar"
-                  aria-label={
-                    mostrarContrasena
-                      ? "Ocultar contraseña"
-                      : "Mostrar contraseña"
-                  }
-                  onClick={() =>
-                    setMostrarContrasena((estadoActual) => !estadoActual)
-                  }
-                >
-                  {mostrarContrasena ? "Ocultar" : "Mostrar"}
-                </button>
-              </div>
-            </div>
-
-            <div className="login__opciones">
-              <label className="login__recordarme">
-                <input
-                  type="checkbox"
-                  checked={recordarme}
-                  onChange={(evento) => setRecordarme(evento.target.checked)}
-                />
-
-                <span>Recordarme</span>
-              </label>
-
-              <Link to="/recuperar-contrasena" className="login__enlace">
-                ¿Has olvidado la contraseña?
-              </Link>
-            </div>
+            <Link to="/recuperar-contrasena" className="login__recuperar">
+              ¿Has olvidado tu contraseña?
+            </Link>
 
             <button type="submit" className="login__boton" disabled={enviando}>
-              {enviando ? "Comprobando datos..." : "Iniciar sesión"}
+              {enviando ? "Accediendo..." : "Iniciar sesión"}
             </button>
           </form>
 
-          <div className="login__registro">
-            <span>¿Todavía no tienes una cuenta?</span>
+          <div className="login__separador">
+            <span />
 
-            <Link to="/registro" className="login__registro-enlace">
-              Solicitar registro
-            </Link>
+            <p>¿Todavía no tienes cuenta?</p>
+
+            <span />
           </div>
-        </section>
 
-        <footer className="login__pie">
-          <span>Servicio municipal de recarga eléctrica</span>
-          <span>Quer, Guadalajara</span>
-        </footer>
+          <Link to="/registro" className="login__registro">
+            Crear una cuenta
+          </Link>
+        </section>
       </section>
     </main>
   );
-}
-
-function validarEmail(email: string) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 export default LoginPage;

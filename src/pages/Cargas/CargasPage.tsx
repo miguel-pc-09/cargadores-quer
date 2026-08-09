@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import { cargadoresSimulados } from "../../data/cargadores";
+import useAuth from "../../hooks/useAuth";
+
 import { obtenerCargasUsuario } from "../../services/cargasService";
 import {
   calcularEstadisticasCargas,
@@ -9,11 +11,10 @@ import {
   formatearEnergia,
   formatearTiempoTotal,
 } from "../../services/estadisticasService";
+
 import type { Carga } from "../../types/carga";
 
 import "../../styles/Cargas/CargasPage.css";
-
-const USUARIO_ACTUAL_ID = "usuario-demo";
 
 interface EstadoNavegacion {
   mensaje?: string;
@@ -53,9 +54,14 @@ function CargasPage() {
   const location = useLocation();
   const navigate = useNavigate();
 
+  const { usuario } = useAuth();
+
+  const usuarioId = usuario?.id ?? "";
+
   const estadoNavegacion = location.state as EstadoNavegacion | null;
 
   const [cargas, setCargas] = useState<Carga[]>([]);
+
   const [cargando, setCargando] = useState(true);
 
   const [mensajeExito, setMensajeExito] = useState(
@@ -64,24 +70,31 @@ function CargasPage() {
 
   const [mensajeError, setMensajeError] = useState("");
 
-  const cargarSesiones = async () => {
-    setCargando(true);
-    setMensajeError("");
-
-    try {
-      const cargasUsuario = await obtenerCargasUsuario(USUARIO_ACTUAL_ID);
-
-      setCargas(cargasUsuario);
-    } catch {
-      setMensajeError("No hemos podido cargar tu historial de cargas.");
-    } finally {
-      setCargando(false);
-    }
-  };
-
   useEffect(() => {
+    const cargarSesiones = async () => {
+      if (!usuarioId) {
+        setCargas([]);
+        setCargando(false);
+
+        return;
+      }
+
+      setCargando(true);
+      setMensajeError("");
+
+      try {
+        const cargasUsuario = await obtenerCargasUsuario(usuarioId);
+
+        setCargas(cargasUsuario);
+      } catch {
+        setMensajeError("No hemos podido cargar tu historial de cargas.");
+      } finally {
+        setCargando(false);
+      }
+    };
+
     void cargarSesiones();
-  }, []);
+  }, [usuarioId]);
 
   useEffect(() => {
     if (!estadoNavegacion?.mensaje) {
@@ -220,9 +233,13 @@ function CargasPage() {
               <thead>
                 <tr>
                   <th>Inicio</th>
+
                   <th>Fin</th>
+
                   <th>Cargador</th>
+
                   <th>Duración</th>
+
                   <th>Energía</th>
                 </tr>
               </thead>

@@ -1,12 +1,45 @@
+import { useEffect, useState } from "react";
+
 import AlertaUsuario from "../../components/panelUsuario/AlertaUsuario";
 import TarjetaCargador from "../../components/cargadores/TarjetaCargador";
 
-import { alertasUsuarioSimuladas } from "../../data/panelUsuario";
 import { cargadoresSimulados } from "../../data/cargadores";
+
+import useAuth from "../../hooks/useAuth";
+
+import { obtenerPanelUsuario } from "../../services/panelUsuarioService";
+
+import type { AlertaUsuario as AlertaUsuarioTipo } from "../../types/panelUsuario";
 
 import "../../styles/Cargadores/CargadoresPage.css";
 
 function CargadoresPage() {
+  const { usuario } = useAuth();
+
+  const usuarioId = usuario?.id ?? "";
+
+  const [alertas, setAlertas] = useState<AlertaUsuarioTipo[]>([]);
+
+  useEffect(() => {
+    if (!usuarioId) {
+      setAlertas([]);
+
+      return;
+    }
+
+    const cargarAlertas = async () => {
+      try {
+        const panel = await obtenerPanelUsuario(usuarioId);
+
+        setAlertas(panel.alertas);
+      } catch {
+        setAlertas([]);
+      }
+    };
+
+    void cargarAlertas();
+  }, [usuarioId]);
+
   const numeroTomas = cargadoresSimulados.reduce(
     (total, cargador) => total + cargador.tomas.length,
     0,
@@ -35,27 +68,30 @@ function CargadoresPage() {
         <div className="cargadores-page__estadisticas">
           <div>
             <strong>{cargadoresSimulados.length}</strong>
+
             <span>ubicaciones</span>
           </div>
 
           <div>
             <strong>{numeroTomas}</strong>
+
             <span>tomas</span>
           </div>
 
           <div>
             <strong>{numeroTomasLibres}</strong>
+
             <span>libres ahora</span>
           </div>
         </div>
       </header>
 
-      {alertasUsuarioSimuladas.length > 0 && (
+      {alertas.length > 0 && (
         <section
           className="cargadores-page__alertas"
           aria-label="Avisos del usuario"
         >
-          {alertasUsuarioSimuladas.map((alerta) => (
+          {alertas.map((alerta) => (
             <AlertaUsuario key={alerta.id} alerta={alerta} />
           ))}
         </section>

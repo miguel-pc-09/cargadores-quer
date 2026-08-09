@@ -1,5 +1,7 @@
 import { type FormEvent, useState } from "react";
 
+import useAuth from "../../hooks/useAuth";
+
 import {
   guardarVehiculoUsuario,
   obtenerVehiculoUsuario,
@@ -18,6 +20,8 @@ function obtenerTextoTipoVehiculo(tipo: TipoVehiculo) {
 }
 
 function PerfilPage() {
+  const { usuario } = useAuth();
+
   const [vehiculo, setVehiculo] = useState<DatosVehiculo>(
     obtenerVehiculoUsuario,
   );
@@ -41,6 +45,14 @@ function PerfilPage() {
 
   const [mensajePerfil, setMensajePerfil] = useState("");
 
+  const nombreCompleto = usuario
+    ? `${usuario.nombre} ${usuario.apellidos}`.trim()
+    : "Usuario";
+
+  const correo = usuario?.email ?? "No disponible";
+
+  const telefono = usuario?.telefono ?? "No disponible";
+
   const abrirEdicionVehiculo = () => {
     setMarcaModeloTemporal(vehiculo.marcaModelo);
 
@@ -49,11 +61,13 @@ function PerfilPage() {
     setTipoTemporal(vehiculo.tipo);
 
     setMensajePerfil("");
+
     setEditandoVehiculo(true);
   };
 
   const cancelarEdicionVehiculo = () => {
     setEditandoVehiculo(false);
+
     setMensajePerfil("");
   };
 
@@ -136,7 +150,9 @@ function PerfilPage() {
       )}
 
       <div className="perfil__contenido">
-        {/* DATOS PERSONALES */}
+        {/* =========================================
+            DATOS PERSONALES
+            ========================================= */}
 
         <section className="perfil__bloque">
           <header className="perfil__bloque-cabecera">
@@ -149,19 +165,19 @@ function PerfilPage() {
             <div className="perfil__dato">
               <span>Nombre</span>
 
-              <strong>Miguel Ángel</strong>
+              <strong>{nombreCompleto}</strong>
             </div>
 
             <div className="perfil__dato">
               <span>Correo electrónico</span>
 
-              <strong>miguel@example.com</strong>
+              <strong>{correo}</strong>
             </div>
 
             <div className="perfil__dato">
               <span>Teléfono</span>
 
-              <strong>600 000 000</strong>
+              <strong>{telefono}</strong>
             </div>
 
             <div className="perfil__dato">
@@ -178,7 +194,9 @@ function PerfilPage() {
           </button>
         </section>
 
-        {/* VEHÍCULO */}
+        {/* =========================================
+            VEHÍCULO
+            ========================================= */}
 
         <section className="perfil__bloque">
           <header className="perfil__bloque-cabecera perfil__bloque-cabecera--vehiculo">
@@ -362,7 +380,9 @@ function PerfilPage() {
           )}
         </section>
 
-        {/* NOTIFICACIONES */}
+        {/* =========================================
+            NOTIFICACIONES
+            ========================================= */}
 
         <section className="perfil__bloque">
           <header className="perfil__bloque-cabecera">
@@ -408,7 +428,9 @@ function PerfilPage() {
           </div>
         </section>
 
-        {/* PENALIZACIONES */}
+        {/* =========================================
+            PENALIZACIONES
+            ========================================= */}
 
         <section className="perfil__bloque">
           <header className="perfil__bloque-cabecera">
@@ -437,7 +459,9 @@ function PerfilPage() {
           </button>
         </section>
 
-        {/* SEGURIDAD */}
+        {/* =========================================
+            SEGURIDAD
+            ========================================= */}
 
         <section className="perfil__bloque">
           <header className="perfil__bloque-cabecera">

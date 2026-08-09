@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+
 import {
   Link,
   Navigate,
@@ -11,7 +12,11 @@ import EstadoConexionCargador from "../../components/detalleCargador/EstadoConex
 import TarjetaTomaDetalle from "../../components/detalleCargador/TarjetaTomaDetalle";
 
 import { cargadoresSimulados } from "../../data/cargadores";
+
+import useAuth from "../../hooks/useAuth";
+
 import { iniciarCarga } from "../../services/cargasService";
+
 import {
   marcarReservaComoActiva,
   obtenerFechaHoraFin,
@@ -20,6 +25,7 @@ import {
   obtenerReservaPorId,
   puedeIniciarCarga,
 } from "../../services/reservationsService";
+
 import {
   obtenerVehiculoUsuario,
   puedeUsuarioIniciarCarga,
@@ -29,7 +35,6 @@ import type { Reserva } from "../../types/reservation";
 
 import "../../styles/DetalleCargador/DetalleCargadorPage.css";
 
-const USUARIO_ACTUAL_ID = "usuario-demo";
 const INTERVALO_ACTUALIZACION_MS = 1_000;
 
 function formatearFechaHora(fecha: Date) {
@@ -44,6 +49,7 @@ function formatearFechaHora(fecha: Date) {
 
 function formatearDuracion(minutosTotales: number) {
   const horas = Math.floor(minutosTotales / 60);
+
   const minutos = minutosTotales % 60;
 
   if (horas === 0) {
@@ -90,6 +96,10 @@ function DetalleCargadorPage() {
 
   const navigate = useNavigate();
 
+  const { usuario } = useAuth();
+
+  const usuarioId = usuario?.id ?? "";
+
   const reservaId = searchParams.get("reservaId");
 
   const [reservaUsuario, setReservaUsuario] = useState<Reserva | null>(null);
@@ -111,20 +121,22 @@ function DetalleCargadorPage() {
   );
 
   useEffect(() => {
-    if (!cargadorId) {
+    if (!cargadorId || !usuarioId) {
+      setReservaUsuario(null);
+
+      setCargandoReserva(false);
+
       return;
     }
 
     const cargarReserva = async () => {
       setCargandoReserva(true);
+
       setMensajeError("");
 
       try {
         if (reservaId) {
-          const reservaExacta = await obtenerReservaPorId(
-            reservaId,
-            USUARIO_ACTUAL_ID,
-          );
+          const reservaExacta = await obtenerReservaPorId(reservaId, usuarioId);
 
           if (!reservaExacta || reservaExacta.cargadorId !== cargadorId) {
             setReservaUsuario(null);
@@ -140,7 +152,7 @@ function DetalleCargadorPage() {
         }
 
         const siguienteReserva = await obtenerReservaActivaDelCargador(
-          USUARIO_ACTUAL_ID,
+          usuarioId,
           cargadorId,
         );
 
@@ -155,7 +167,7 @@ function DetalleCargadorPage() {
     };
 
     void cargarReserva();
-  }, [cargadorId, reservaId]);
+  }, [cargadorId, reservaId, usuarioId]);
 
   useEffect(() => {
     const intervalo = window.setInterval(() => {
@@ -210,6 +222,7 @@ function DetalleCargadorPage() {
 
   const iniciarCargaUsuario = async () => {
     if (
+      !usuarioId ||
       !reservaUsuario ||
       !tomaReservada ||
       !fechaHoraFin ||
@@ -220,16 +233,17 @@ function DetalleCargadorPage() {
     }
 
     setIniciandoCarga(true);
+
     setMensajeError("");
 
     try {
       const reservaActivaActualizada = await marcarReservaComoActiva(
         reservaUsuario.id,
-        USUARIO_ACTUAL_ID,
+        usuarioId,
       );
 
       const nuevaCarga = await iniciarCarga({
-        usuarioId: USUARIO_ACTUAL_ID,
+        usuarioId,
 
         reservaId: reservaActivaActualizada.id,
 

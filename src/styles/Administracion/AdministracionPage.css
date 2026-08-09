@@ -1,0 +1,279 @@
+.administracion {
+  width: 100%;
+}
+
+/* =========================================================
+   CABECERA
+   ========================================================= */
+
+.administracion__cabecera {
+  margin-bottom: 24px;
+}
+
+.administracion__etiqueta {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--color-verde);
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.administracion__cabecera h1 {
+  margin: 0;
+  color: var(--color-blanco);
+  font-size: clamp(32px, 4vw, 42px);
+  line-height: 1.15;
+}
+
+.administracion__cabecera p {
+  max-width: 680px;
+  margin: 9px 0 0;
+  color: var(--color-texto-suave);
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+/* =========================================================
+   MÉTRICAS
+   ========================================================= */
+
+.administracion__metricas {
+  margin-bottom: 22px;
+  display: grid;
+  grid-template-columns: repeat(
+    3,
+    minmax(0, 1fr)
+  );
+  gap: 14px;
+}
+
+.administracion__metrica {
+  min-height: 135px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border: 1px solid var(--color-borde);
+  border-radius: 14px;
+  background: rgba(17, 37, 68, 0.76);
+  box-shadow: var(--sombra-tarjeta);
+}
+
+.administracion__metrica > span {
+  color: var(--color-texto-suave);
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.administracion__metrica strong {
+  margin-top: 10px;
+  color: var(--color-blanco);
+  font-size: 30px;
+  line-height: 1;
+}
+
+.administracion__metrica small {
+  margin-top: 9px;
+  color: var(--color-texto-suave);
+  font-size: 10px;
+}
+
+.administracion__metrica--pendiente {
+  border-color: rgba(255, 184, 77, 0.3);
+}
+
+.administracion__metrica--pendiente strong {
+  color: #ffca76;
+}
+
+.administracion__metrica--incidencia {
+  border-color: rgba(255, 123, 123, 0.3);
+}
+
+.administracion__metrica--incidencia strong {
+  color: var(--color-error);
+}
+
+/* =========================================================
+   PANEL
+   ========================================================= */
+
+.administracion__panel {
+  overflow: hidden;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-medio);
+  background: rgba(17, 37, 68, 0.76);
+  box-shadow: var(--sombra-tarjeta);
+}
+
+.administracion__panel-cabecera {
+  padding: 20px;
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.administracion__panel-cabecera h2 {
+  margin: 0;
+  color: var(--color-blanco);
+  font-size: 21px;
+}
+
+/* =========================================================
+   TABLA
+   ========================================================= */
+
+.administracion__tabla-contenedor {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.administracion__tabla {
+  width: 100%;
+  min-width: 720px;
+  border-collapse: collapse;
+}
+
+.administracion__tabla th {
+  padding: 13px 15px;
+  color: var(--color-texto-suave);
+  background: rgba(7, 20, 39, 0.4);
+  font-size: 9px;
+  font-weight: 900;
+  text-align: left;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+
+.administracion__tabla td {
+  padding: 15px;
+  color: var(--color-blanco);
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.administracion__tabla tbody tr + tr {
+  border-top: 1px solid var(--color-borde);
+}
+
+.administracion__tabla tbody tr:hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+/* =========================================================
+   ESTADOS
+   ========================================================= */
+
+.administracion__estado {
+  min-height: 27px;
+  padding: 0 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 900;
+}
+
+.administracion__estado--correcto {
+  border-color: rgba(110, 231, 183, 0.28);
+  color: var(--color-verde);
+  background: rgba(110, 231, 183, 0.09);
+}
+
+.administracion__estado--pendiente {
+  border-color: rgba(255, 184, 77, 0.28);
+  color: #ffca76;
+  background: rgba(255, 184, 77, 0.09);
+}
+
+.administracion__estado--incidencia {
+  border-color: rgba(255, 123, 123, 0.28);
+  color: var(--color-error);
+  background: rgba(255, 123, 123, 0.09);
+}
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 1000px) {
+  .administracion__metricas {
+    grid-template-columns: repeat(
+      2,
+      minmax(0, 1fr)
+    );
+  }
+}
+
+@media (max-width: 620px) {
+  .administracion__cabecera h1 {
+    font-size: 32px;
+  }
+
+  .administracion__cabecera p {
+    font-size: 13px;
+  }
+
+  .administracion__metricas {
+    grid-template-columns: repeat(
+      2,
+      minmax(0, 1fr)
+    );
+    gap: 9px;
+  }
+
+  .administracion__metrica {
+    min-height: 110px;
+    padding: 14px;
+  }
+
+  .administracion__metrica > span {
+    font-size: 8px;
+  }
+
+  .administracion__metrica strong {
+    font-size: 23px;
+  }
+
+  .administracion__metrica small {
+    font-size: 8px;
+  }
+
+  .administracion__panel-cabecera {
+    padding: 16px;
+  }
+
+  .administracion__panel-cabecera h2 {
+    font-size: 18px;
+  }
+
+  .administracion__tabla th {
+    padding: 11px 10px;
+    font-size: 8px;
+  }
+
+  .administracion__tabla td {
+    padding: 12px 10px;
+    font-size: 10px;
+  }
+}
+
+@media (max-width: 430px) {
+  .administracion__metricas {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .administracion__metrica {
+    padding: 12px;
+  }
+
+  .administracion__metrica strong {
+    font-size: 21px;
+  }
+}

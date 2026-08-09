@@ -1,3 +1,7 @@
+import type { User } from "@supabase/supabase-js";
+
+import { supabase } from "./supabaseClient";
+
 import type {
   CredencialesLogin,
   ResultadoLogin,
@@ -5,34 +9,68 @@ import type {
   UsuarioAutenticado,
 } from "../types/auth";
 
-const CLAVE_SESION = "cargaquer_sesion";
+interface PerfilSupabase {
+  id: string;
+  nombre: string | null;
+  apellidos: string | null;
+  telefono: string | null;
+  rol: "usuario" | "administrador";
+  cliente: string | null;
+  estado_cuenta: "pendiente" | "verificada" | "bloqueada";
+}
 
-const USUARIO_DEMO: UsuarioAutenticado = {
-  id: "usuario-demo",
-  nombre: "Miguel",
-  apellidos: "Ángel",
-  email: "usuario@cargaquer.es",
-  rol: "usuario",
-};
-
-const ADMIN_DEMO: UsuarioAutenticado = {
-  id: "admin-ayuntamiento-quer",
-  nombre: "Ayuntamiento",
-  apellidos: "de Quer",
-  email: "admin@cargaquer.es",
-  rol: "administrador",
-  ayuntamiento: "Ayuntamiento de Quer",
-};
-
-const CONTRASENA_DEMO = "12345678";
-
-function guardarSesion(usuario: UsuarioAutenticado): void {
-  const sesion: SesionUsuario = {
-    usuario,
-    iniciadaEn: new Date().toISOString(),
+function convertirPerfilEnUsuario(
+  perfil: PerfilSupabase,
+  email: string,
+): UsuarioAutenticado {
+  return {
+    id: perfil.id,
+    nombre: perfil.nombre ?? "",
+    apellidos: perfil.apellidos ?? "",
+    email,
+    telefono: perfil.telefono ?? undefined,
+    rol: perfil.rol,
+    ayuntamiento: perfil.cliente ?? undefined,
   };
+}
 
-  localStorage.setItem(CLAVE_SESION, JSON.stringify(sesion));
+async function obtenerPerfilUsuario(
+  usuarioId: string,
+  email: string,
+): Promise<UsuarioAutenticado> {
+  const { data, error } = await supabase
+    .from("perfiles")
+    .select(
+      `
+        id,
+        nombre,
+        apellidos,
+        telefono,
+        rol,
+        cliente,
+        estado_cuenta
+      `,
+    )
+    .eq("id", usuarioId)
+    .single();
+
+  if (error) {
+    throw new Error(
+      `No se ha podido cargar el perfil del usuario: ${error.message}`,
+    );
+  }
+
+  if (!data) {
+    throw new Error("No existe el perfil asociado al usuario.");
+  }
+
+  return convertirPerfilEnUsuario(data as PerfilSupabase, email);
+}
+
+export async function obtenerUsuarioPorSesion(
+  usuarioAuth: User,
+): Promise<UsuarioAutenticado> {
+  return obtenerPerfilUsuario(usuarioAuth.id, usuarioAuth.email ?? "");
 }
 
 export async function iniciarSesion(
@@ -40,86 +78,51 @@ export async function iniciarSesion(
 ): Promise<ResultadoLogin> {
   const email = credenciales.email.trim().toLowerCase();
 
-  const contrasena = credenciales.contrasena.trim();
-
-  /*
-   * Simulamos una pequeña espera para que el comportamiento
-   * sea parecido al que tendremos cuando conectemos Supabase.
-   */
-  await new Promise<void>((resolve) => {
-    window.setTimeout(resolve, 500);
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password: credenciales.contrasena,
   });
 
-  if (
-    email === USUARIO_DEMO.email.toLowerCase() &&
-    contrasena === CONTRASENA_DEMO
-  ) {
-    guardarSesion(USUARIO_DEMO);
-
-    return {
-      usuario: USUARIO_DEMO,
-    };
+  if (error) {
+    throw new Error("Correo electrónico o contraseña incorrectos.");
   }
 
-  if (
-    email === ADMIN_DEMO.email.toLowerCase() &&
-    contrasena === CONTRASENA_DEMO
-  ) {
-    guardarSesion(ADMIN_DEMO);
-
-    return {
-      usuario: ADMIN_DEMO,
-    };
+  if (!data.user) {
+    throw new Error("No se ha podido recuperar el usuario autenticado.");
   }
 
-  throw new Error("El correo electrónico o la contraseña no son correctos.");
+  const usuario = await obtenerUsuarioPorSesion(data.user);
+
+  return {
+    usuario,
+  };
 }
 
-export function obtenerSesionActual(): SesionUsuario | null {
-  try {
-    const sesionGuardada = localStorage.getItem(CLAVE_SESION);
+export async function cerrarSesion(): Promise<void> {
+  const { error } = await supabase.auth.signOut();
 
-    if (!sesionGuardada) {
-      return null;
-    }
+  if (error) {
+    throw new Error("No se ha podido cerrar la sesión.");
+  }
+}
 
-    const sesion = JSON.parse(sesionGuardada) as SesionUsuario;
+export async function obtenerSesionActual(): Promise<SesionUsuario | null> {
+  const { data, error } = await supabase.auth.getSession();
 
-    if (
-      !sesion.usuario ||
-      !sesion.usuario.id ||
-      !sesion.usuario.email ||
-      !sesion.usuario.rol
-    ) {
-      cerrarSesion();
-
-      return null;
-    }
-
-    return sesion;
-  } catch {
-    cerrarSesion();
-
+  if (error) {
     return null;
   }
-}
 
-export function obtenerUsuarioActual(): UsuarioAutenticado | null {
-  return obtenerSesionActual()?.usuario ?? null;
-}
+  const sesion = data.session;
 
-export function haySesionActiva(): boolean {
-  return obtenerSesionActual() !== null;
-}
+  if (!sesion?.user) {
+    return null;
+  }
 
-export function usuarioEsAdministrador(): boolean {
-  return obtenerUsuarioActual()?.rol === "administrador";
-}
+  const usuario = await obtenerUsuarioPorSesion(sesion.user);
 
-export function usuarioEsUsuarioNormal(): boolean {
-  return obtenerUsuarioActual()?.rol === "usuario";
-}
-
-export function cerrarSesion(): void {
-  localStorage.removeItem(CLAVE_SESION);
+  return {
+    usuario,
+    iniciadaEn: sesion.user.last_sign_in_at ?? new Date().toISOString(),
+  };
 }

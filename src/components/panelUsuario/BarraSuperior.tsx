@@ -1,23 +1,17 @@
-import { useNavigate } from "react-router-dom";
-
 interface BarraSuperiorProps {
   nombreUsuario: string;
   menuAbierto: boolean;
   alternarMenu: () => void;
+  salir: () => void;
 }
 
 function BarraSuperior({
   nombreUsuario,
   menuAbierto,
   alternarMenu,
+  salir,
 }: BarraSuperiorProps) {
-  const navigate = useNavigate();
-
   const inicialUsuario = nombreUsuario.charAt(0).toUpperCase();
-
-  function cerrarSesion() {
-    navigate("/login");
-  }
 
   return (
     <header className="barra-superior">
@@ -40,6 +34,7 @@ function BarraSuperior({
 
             <div className="barra-superior__marca-texto">
               <strong>CargaQuer</strong>
+
               <span>Carga eléctrica municipal</span>
             </div>
           </div>
@@ -47,6 +42,7 @@ function BarraSuperior({
 
         <div className="barra-superior__cliente">
           <span>Servicio:</span>
+
           <strong>Ayuntamiento de Quer</strong>
         </div>
 
@@ -60,9 +56,10 @@ function BarraSuperior({
           <button
             type="button"
             className="barra-superior__salir"
-            onClick={cerrarSesion}
+            onClick={salir}
           >
             <span aria-hidden="true">↪</span>
+
             <span>Salir</span>
           </button>
         </div>
@@ -70,6 +67,7 @@ function BarraSuperior({
 
       <div className="barra-superior__cliente-movil">
         <span>Cliente:</span>
+
         <strong>Ayuntamiento de Quer</strong>
       </div>
     </header>

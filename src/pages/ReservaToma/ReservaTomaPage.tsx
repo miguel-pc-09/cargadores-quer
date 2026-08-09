@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+
 import { Link, Navigate, useParams } from "react-router-dom";
 
 import ControlDuracionReserva from "../../components/reservas/ControlDuracionReserva";
@@ -9,11 +10,16 @@ import SelectorDiaReserva, {
 import SelectorHoraReserva, {
   type FranjaHoraria,
 } from "../../components/reservas/SelectorHoraReserva";
+
 import { cargadoresSimulados } from "../../data/cargadores";
+
+import useAuth from "../../hooks/useAuth";
+
 import {
   crearReserva,
   obtenerReservasToma,
 } from "../../services/reservationsService";
+
 import type { Reserva } from "../../types/reservation";
 
 import "../../styles/ReservaToma/ReservaTomaPage.css";
@@ -22,11 +28,11 @@ const DURACION_MINIMA = 30;
 const DURACION_MAXIMA_GENERAL = 4 * 60;
 const INCREMENTO_DURACION = 30;
 
-const USUARIO_ACTUAL_ID = "usuario-demo";
-
 function convertirFechaAValor(fecha: Date) {
   const anio = fecha.getFullYear();
+
   const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+
   const dia = String(fecha.getDate()).padStart(2, "0");
 
   return `${anio}-${mes}-${dia}`;
@@ -47,26 +53,31 @@ function convertirFechaAHora(fecha: Date) {
 function crearDiasDisponibles(): DiaDisponible[] {
   const hoy = new Date();
 
-  return Array.from({ length: 3 }, (_, indice) => {
-    const fecha = new Date(hoy);
+  return Array.from(
+    {
+      length: 3,
+    },
+    (_, indice) => {
+      const fecha = new Date(hoy);
 
-    fecha.setDate(hoy.getDate() + indice);
+      fecha.setDate(hoy.getDate() + indice);
 
-    return {
-      valor: convertirFechaAValor(fecha),
+      return {
+        valor: convertirFechaAValor(fecha),
 
-      nombreDia: new Intl.DateTimeFormat("es-ES", {
-        weekday: "short",
-      })
-        .format(fecha)
-        .replace(".", "")
-        .toUpperCase(),
+        nombreDia: new Intl.DateTimeFormat("es-ES", {
+          weekday: "short",
+        })
+          .format(fecha)
+          .replace(".", "")
+          .toUpperCase(),
 
-      numeroDia: String(fecha.getDate()),
+        numeroDia: String(fecha.getDate()),
 
-      etiqueta: indice === 0 ? "Hoy" : indice === 1 ? "Mañana" : "En 2 días",
-    };
-  });
+        etiqueta: indice === 0 ? "Hoy" : indice === 1 ? "Mañana" : "En 2 días",
+      };
+    },
+  );
 }
 
 function crearTodasLasHoras() {
@@ -242,6 +253,10 @@ function formatearFechaCompleta(valorFecha: string) {
 function ReservaTomaPage() {
   const { cargadorId, tomaId } = useParams();
 
+  const { usuario } = useAuth();
+
+  const usuarioId = usuario?.id ?? "";
+
   const diasDisponibles = useMemo(crearDiasDisponibles, []);
 
   const [reservasToma, setReservasToma] = useState<Reserva[]>([]);
@@ -272,9 +287,13 @@ function ReservaTomaPage() {
     }
 
     const cargarReservas = async () => {
-      const reservas = await obtenerReservasToma(cargadorId, tomaId);
+      try {
+        const reservas = await obtenerReservasToma(cargadorId, tomaId);
 
-      setReservasToma(reservas);
+        setReservasToma(reservas);
+      } catch {
+        setMensajeError("No hemos podido consultar las reservas de esta toma.");
+      }
     };
 
     void cargarReservas();
@@ -347,16 +366,23 @@ function ReservaTomaPage() {
 
   const seleccionarDia = (dia: string) => {
     setDiaSeleccionado(dia);
+
     setHoraSeleccionada("");
+
     setDuracionMinutos(DURACION_MINIMA);
+
     setReservaConfirmada(false);
+
     setMensajeError("");
   };
 
   const seleccionarHora = (hora: string) => {
     setHoraSeleccionada(hora);
+
     setDuracionMinutos(DURACION_MINIMA);
+
     setReservaConfirmada(false);
+
     setMensajeError("");
   };
 
@@ -366,11 +392,19 @@ function ReservaTomaPage() {
     }
 
     setDuracionMinutos(duracion);
+
     setReservaConfirmada(false);
+
     setMensajeError("");
   };
 
   const confirmarReserva = async () => {
+    if (!usuarioId) {
+      setMensajeError("No se ha podido identificar al usuario.");
+
+      return;
+    }
+
     if (!horaSeleccionada) {
       setMensajeError("Selecciona una hora disponible antes de confirmar.");
 
@@ -393,11 +427,12 @@ function ReservaTomaPage() {
     }
 
     setConfirmando(true);
+
     setMensajeError("");
 
     try {
       await crearReserva({
-        usuarioId: USUARIO_ACTUAL_ID,
+        usuarioId,
         cargadorId,
         tomaId,
         fecha: diaSeleccionado,

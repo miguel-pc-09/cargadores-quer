@@ -11,7 +11,10 @@ import {
   cerrarSesion as cerrarSesionServicio,
   iniciarSesion as iniciarSesionServicio,
   obtenerSesionActual,
+  obtenerUsuarioPorSesion,
 } from "../services/authService";
+
+import { supabase } from "../services/supabaseClient";
 
 import type { CredencialesLogin, UsuarioAutenticado } from "../types/auth";
 
@@ -20,10 +23,12 @@ interface AuthContextValue {
   cargandoSesion: boolean;
   autenticado: boolean;
   esAdministrador: boolean;
+
   iniciarSesion: (
     credenciales: CredencialesLogin,
   ) => Promise<UsuarioAutenticado>;
-  cerrarSesion: () => void;
+
+  cerrarSesion: () => Promise<void>;
 }
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
@@ -38,11 +43,70 @@ function AuthProvider({ children }: AuthProviderProps) {
   const [cargandoSesion, setCargandoSesion] = useState(true);
 
   useEffect(() => {
-    const sesion = obtenerSesionActual();
+    let activo = true;
 
-    setUsuario(sesion?.usuario ?? null);
+    const cargarSesionInicial = async () => {
+      try {
+        const sesion = await obtenerSesionActual();
 
-    setCargandoSesion(false);
+        if (!activo) {
+          return;
+        }
+
+        setUsuario(sesion?.usuario ?? null);
+      } catch {
+        if (activo) {
+          setUsuario(null);
+        }
+      } finally {
+        if (activo) {
+          setCargandoSesion(false);
+        }
+      }
+    };
+
+    void cargarSesionInicial();
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_evento, sesion) => {
+      if (!activo) {
+        return;
+      }
+
+      if (!sesion?.user) {
+        setUsuario(null);
+        setCargandoSesion(false);
+
+        return;
+      }
+
+      window.setTimeout(() => {
+        void (async () => {
+          try {
+            const usuarioSesion = await obtenerUsuarioPorSesion(sesion.user);
+
+            if (activo) {
+              setUsuario(usuarioSesion);
+            }
+          } catch {
+            if (activo) {
+              setUsuario(null);
+            }
+          } finally {
+            if (activo) {
+              setCargandoSesion(false);
+            }
+          }
+        })();
+      }, 0);
+    });
+
+    return () => {
+      activo = false;
+
+      subscription.unsubscribe();
+    };
   }, []);
 
   const iniciarSesion = useCallback(async (credenciales: CredencialesLogin) => {
@@ -53,12 +117,13 @@ function AuthProvider({ children }: AuthProviderProps) {
     return resultado.usuario;
   }, []);
 
-  const cerrarSesion = useCallback(() => {
-    cerrarSesionServicio();
+  const cerrarSesion = useCallback(async () => {
+    await cerrarSesionServicio();
+
     setUsuario(null);
   }, []);
 
-  const valor = useMemo<AuthContextValue>(
+  const value = useMemo<AuthContextValue>(
     () => ({
       usuario,
       cargandoSesion,
@@ -70,7 +135,7 @@ function AuthProvider({ children }: AuthProviderProps) {
     [usuario, cargandoSesion, iniciarSesion, cerrarSesion],
   );
 
-  return <AuthContext.Provider value={valor}>{children}</AuthContext.Provider>;
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export default AuthProvider;

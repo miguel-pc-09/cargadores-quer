@@ -1,6 +1,7 @@
 import type { Carga, DatosNuevaCarga } from "../types/carga";
 
 const CLAVE_CARGAS = "cargaquer_cargas";
+
 const RETARDO_SIMULADO_MS = 250;
 
 function esperar(milisegundos: number) {
@@ -59,6 +60,7 @@ function actualizarCargaCalculada(carga: Carga): Carga {
 
   return {
     ...carga,
+
     energiaConsumidaKwh: calcularEnergiaConsumida(carga),
   };
 }
@@ -109,6 +111,24 @@ export async function obtenerCargaActivaPorReserva(
   );
 }
 
+export async function obtenerCargaActivaUsuarioEnToma(
+  usuarioId: string,
+  cargadorId: string,
+  tomaId: string,
+): Promise<Carga | null> {
+  const cargas = await obtenerCargas();
+
+  return (
+    cargas.find(
+      (carga) =>
+        carga.usuarioId === usuarioId &&
+        carga.cargadorId === cargadorId &&
+        carga.tomaId === tomaId &&
+        carga.estado === "activa",
+    ) ?? null
+  );
+}
+
 export async function iniciarCarga(
   datosCarga: DatosNuevaCarga,
 ): Promise<Carga> {
@@ -133,11 +153,13 @@ export async function iniciarCarga(
     ...datosCarga,
 
     id: generarId(),
+
     estado: "activa",
 
     fechaHoraFinReal: null,
 
     potenciaActualKw,
+
     energiaConsumidaKwh: 0,
 
     creadaEn: new Date().toISOString(),
@@ -167,8 +189,11 @@ export async function finalizarCarga(cargaId: string): Promise<Carga> {
 
   const cargaFinalizada: Carga = {
     ...cargaEncontrada,
+
     estado: "finalizada",
+
     fechaHoraFinReal,
+
     energiaConsumidaKwh: calcularEnergiaConsumida({
       ...cargaEncontrada,
       fechaHoraFinReal,
@@ -203,8 +228,11 @@ export async function cancelarCarga(cargaId: string): Promise<Carga> {
 
   const cargaCancelada: Carga = {
     ...cargaEncontrada,
+
     estado: "cancelada",
+
     fechaHoraFinReal,
+
     energiaConsumidaKwh: calcularEnergiaConsumida({
       ...cargaEncontrada,
       fechaHoraFinReal,

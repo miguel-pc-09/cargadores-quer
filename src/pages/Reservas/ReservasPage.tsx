@@ -1,16 +1,19 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
+
 import { Link } from "react-router-dom";
 
 import { cargadoresSimulados } from "../../data/cargadores";
+
+import useAuth from "../../hooks/useAuth";
+
 import {
   cancelarReserva,
   obtenerReservasUsuario,
 } from "../../services/reservationsService";
+
 import type { EstadoReserva, Reserva } from "../../types/reservation";
 
 import "../../styles/Reservas/ReservasPage.css";
-
-const USUARIO_ACTUAL_ID = "usuario-demo";
 
 type PestanaReservas = "activas" | "historico";
 
@@ -32,6 +35,7 @@ function formatearFechaHora(fecha: string, hora: string) {
 
 function formatearDuracion(minutosTotales: number) {
   const horas = Math.floor(minutosTotales / 60);
+
   const minutos = minutosTotales % 60;
 
   if (horas === 0) {
@@ -68,12 +72,19 @@ function obtenerDatosCargador(reserva: Reserva) {
 }
 
 function ReservasPage() {
+  const { usuario } = useAuth();
+
+  const usuarioId = usuario?.id ?? "";
+
   const [reservas, setReservas] = useState<Reserva[]>([]);
+
   const [pestanaActiva, setPestanaActiva] =
     useState<PestanaReservas>("activas");
 
   const [cargando, setCargando] = useState(true);
+
   const [mensajeError, setMensajeError] = useState("");
+
   const [mensajeExito, setMensajeExito] = useState("");
 
   const [reservaPendienteCancelar, setReservaPendienteCancelar] = useState<
@@ -83,11 +94,18 @@ function ReservasPage() {
   const [cancelandoId, setCancelandoId] = useState<string | null>(null);
 
   const cargarReservas = async () => {
+    if (!usuarioId) {
+      setReservas([]);
+      setCargando(false);
+
+      return;
+    }
+
     setCargando(true);
     setMensajeError("");
 
     try {
-      const reservasUsuario = await obtenerReservasUsuario(USUARIO_ACTUAL_ID);
+      const reservasUsuario = await obtenerReservasUsuario(usuarioId);
 
       setReservas(reservasUsuario);
     } catch {
@@ -101,7 +119,7 @@ function ReservasPage() {
 
   useEffect(() => {
     void cargarReservas();
-  }, []);
+  }, [usuarioId]);
 
   const reservasActivas = useMemo(
     () =>
@@ -140,6 +158,7 @@ function ReservasPage() {
 
   const solicitarCancelacion = (reservaId: string) => {
     setReservaPendienteCancelar(reservaId);
+
     setMensajeExito("");
     setMensajeError("");
   };
@@ -153,17 +172,24 @@ function ReservasPage() {
   };
 
   const confirmarCancelacion = async (reservaId: string) => {
+    if (!usuarioId) {
+      setMensajeError("No se ha podido identificar al usuario.");
+
+      return;
+    }
+
     setCancelandoId(reservaId);
+
     setMensajeError("");
     setMensajeExito("");
 
     try {
-      await cancelarReserva(reservaId, USUARIO_ACTUAL_ID);
+      await cancelarReserva(reservaId, usuarioId);
 
-      const reservasActualizadas =
-        await obtenerReservasUsuario(USUARIO_ACTUAL_ID);
+      const reservasActualizadas = await obtenerReservasUsuario(usuarioId);
 
       setReservas(reservasActualizadas);
+
       setReservaPendienteCancelar(null);
 
       setMensajeExito("La reserva se ha cancelado correctamente.");
@@ -277,9 +303,13 @@ function ReservasPage() {
             <thead>
               <tr>
                 <th>Inicio</th>
+
                 <th>Fin</th>
+
                 <th>Cargador</th>
+
                 <th>Duración</th>
+
                 <th>Estado</th>
 
                 {pestanaActiva === "activas" && <th aria-label="Acciones" />}
@@ -298,8 +328,8 @@ function ReservasPage() {
                 const estaCancelando = cancelandoId === reserva.id;
 
                 return (
-                  <>
-                    <tr key={reserva.id}>
+                  <Fragment key={reserva.id}>
+                    <tr>
                       <td>
                         {formatearFechaHora(reserva.fecha, reserva.horaInicio)}
                       </td>
@@ -345,10 +375,7 @@ function ReservasPage() {
                     </tr>
 
                     {estaConfirmandoCancelacion && (
-                      <tr
-                        key={`${reserva.id}-confirmacion`}
-                        className="mis-reservas__fila-confirmacion"
-                      >
+                      <tr className="mis-reservas__fila-confirmacion">
                         <td colSpan={pestanaActiva === "activas" ? 6 : 5}>
                           <div className="mis-reservas__confirmacion">
                             <div>
@@ -385,7 +412,7 @@ function ReservasPage() {
                         </td>
                       </tr>
                     )}
-                  </>
+                  </Fragment>
                 );
               })}
             </tbody>

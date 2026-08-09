@@ -5,6 +5,7 @@ export interface UsuarioAutenticado {
   nombre: string;
   apellidos: string;
   email: string;
+  telefono?: string;
   rol: RolUsuario;
   ayuntamiento?: string;
 }

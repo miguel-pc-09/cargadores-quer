@@ -1,17 +1,22 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 
 import { cargadoresSimulados } from "../../data/cargadores";
+
+import useAuth from "../../hooks/useAuth";
+
 import {
   finalizarCarga,
   obtenerCargaPorId,
 } from "../../services/cargasService";
+
 import { marcarReservaComoFinalizada } from "../../services/reservationsService";
+
 import type { Carga } from "../../types/carga";
 
 import "../../styles/CargaActiva/CargaActivaPage.css";
 
-const USUARIO_ACTUAL_ID = "usuario-demo";
 const INTERVALO_ACTUALIZACION_MS = 1_000;
 
 function formatearFechaHora(fechaIso: string) {
@@ -28,6 +33,7 @@ function formatearTiempo(minutosTotales: number) {
   const minutosSeguros = Math.max(0, Math.floor(minutosTotales));
 
   const horas = Math.floor(minutosSeguros / 60);
+
   const minutos = minutosSeguros % 60;
 
   if (horas === 0) {
@@ -63,6 +69,10 @@ function CargaActivaPage() {
 
   const navigate = useNavigate();
 
+  const { usuario } = useAuth();
+
+  const usuarioId = usuario?.id ?? "";
+
   const [carga, setCarga] = useState<Carga | null>(null);
 
   const [cargando, setCargando] = useState(true);
@@ -78,25 +88,44 @@ function CargaActivaPage() {
   const finalizacionAutomaticaIniciada = useRef(false);
 
   useEffect(() => {
-    if (!cargaId) {
+    if (!cargaId || !usuarioId) {
+      setCarga(null);
+
+      setCargando(false);
+
       return;
     }
 
     const cargarSesion = async () => {
       setCargando(true);
+
       setMensajeError("");
 
       try {
         const cargaEncontrada = await obtenerCargaPorId(cargaId);
 
         if (!cargaEncontrada) {
+          setCarga(null);
+
           setMensajeError("No se ha encontrado la sesión de carga.");
+
+          return;
+        }
+
+        if (cargaEncontrada.usuarioId !== usuarioId) {
+          setCarga(null);
+
+          setMensajeError(
+            "No tienes permiso para consultar esta sesión de carga.",
+          );
 
           return;
         }
 
         setCarga(cargaEncontrada);
       } catch {
+        setCarga(null);
+
         setMensajeError("No hemos podido cargar los datos de la sesión.");
       } finally {
         setCargando(false);
@@ -104,7 +133,7 @@ function CargaActivaPage() {
     };
 
     void cargarSesion();
-  }, [cargaId]);
+  }, [cargaId, usuarioId]);
 
   useEffect(() => {
     const intervalo = window.setInterval(() => {
@@ -166,20 +195,28 @@ function CargaActivaPage() {
   }, [carga, ahora]);
 
   const terminarCarga = async (finalizacionAutomatica = false) => {
-    if (!carga || carga.estado !== "activa" || finalizando) {
+    if (
+      !usuarioId ||
+      !carga ||
+      carga.usuarioId !== usuarioId ||
+      carga.estado !== "activa" ||
+      finalizando
+    ) {
       return;
     }
 
     setFinalizando(true);
+
     setMensajeError("");
 
     try {
       await finalizarCarga(carga.id);
 
-      await marcarReservaComoFinalizada(carga.reservaId, USUARIO_ACTUAL_ID);
+      await marcarReservaComoFinalizada(carga.reservaId, usuarioId);
 
       navigate("/panel/mis-cargas", {
         replace: finalizacionAutomatica,
+
         state: {
           mensaje: finalizacionAutomatica
             ? "La carga ha finalizado al alcanzar la hora prevista."
@@ -196,6 +233,7 @@ function CargaActivaPage() {
       );
     } finally {
       setFinalizando(false);
+
       setMostrarConfirmacion(false);
     }
   };
@@ -212,7 +250,7 @@ function CargaActivaPage() {
 
       void terminarCarga(true);
     }
-  }, [ahora, carga, datosCalculados]);
+  }, [ahora, carga, datosCalculados, usuarioId]);
 
   if (!cargaId) {
     return <Navigate to="/panel/mis-cargas" replace />;
@@ -261,6 +299,7 @@ function CargaActivaPage() {
         className="carga-activa__volver"
       >
         <span aria-hidden="true">←</span>
+
         <span>Volver al cargador</span>
       </Link>
 

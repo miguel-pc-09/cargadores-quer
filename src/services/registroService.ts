@@ -6,19 +6,24 @@ export interface SolicitudRegistro {
   formulario: DatosFormularioRegistro;
 }
 
+const RETARDO_SIMULADO_MS = 900;
+
+function esperar(milisegundos: number) {
+  return new Promise<void>((resolve) => {
+    window.setTimeout(resolve, milisegundos);
+  });
+}
+
 export async function enviarSolicitudRegistro(
-  solicitud: SolicitudRegistro,
+  _solicitud: SolicitudRegistro,
 ): Promise<void> {
   /*
    * Simulación temporal hasta conectar Supabase.
    *
-   * Este archivo será el encargado de comunicarse con el backend.
-   * RegistroPage no debe guardar directamente en la base de datos.
+   * RegistroPage únicamente prepara la solicitud.
+   * Este servicio será sustituido por la llamada
+   * real al backend.
    */
 
-  await new Promise((resolve) => {
-    window.setTimeout(resolve, 900);
-  });
-
-  console.log("Solicitud de registro preparada:", solicitud);
+  await esperar(RETARDO_SIMULADO_MS);
 }

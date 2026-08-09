@@ -9,14 +9,14 @@ export type TipoActividadUsuario =
 export type EstadoUsuario = "correcto" | "penalizado" | "advertencia";
 
 export interface AlertaUsuario {
-  id: number;
+  id: string;
   tipo: TipoAlertaUsuario;
   titulo: string;
   mensaje: string;
 }
 
 export interface ActividadUsuario {
-  id: number;
+  id: string;
   tipo: TipoActividadUsuario;
   titulo: string;
   ubicacion: string;
