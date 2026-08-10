@@ -1,0 +1,240 @@
+.incidencias-admin {
+  width: 100%;
+}
+
+.incidencias-admin__cabecera {
+  margin-bottom: 28px;
+}
+
+.incidencias-admin__etiqueta {
+  display: block;
+  margin-bottom: 8px;
+  color: #63e6be;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.incidencias-admin__cabecera h1 {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(2.2rem, 4vw, 3.5rem);
+  line-height: 1;
+}
+
+.incidencias-admin__cabecera p {
+  margin: 18px 0 0;
+  color: #aeb9c9;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.incidencias-admin__lista {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.incidencias-admin__tarjeta {
+  overflow: hidden;
+  border: 1px solid rgba(89, 151, 211, 0.2);
+  border-radius: 18px;
+  background: #112a4b;
+}
+
+.incidencias-admin__tarjeta-cabecera {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.incidencias-admin__tipo {
+  display: block;
+  margin-bottom: 8px;
+  color: #ff8585;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.incidencias-admin__tarjeta-cabecera h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1.35rem;
+}
+
+.incidencias-admin__tarjeta-cabecera p {
+  margin: 7px 0 0;
+  color: #aeb9c9;
+  font-size: 0.88rem;
+}
+
+.incidencias-admin__estado {
+  flex: 0 0 auto;
+  padding: 7px 11px;
+  border: 1px solid rgba(255, 107, 107, 0.3);
+  border-radius: 999px;
+  background: rgba(255, 107, 107, 0.09);
+  color: #ff8585;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.incidencias-admin__descripcion {
+  padding: 20px 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.incidencias-admin__descripcion strong {
+  color: #ffffff;
+  font-size: 0.82rem;
+}
+
+.incidencias-admin__descripcion p {
+  margin: 8px 0 0;
+  color: #b8c3d1;
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.incidencias-admin__empresas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.incidencias-admin__empresa {
+  padding: 20px 22px;
+}
+
+.incidencias-admin__empresa + .incidencias-admin__empresa {
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.incidencias-admin__empresa span {
+  display: block;
+  margin-bottom: 7px;
+  color: #8f9eae;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.incidencias-admin__empresa strong {
+  display: block;
+  color: #ffffff;
+  font-size: 0.95rem;
+}
+
+.incidencias-admin__empresa p {
+  margin: 6px 0 0;
+  color: #45b7ff;
+  font-size: 0.88rem;
+}
+
+.incidencias-admin__cargando,
+.incidencias-admin__vacio {
+  min-height: 320px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border: 1px solid rgba(89, 151, 211, 0.2);
+  border-radius: 18px;
+  background: #112a4b;
+  color: #aeb9c9;
+  text-align: center;
+}
+
+.incidencias-admin__vacio > span {
+  display: grid;
+  width: 54px;
+  height: 54px;
+  place-items: center;
+  border: 1px solid rgba(99, 230, 190, 0.28);
+  border-radius: 15px;
+  background: rgba(99, 230, 190, 0.08);
+  color: #63e6be;
+  font-size: 1.4rem;
+  font-weight: 900;
+}
+
+.incidencias-admin__vacio h2 {
+  margin: 4px 0 0;
+  color: #ffffff;
+  font-size: 1.3rem;
+}
+
+.incidencias-admin__vacio p {
+  margin: 0;
+  color: #aeb9c9;
+}
+
+.incidencias-admin__spinner {
+  width: 34px;
+  height: 34px;
+  border: 3px solid rgba(255, 255, 255, 0.12);
+  border-top-color: #1ea7ff;
+  border-radius: 50%;
+  animation: incidencias-admin-girar 0.8s linear infinite;
+}
+
+.incidencias-admin__error {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  border: 1px solid rgba(255, 107, 107, 0.28);
+  border-radius: 12px;
+  background: rgba(255, 107, 107, 0.08);
+  color: #ff8d8d;
+}
+
+.incidencias-admin__error p {
+  margin: 0;
+}
+
+@keyframes incidencias-admin-girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 900px) {
+  .incidencias-admin__lista {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .incidencias-admin__cabecera h1 {
+    font-size: 2.3rem;
+  }
+
+  .incidencias-admin__tarjeta-cabecera {
+    padding: 18px;
+  }
+
+  .incidencias-admin__descripcion {
+    padding: 18px;
+  }
+
+  .incidencias-admin__empresas {
+    grid-template-columns: 1fr;
+  }
+
+  .incidencias-admin__empresa {
+    padding: 18px;
+  }
+
+  .incidencias-admin__empresa + .incidencias-admin__empresa {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-left: 0;
+  }
+}

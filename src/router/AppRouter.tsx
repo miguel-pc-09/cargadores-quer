@@ -4,7 +4,11 @@ import AdminLayout from "../layouts/AdminLayout";
 import PrivateLayout from "../layouts/PrivateLayout";
 
 import AdministracionPage from "../pages/Administracion/AdministracionPage";
+import CargadoresAdminPage from "../pages/Administracion/CargadoresAdminPage";
+import IncidenciasAdminPage from "../pages/Administracion/IncidenciasAdminPage";
+import UsuariosPage from "../pages/Administracion/UsuariosPage";
 import ValidacionesPage from "../pages/Administracion/ValidacionesPage";
+
 import AyudaPage from "../pages/Ayuda/AyudaPage";
 import CargaActivaPage from "../pages/CargaActiva/CargaActivaPage";
 import CargadoresPage from "../pages/Cargadores/CargadoresPage";
@@ -71,7 +75,13 @@ function AppRouter() {
         <Route path="/administracion" element={<AdminLayout />}>
           <Route index element={<AdministracionPage />} />
 
+          <Route path="usuarios" element={<UsuariosPage />} />
+
           <Route path="validaciones" element={<ValidacionesPage />} />
+
+          <Route path="cargadores" element={<CargadoresAdminPage />} />
+
+          <Route path="incidencias" element={<IncidenciasAdminPage />} />
         </Route>
       </Route>
 

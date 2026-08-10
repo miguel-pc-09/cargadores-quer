@@ -1,0 +1,317 @@
+.cargadores-admin {
+  width: 100%;
+}
+
+.cargadores-admin__cabecera {
+  margin-bottom: 30px;
+}
+
+.cargadores-admin__etiqueta {
+  display: block;
+  margin-bottom: 8px;
+  color: #63e6be;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cargadores-admin__cabecera h1 {
+  margin: 0;
+  color: #ffffff;
+  font-size: clamp(2.2rem, 4vw, 3.5rem);
+  line-height: 1;
+}
+
+.cargadores-admin__cabecera p {
+  margin: 18px 0 0;
+  color: #aeb9c9;
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.cargadores-admin__panel {
+  overflow: hidden;
+  border: 1px solid rgba(89, 151, 211, 0.2);
+  border-radius: 20px;
+  background: #112a4b;
+}
+
+.cargadores-admin__panel-cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 24px 26px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cargadores-admin__panel-cabecera h2 {
+  margin: 0;
+  color: #ffffff;
+  font-size: 1.55rem;
+}
+
+.cargadores-admin__contador {
+  display: grid;
+  width: 50px;
+  height: 50px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(30, 167, 255, 0.35);
+  border-radius: 50%;
+  background: rgba(30, 167, 255, 0.08);
+  color: #1ea7ff;
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.cargadores-admin__tabla-contenedor {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.cargadores-admin__tabla {
+  width: 100%;
+  min-width: 900px;
+  border-collapse: collapse;
+}
+
+.cargadores-admin__tabla th {
+  padding: 16px 20px;
+  background: rgba(5, 21, 40, 0.38);
+  color: #9eabba;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.cargadores-admin__tabla td {
+  padding: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  color: #dce5ef;
+  font-size: 0.92rem;
+  vertical-align: middle;
+}
+
+.cargadores-admin__tabla tbody tr:first-child td {
+  border-top: 0;
+}
+
+.cargadores-admin__tabla td strong {
+  color: #ffffff;
+}
+
+.cargadores-admin__fila--abierta td {
+  background: rgba(30, 167, 255, 0.035);
+}
+
+.cargadores-admin__estado,
+.cargadores-admin__incidencia {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 82px;
+  padding: 7px 11px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.76rem;
+  font-weight: 800;
+}
+
+.cargadores-admin__estado--disponible {
+  border-color: rgba(99, 230, 190, 0.25);
+  background: rgba(99, 230, 190, 0.09);
+  color: #63e6be;
+}
+
+.cargadores-admin__estado--ocupado {
+  border-color: rgba(255, 193, 7, 0.3);
+  background: rgba(255, 193, 7, 0.09);
+  color: #ffc857;
+}
+
+.cargadores-admin__estado--inactivo {
+  border-color: rgba(255, 107, 107, 0.28);
+  background: rgba(255, 107, 107, 0.09);
+  color: #ff7b7b;
+}
+
+.cargadores-admin__incidencia--correcto {
+  border-color: rgba(99, 230, 190, 0.25);
+  background: rgba(99, 230, 190, 0.09);
+  color: #63e6be;
+}
+
+.cargadores-admin__incidencia--abierta {
+  border-color: rgba(255, 107, 107, 0.28);
+  background: rgba(255, 107, 107, 0.09);
+  color: #ff7b7b;
+}
+
+.cargadores-admin__boton-desplegar {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 13px;
+  border: 1px solid rgba(30, 167, 255, 0.3);
+  border-radius: 10px;
+  background: rgba(30, 167, 255, 0.08);
+  color: #45b7ff;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.cargadores-admin__boton-desplegar:hover {
+  border-color: rgba(30, 167, 255, 0.55);
+  background: rgba(30, 167, 255, 0.14);
+}
+
+.cargadores-admin__flecha {
+  display: inline-block;
+  transition: transform 0.2s ease;
+}
+
+.cargadores-admin__flecha--abierta {
+  transform: rotate(180deg);
+}
+
+.cargadores-admin__fila-detalle td {
+  padding: 0;
+  background: rgba(4, 18, 35, 0.28);
+}
+
+.cargadores-admin__detalle {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(120px, 1fr));
+  gap: 1px;
+  padding: 18px 20px;
+}
+
+.cargadores-admin__detalle-dato {
+  padding: 16px 18px;
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.cargadores-admin__detalle-dato:last-child {
+  border-right: 0;
+}
+
+.cargadores-admin__detalle-dato span {
+  display: block;
+  margin-bottom: 7px;
+  color: #8f9eae;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.cargadores-admin__detalle-dato strong {
+  color: #ffffff;
+  font-size: 1.05rem;
+}
+
+.cargadores-admin__fila-vacia {
+  height: 180px;
+  color: #9eabba !important;
+  text-align: center;
+}
+
+.cargadores-admin__cargando {
+  display: flex;
+  min-height: 220px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: #9eabba;
+}
+
+.cargadores-admin__spinner {
+  width: 34px;
+  height: 34px;
+  border: 3px solid rgba(255, 255, 255, 0.12);
+  border-top-color: #1ea7ff;
+  border-radius: 50%;
+  animation: cargadores-admin-girar 0.8s linear infinite;
+}
+
+.cargadores-admin__mensaje-error {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  border: 1px solid rgba(255, 107, 107, 0.28);
+  border-radius: 12px;
+  background: rgba(255, 107, 107, 0.08);
+  color: #ff8d8d;
+}
+
+.cargadores-admin__mensaje-error p {
+  margin: 0;
+}
+
+@keyframes cargadores-admin-girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 900px) {
+  .cargadores-admin__cabecera {
+    margin-bottom: 24px;
+  }
+
+  .cargadores-admin__panel {
+    border-radius: 16px;
+  }
+
+  .cargadores-admin__panel-cabecera {
+    padding: 20px;
+  }
+
+  .cargadores-admin__detalle {
+    grid-template-columns: repeat(5, minmax(130px, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .cargadores-admin__cabecera h1 {
+    font-size: 2.3rem;
+  }
+
+  .cargadores-admin__cabecera p {
+    margin-top: 14px;
+    font-size: 0.92rem;
+  }
+
+  .cargadores-admin__panel-cabecera {
+    padding: 18px;
+  }
+
+  .cargadores-admin__panel-cabecera h2 {
+    font-size: 1.25rem;
+  }
+
+  .cargadores-admin__contador {
+    width: 44px;
+    height: 44px;
+  }
+
+  .cargadores-admin__tabla th {
+    padding: 14px 16px;
+  }
+
+  .cargadores-admin__tabla td {
+    padding: 17px 16px;
+  }
+}

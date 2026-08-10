@@ -9,22 +9,6 @@ import {
 
 import "../../styles/Administracion/ValidacionesPage.css";
 
-function formatearFecha(fechaTexto: string) {
-  const fecha = new Date(fechaTexto);
-
-  if (Number.isNaN(fecha.getTime())) {
-    return "—";
-  }
-
-  return new Intl.DateTimeFormat("es-ES", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(fecha);
-}
-
 function obtenerNombreCompleto(validacion: ValidacionPendiente) {
   return `${validacion.nombre} ${validacion.apellidos}`.trim();
 }
@@ -134,8 +118,8 @@ function ValidacionesPage() {
         <h1>Validaciones</h1>
 
         <p>
-          Revisa las solicitudes pendientes antes de permitir el acceso a las
-          reservas y cargas.
+          Revisa las solicitudes pendientes antes de permitir el acceso al
+          servicio.
         </p>
       </header>
 
@@ -180,41 +164,32 @@ function ValidacionesPage() {
 
             <p>Cargando validaciones...</p>
           </div>
-        ) : validaciones.length === 0 ? (
-          <div className="validaciones-admin__estado-vacio">
-            <span
-              className="validaciones-admin__vacio-icono"
-              aria-hidden="true"
-            >
-              ✓
-            </span>
-
-            <h3>No hay validaciones pendientes</h3>
-
-            <p>Todas las solicitudes están revisadas.</p>
-          </div>
         ) : (
-          <>
-            <div className="validaciones-admin__tabla-contenedor">
-              <table className="validaciones-admin__tabla">
-                <thead>
+          <div className="validaciones-admin__tabla-contenedor">
+            <table className="validaciones-admin__tabla">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+
+                  <th>DNI / NIE</th>
+
+                  <th>Correo</th>
+
+                  <th>Matrícula</th>
+
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {validaciones.length === 0 ? (
                   <tr>
-                    <th>Usuario</th>
-
-                    <th>DNI / NIE</th>
-
-                    <th>Teléfono</th>
-
-                    <th>Matrícula</th>
-
-                    <th>Solicitud</th>
-
-                    <th>Acciones</th>
+                    <td colSpan={5} className="validaciones-admin__fila-vacia">
+                      No hay validaciones pendientes.
+                    </td>
                   </tr>
-                </thead>
-
-                <tbody>
-                  {validaciones.map((validacion) => {
+                ) : (
+                  validaciones.map((validacion) => {
                     const procesando = procesandoId === validacion.vehiculoId;
 
                     return (
@@ -225,15 +200,13 @@ function ValidacionesPage() {
 
                         <td>{validacion.dni}</td>
 
-                        <td>{validacion.telefono}</td>
+                        <td>{validacion.email}</td>
 
                         <td>
                           <span className="validaciones-admin__matricula">
                             {validacion.matricula}
                           </span>
                         </td>
-
-                        <td>{formatearFecha(validacion.creadoEn)}</td>
 
                         <td>
                           <div className="validaciones-admin__acciones">
@@ -258,82 +231,11 @@ function ValidacionesPage() {
                         </td>
                       </tr>
                     );
-                  })}
-                </tbody>
-              </table>
-            </div>
-
-            <div className="validaciones-admin__lista-movil">
-              {validaciones.map((validacion) => {
-                const procesando = procesandoId === validacion.vehiculoId;
-
-                return (
-                  <article
-                    key={validacion.vehiculoId}
-                    className="validaciones-admin__tarjeta"
-                  >
-                    <header className="validaciones-admin__tarjeta-cabecera">
-                      <div>
-                        <span>Usuario</span>
-
-                        <strong>{obtenerNombreCompleto(validacion)}</strong>
-                      </div>
-
-                      <span className="validaciones-admin__estado">
-                        Pendiente
-                      </span>
-                    </header>
-
-                    <dl className="validaciones-admin__datos">
-                      <div>
-                        <dt>Matrícula</dt>
-
-                        <dd>{validacion.matricula}</dd>
-                      </div>
-
-                      <div>
-                        <dt>DNI / NIE</dt>
-
-                        <dd>{validacion.dni}</dd>
-                      </div>
-
-                      <div>
-                        <dt>Teléfono</dt>
-
-                        <dd>{validacion.telefono}</dd>
-                      </div>
-
-                      <div>
-                        <dt>Solicitud</dt>
-
-                        <dd>{formatearFecha(validacion.creadoEn)}</dd>
-                      </div>
-                    </dl>
-
-                    <div className="validaciones-admin__acciones validaciones-admin__acciones--movil">
-                      <button
-                        type="button"
-                        className="validaciones-admin__boton validaciones-admin__boton--aceptar"
-                        disabled={procesando}
-                        onClick={() => void aceptar(validacion)}
-                      >
-                        {procesando ? "Procesando..." : "Aceptar"}
-                      </button>
-
-                      <button
-                        type="button"
-                        className="validaciones-admin__boton validaciones-admin__boton--rechazar"
-                        disabled={procesando}
-                        onClick={() => void rechazar(validacion)}
-                      >
-                        Rechazar
-                      </button>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          </>
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
         )}
       </section>
     </section>
