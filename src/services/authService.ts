@@ -4,7 +4,9 @@ import { supabase } from "./supabaseClient";
 
 import type {
   CredencialesLogin,
+  EstadoCuenta,
   ResultadoLogin,
+  RolUsuario,
   SesionUsuario,
   UsuarioAutenticado,
 } from "../types/auth";
@@ -14,9 +16,9 @@ interface PerfilSupabase {
   nombre: string | null;
   apellidos: string | null;
   telefono: string | null;
-  rol: "usuario" | "administrador";
+  rol: RolUsuario;
   cliente: string | null;
-  estado_cuenta: "pendiente" | "verificada" | "bloqueada";
+  estado_cuenta: EstadoCuenta;
 }
 
 function convertirPerfilEnUsuario(
@@ -30,6 +32,7 @@ function convertirPerfilEnUsuario(
     email,
     telefono: perfil.telefono ?? undefined,
     rol: perfil.rol,
+    estadoCuenta: perfil.estado_cuenta,
     ayuntamiento: perfil.cliente ?? undefined,
   };
 }
@@ -67,6 +70,28 @@ async function obtenerPerfilUsuario(
   return convertirPerfilEnUsuario(data as PerfilSupabase, email);
 }
 
+function comprobarAcceso(usuario: UsuarioAutenticado) {
+  if (usuario.rol === "administrador") {
+    return;
+  }
+
+  if (usuario.estadoCuenta === "pendiente") {
+    throw new Error(
+      "Tu solicitud todavía está pendiente de aprobación por el Ayuntamiento.",
+    );
+  }
+
+  if (usuario.estadoCuenta === "bloqueada") {
+    throw new Error(
+      "Tu cuenta está bloqueada. Ponte en contacto con el Ayuntamiento.",
+    );
+  }
+
+  if (usuario.estadoCuenta !== "verificada") {
+    throw new Error("Tu cuenta todavía no tiene acceso al servicio.");
+  }
+}
+
 export async function obtenerUsuarioPorSesion(
   usuarioAuth: User,
 ): Promise<UsuarioAutenticado> {
@@ -91,11 +116,19 @@ export async function iniciarSesion(
     throw new Error("No se ha podido recuperar el usuario autenticado.");
   }
 
-  const usuario = await obtenerUsuarioPorSesion(data.user);
+  try {
+    const usuario = await obtenerUsuarioPorSesion(data.user);
 
-  return {
-    usuario,
-  };
+    comprobarAcceso(usuario);
+
+    return {
+      usuario,
+    };
+  } catch (error) {
+    await supabase.auth.signOut();
+
+    throw error;
+  }
 }
 
 export async function cerrarSesion(): Promise<void> {
@@ -119,10 +152,18 @@ export async function obtenerSesionActual(): Promise<SesionUsuario | null> {
     return null;
   }
 
-  const usuario = await obtenerUsuarioPorSesion(sesion.user);
+  try {
+    const usuario = await obtenerUsuarioPorSesion(sesion.user);
 
-  return {
-    usuario,
-    iniciadaEn: sesion.user.last_sign_in_at ?? new Date().toISOString(),
-  };
+    comprobarAcceso(usuario);
+
+    return {
+      usuario,
+      iniciadaEn: sesion.user.last_sign_in_at ?? new Date().toISOString(),
+    };
+  } catch {
+    await supabase.auth.signOut();
+
+    return null;
+  }
 }

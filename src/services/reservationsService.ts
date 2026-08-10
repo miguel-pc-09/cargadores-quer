@@ -1,3 +1,5 @@
+import { puedeUsuarioReservar } from "./usersService";
+
 import type {
   DatosNuevaReserva,
   EstadoReserva,
@@ -31,7 +33,9 @@ function crearFechaHora(fecha: string, hora: string) {
 
 function convertirFechaAValor(fecha: Date) {
   const anio = fecha.getFullYear();
+
   const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+
   const dia = String(fecha.getDate()).padStart(2, "0");
 
   return `${anio}-${mes}-${dia}`;
@@ -39,6 +43,7 @@ function convertirFechaAValor(fecha: Date) {
 
 function convertirFechaAHora(fecha: Date) {
   const horas = String(fecha.getHours()).padStart(2, "0");
+
   const minutos = String(fecha.getMinutes()).padStart(2, "0");
 
   return `${horas}:${minutos}`;
@@ -55,7 +60,9 @@ function calcularFechaHoraFin(
 
   return {
     fechaFin: convertirFechaAValor(fechaHoraFin),
+
     horaFin: convertirFechaAHora(fechaHoraFin),
+
     fechaHoraFin,
   };
 }
@@ -81,15 +88,21 @@ function normalizarReserva(reserva: Partial<Reserva>): Reserva | null {
 
   return {
     id: reserva.id,
+
     usuarioId: reserva.usuarioId,
+
     cargadorId: reserva.cargadorId,
+
     tomaId: reserva.tomaId,
 
     fecha: reserva.fecha,
+
     horaInicio: reserva.horaInicio,
+
     duracionMinutos: reserva.duracionMinutos,
 
     fechaFin: reserva.fechaFin ?? datosFin.fechaFin,
+
     horaFin: reserva.horaFin ?? datosFin.horaFin,
 
     creadaEn: reserva.creadaEn ?? new Date().toISOString(),
@@ -157,12 +170,9 @@ function calcularEstadoActual(reserva: Reserva): EstadoReserva {
   }
 
   const ahora = new Date();
+
   const fechaHoraFin = obtenerFinReserva(reserva);
 
-  /*
-   * Una reserva solamente pasa a activa cuando el usuario
-   * pulsa el botón "Iniciar carga".
-   */
   if (reserva.estado === "activa") {
     if (ahora.getTime() >= fechaHoraFin.getTime()) {
       return "finalizada";
@@ -171,10 +181,6 @@ function calcularEstadoActual(reserva: Reserva): EstadoReserva {
     return "activa";
   }
 
-  /*
-   * Si la reserva termina sin que se haya iniciado una carga,
-   * queda caducada, no finalizada.
-   */
   if (
     reserva.estado === "confirmada" &&
     ahora.getTime() >= fechaHoraFin.getTime()
@@ -199,6 +205,7 @@ function actualizarEstados(reservas: Reserva[]): Reserva[] {
 
     return {
       ...reserva,
+
       estado: estadoActual,
     };
   });
@@ -213,7 +220,9 @@ function actualizarEstados(reservas: Reserva[]): Reserva[] {
 function convertirReservaConFechas(reserva: Reserva): ReservaConFechas {
   return {
     ...reserva,
+
     fechaHoraInicio: obtenerInicioReserva(reserva),
+
     fechaHoraFin: obtenerFinReserva(reserva),
   };
 }
@@ -278,6 +287,16 @@ export async function obtenerReservasToma(
 export async function crearReserva(
   datosReserva: DatosNuevaReserva,
 ): Promise<Reserva> {
+  const usuarioPuedeReservar = await puedeUsuarioReservar(
+    datosReserva.usuarioId,
+  );
+
+  if (!usuarioPuedeReservar) {
+    throw new Error(
+      "Tu vehículo debe estar validado por el Ayuntamiento antes de poder realizar una reserva.",
+    );
+  }
+
   await esperar(RETARDO_SIMULADO_MS);
 
   const reservas = actualizarEstados(leerReservasGuardadas());
@@ -293,11 +312,6 @@ export async function crearReserva(
     datosReserva.duracionMinutos,
   );
 
-  /*
-   * Primera comprobación:
-   * la toma no puede estar reservada por ningún usuario
-   * durante ese horario.
-   */
   const reservaSolapadaEnToma = reservas.find((reserva) => {
     if (
       reserva.cargadorId !== datosReserva.cargadorId ||
@@ -321,11 +335,6 @@ export async function crearReserva(
     );
   }
 
-  /*
-   * Segunda comprobación:
-   * un mismo usuario no puede tener dos reservas
-   * simultáneas, aunque sean cargadores o tomas distintas.
-   */
   const reservaSolapadaDelUsuario = reservas.find((reserva) => {
     if (
       reserva.usuarioId !== datosReserva.usuarioId ||
@@ -354,9 +363,11 @@ export async function crearReserva(
     id: generarId(),
 
     fechaFin: datosFin.fechaFin,
+
     horaFin: datosFin.horaFin,
 
     creadaEn: new Date().toISOString(),
+
     estado: "confirmada",
   };
 
@@ -391,6 +402,7 @@ export async function cancelarReserva(
 
   const reservaCancelada: Reserva = {
     ...reservaEncontrada,
+
     estado: "cancelada",
   };
 
@@ -424,7 +436,9 @@ export async function marcarReservaComoActiva(
   }
 
   const ahora = new Date();
+
   const inicio = obtenerInicioReserva(reservaEncontrada);
+
   const fin = obtenerFinReserva(reservaEncontrada);
 
   if (ahora.getTime() < inicio.getTime() || ahora.getTime() >= fin.getTime()) {
@@ -433,6 +447,7 @@ export async function marcarReservaComoActiva(
 
   const reservaActiva: Reserva = {
     ...reservaEncontrada,
+
     estado: "activa",
   };
 
@@ -467,6 +482,7 @@ export async function marcarReservaComoFinalizada(
 
   const reservaFinalizada: Reserva = {
     ...reservaEncontrada,
+
     estado: "finalizada",
   };
 

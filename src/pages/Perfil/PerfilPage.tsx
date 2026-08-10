@@ -1,42 +1,26 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 
 import useAuth from "../../hooks/useAuth";
 
 import {
-  guardarVehiculoUsuario,
+  actualizarMatriculaVehiculo,
   obtenerVehiculoUsuario,
 } from "../../services/usersService";
 
-import type { DatosVehiculo, TipoVehiculo } from "../../types/user";
+import type { DatosVehiculo } from "../../types/user";
 
 import "../../styles/Perfil/PerfilPage.css";
-
-function obtenerTextoTipoVehiculo(tipo: TipoVehiculo) {
-  if (tipo === "electrico") {
-    return "Eléctrico";
-  }
-
-  return "Híbrido enchufable";
-}
 
 function PerfilPage() {
   const { usuario } = useAuth();
 
-  const [vehiculo, setVehiculo] = useState<DatosVehiculo>(
-    obtenerVehiculoUsuario,
-  );
+  const [vehiculo, setVehiculo] = useState<DatosVehiculo | null>(null);
+
+  const [cargandoVehiculo, setCargandoVehiculo] = useState(true);
 
   const [editandoVehiculo, setEditandoVehiculo] = useState(false);
 
-  const [marcaModeloTemporal, setMarcaModeloTemporal] = useState(
-    vehiculo.marcaModelo,
-  );
-
-  const [matriculaTemporal, setMatriculaTemporal] = useState(
-    vehiculo.matricula,
-  );
-
-  const [tipoTemporal, setTipoTemporal] = useState<TipoVehiculo>(vehiculo.tipo);
+  const [matriculaTemporal, setMatriculaTemporal] = useState("");
 
   const [notificacionesAplicacion, setNotificacionesAplicacion] =
     useState(true);
@@ -44,6 +28,8 @@ function PerfilPage() {
   const [notificacionesCorreo, setNotificacionesCorreo] = useState(true);
 
   const [mensajePerfil, setMensajePerfil] = useState("");
+
+  const [guardandoVehiculo, setGuardandoVehiculo] = useState(false);
 
   const nombreCompleto = usuario
     ? `${usuario.nombre} ${usuario.apellidos}`.trim()
@@ -53,12 +39,63 @@ function PerfilPage() {
 
   const telefono = usuario?.telefono ?? "No disponible";
 
+  useEffect(() => {
+    let activo = true;
+
+    async function cargarVehiculo() {
+      if (!usuario?.id) {
+        if (activo) {
+          setVehiculo(null);
+          setCargandoVehiculo(false);
+        }
+
+        return;
+      }
+
+      try {
+        setCargandoVehiculo(true);
+
+        const vehiculoObtenido = await obtenerVehiculoUsuario(usuario.id);
+
+        if (!activo) {
+          return;
+        }
+
+        setVehiculo(vehiculoObtenido);
+
+        setMatriculaTemporal(vehiculoObtenido?.matricula ?? "");
+      } catch (error) {
+        if (!activo) {
+          return;
+        }
+
+        setVehiculo(null);
+
+        setMensajePerfil(
+          error instanceof Error
+            ? error.message
+            : "No se ha podido cargar el vehículo.",
+        );
+      } finally {
+        if (activo) {
+          setCargandoVehiculo(false);
+        }
+      }
+    }
+
+    void cargarVehiculo();
+
+    return () => {
+      activo = false;
+    };
+  }, [usuario?.id]);
+
   const abrirEdicionVehiculo = () => {
-    setMarcaModeloTemporal(vehiculo.marcaModelo);
+    if (!vehiculo) {
+      return;
+    }
 
     setMatriculaTemporal(vehiculo.matricula);
-
-    setTipoTemporal(vehiculo.tipo);
 
     setMensajePerfil("");
 
@@ -66,30 +103,37 @@ function PerfilPage() {
   };
 
   const cancelarEdicionVehiculo = () => {
+    setMatriculaTemporal(vehiculo?.matricula ?? "");
+
     setEditandoVehiculo(false);
 
     setMensajePerfil("");
   };
 
-  const guardarCambiosVehiculo = (evento: FormEvent<HTMLFormElement>) => {
+  const guardarCambiosVehiculo = async (evento: FormEvent<HTMLFormElement>) => {
     evento.preventDefault();
 
-    const marcaModeloLimpio = marcaModeloTemporal.trim();
+    if (!usuario?.id || !vehiculo || guardandoVehiculo) {
+      return;
+    }
 
-    const matriculaLimpia = matriculaTemporal.trim().toUpperCase();
+    const matriculaLimpia = matriculaTemporal
+      .trim()
+      .toUpperCase()
+      .replace(/[\s-]/g, "");
 
-    if (!marcaModeloLimpio || !matriculaLimpia) {
-      setMensajePerfil("Debes completar todos los datos del vehículo.");
+    if (!matriculaLimpia) {
+      setMensajePerfil("Debes introducir la matrícula.");
 
       return;
     }
 
-    const haCambiado =
-      marcaModeloLimpio !== vehiculo.marcaModelo ||
-      matriculaLimpia !== vehiculo.matricula ||
-      tipoTemporal !== vehiculo.tipo;
+    const matriculaActual = vehiculo.matricula
+      .trim()
+      .toUpperCase()
+      .replace(/[\s-]/g, "");
 
-    if (!haCambiado) {
+    if (matriculaLimpia === matriculaActual) {
       setEditandoVehiculo(false);
 
       setMensajePerfil("No se han realizado cambios.");
@@ -97,25 +141,32 @@ function PerfilPage() {
       return;
     }
 
-    const vehiculoActualizado: DatosVehiculo = {
-      marcaModelo: marcaModeloLimpio,
+    try {
+      setGuardandoVehiculo(true);
 
-      matricula: matriculaLimpia,
+      const vehiculoActualizado = await actualizarMatriculaVehiculo(
+        usuario.id,
+        matriculaLimpia,
+      );
 
-      tipo: tipoTemporal,
+      setVehiculo(vehiculoActualizado);
 
-      estadoValidacion: "pendiente",
-    };
+      setMatriculaTemporal(vehiculoActualizado.matricula);
 
-    guardarVehiculoUsuario(vehiculoActualizado);
+      setEditandoVehiculo(false);
 
-    setVehiculo(vehiculoActualizado);
-
-    setEditandoVehiculo(false);
-
-    setMensajePerfil(
-      "El cambio de vehículo se ha enviado para validación. Hasta que sea aprobado no podrás iniciar nuevas cargas.",
-    );
+      setMensajePerfil(
+        "El cambio de matrícula se ha enviado para validación. Hasta que sea aprobado no podrás realizar nuevas reservas ni iniciar cargas.",
+      );
+    } catch (error) {
+      setMensajePerfil(
+        error instanceof Error
+          ? error.message
+          : "No se ha podido actualizar la matrícula.",
+      );
+    } finally {
+      setGuardandoVehiculo(false);
+    }
   };
 
   return (
@@ -127,14 +178,14 @@ function PerfilPage() {
       {mensajePerfil && (
         <div
           className={`perfil__mensaje ${
-            vehiculo.estadoValidacion !== "validado"
+            vehiculo?.estadoValidacion !== "validado"
               ? "perfil__mensaje--aviso"
               : ""
           }`}
           role="status"
         >
           <span aria-hidden="true">
-            {vehiculo.estadoValidacion === "validado" ? "✓" : "!"}
+            {vehiculo?.estadoValidacion === "validado" ? "✓" : "!"}
           </span>
 
           <p>{mensajePerfil}</p>
@@ -150,10 +201,6 @@ function PerfilPage() {
       )}
 
       <div className="perfil__contenido">
-        {/* =========================================
-            DATOS PERSONALES
-            ========================================= */}
-
         <section className="perfil__bloque">
           <header className="perfil__bloque-cabecera">
             <span className="perfil__etiqueta">Datos personales</span>
@@ -165,7 +212,7 @@ function PerfilPage() {
             <div className="perfil__dato">
               <span>Nombre</span>
 
-              <strong>{nombreCompleto}</strong>
+              <strong>{nombreCompleto || "No disponible"}</strong>
             </div>
 
             <div className="perfil__dato">
@@ -194,10 +241,6 @@ function PerfilPage() {
           </button>
         </section>
 
-        {/* =========================================
-            VEHÍCULO
-            ========================================= */}
-
         <section className="perfil__bloque">
           <header className="perfil__bloque-cabecera perfil__bloque-cabecera--vehiculo">
             <div>
@@ -206,18 +249,22 @@ function PerfilPage() {
               <h2>Vehículo principal</h2>
             </div>
 
-            <span
-              className={`perfil__validacion perfil__validacion--${vehiculo.estadoValidacion}`}
-            >
-              {vehiculo.estadoValidacion === "validado"
-                ? "✓ Verificado"
-                : vehiculo.estadoValidacion === "pendiente"
-                  ? "◷ Pendiente"
-                  : "✕ Rechazado"}
-            </span>
+            {vehiculo && (
+              <span
+                className={`perfil__validacion perfil__validacion--${vehiculo.estadoValidacion}`}
+              >
+                {vehiculo.estadoValidacion === "validado"
+                  ? "✓ Verificado"
+                  : vehiculo.estadoValidacion === "pendiente"
+                    ? "◷ Pendiente"
+                    : "✕ Rechazado"}
+              </span>
+            )}
           </header>
 
-          {vehiculo.estadoValidacion === "pendiente" && (
+          {cargandoVehiculo ? (
+            <p>Cargando vehículo...</p>
+          ) : !vehiculo ? (
             <div className="perfil__aviso-validacion">
               <span
                 className="perfil__aviso-validacion-icono"
@@ -227,162 +274,147 @@ function PerfilPage() {
               </span>
 
               <div>
-                <strong>Vehículo pendiente de validación</strong>
+                <strong>Vehículo no registrado</strong>
 
                 <p>
-                  El Ayuntamiento debe comprobar los nuevos datos antes de
-                  permitir nuevas cargas.
+                  No hay ninguna matrícula asociada actualmente a esta cuenta.
                 </p>
               </div>
             </div>
-          )}
-
-          {vehiculo.estadoValidacion === "rechazado" && (
-            <div className="perfil__aviso-validacion">
-              <span
-                className="perfil__aviso-validacion-icono"
-                aria-hidden="true"
-              >
-                !
-              </span>
-
-              <div>
-                <strong>Vehículo no validado</strong>
-
-                <p>
-                  La solicitud de cambio no ha sido aprobada. Revisa los datos
-                  del vehículo o contacta con el Ayuntamiento.
-                </p>
-              </div>
-            </div>
-          )}
-
-          <div className="perfil__vehiculo">
-            <div className="perfil__vehiculo-icono" aria-hidden="true">
-              ⚡
-            </div>
-
-            <div className="perfil__vehiculo-info">
-              <strong>{vehiculo.marcaModelo}</strong>
-
-              <span>Vehículo principal</span>
-            </div>
-          </div>
-
-          <div className="perfil__datos perfil__datos--vehiculo">
-            <div className="perfil__dato">
-              <span>Matrícula</span>
-
-              <strong>{vehiculo.matricula}</strong>
-            </div>
-
-            <div className="perfil__dato">
-              <span>Tipo de vehículo</span>
-
-              <strong>{obtenerTextoTipoVehiculo(vehiculo.tipo)}</strong>
-            </div>
-          </div>
-
-          {!editandoVehiculo ? (
-            <button
-              type="button"
-              className="perfil__boton-secundario"
-              onClick={abrirEdicionVehiculo}
-            >
-              Editar vehículo
-            </button>
           ) : (
-            <form
-              className="perfil__formulario-vehiculo"
-              onSubmit={guardarCambiosVehiculo}
-            >
-              <header className="perfil__formulario-cabecera">
-                <span className="perfil__etiqueta">Solicitud de cambio</span>
+            <>
+              {vehiculo.estadoValidacion === "pendiente" && (
+                <div className="perfil__aviso-validacion">
+                  <span
+                    className="perfil__aviso-validacion-icono"
+                    aria-hidden="true"
+                  >
+                    !
+                  </span>
 
-                <h3>Editar vehículo</h3>
+                  <div>
+                    <strong>Vehículo pendiente de validación</strong>
 
-                <p>
-                  Cualquier cambio deberá ser validado por el Ayuntamiento antes
-                  de poder utilizar de nuevo los cargadores.
-                </p>
-              </header>
+                    <p>
+                      El Ayuntamiento debe comprobar la matrícula antes de
+                      permitir nuevas reservas o cargas.
+                    </p>
+                  </div>
+                </div>
+              )}
 
-              <label className="perfil__campo">
-                <span>Marca y modelo</span>
+              {vehiculo.estadoValidacion === "rechazado" && (
+                <div className="perfil__aviso-validacion">
+                  <span
+                    className="perfil__aviso-validacion-icono"
+                    aria-hidden="true"
+                  >
+                    !
+                  </span>
 
-                <input
-                  type="text"
-                  value={marcaModeloTemporal}
-                  onChange={(evento) =>
-                    setMarcaModeloTemporal(evento.target.value)
-                  }
-                  placeholder="Ej. Hyundai Kona"
-                />
-              </label>
+                  <div>
+                    <strong>Vehículo no validado</strong>
 
-              <div className="perfil__formulario-fila">
-                <label className="perfil__campo">
+                    <p>
+                      La matrícula no ha sido aprobada. Revisa los datos o
+                      contacta con el Ayuntamiento.
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              <div className="perfil__vehiculo">
+                <div className="perfil__vehiculo-icono" aria-hidden="true">
+                  ⚡
+                </div>
+
+                <div className="perfil__vehiculo-info">
+                  <strong>{vehiculo.matricula}</strong>
+
+                  <span>Vehículo principal</span>
+                </div>
+              </div>
+
+              <div className="perfil__datos perfil__datos--vehiculo">
+                <div className="perfil__dato">
                   <span>Matrícula</span>
 
-                  <input
-                    type="text"
-                    value={matriculaTemporal}
-                    onChange={(evento) =>
-                      setMatriculaTemporal(evento.target.value)
-                    }
-                    placeholder="0000 AAA"
-                    maxLength={10}
-                  />
-                </label>
-
-                <label className="perfil__campo">
-                  <span>Tipo de vehículo</span>
-
-                  <select
-                    value={tipoTemporal}
-                    onChange={(evento) =>
-                      setTipoTemporal(evento.target.value as TipoVehiculo)
-                    }
-                  >
-                    <option value="electrico">Eléctrico</option>
-
-                    <option value="hibrido-enchufable">
-                      Híbrido enchufable
-                    </option>
-                  </select>
-                </label>
+                  <strong>{vehiculo.matricula}</strong>
+                </div>
               </div>
 
-              <div className="perfil__advertencia-cambio">
-                <span aria-hidden="true">!</span>
-
-                <p>
-                  Al solicitar un cambio, el vehículo quedará pendiente de
-                  validación y no podrá iniciar nuevas cargas hasta que el
-                  Ayuntamiento lo apruebe.
-                </p>
-              </div>
-
-              <div className="perfil__formulario-acciones">
+              {!editandoVehiculo ? (
                 <button
                   type="button"
-                  className="perfil__boton-cancelar"
-                  onClick={cancelarEdicionVehiculo}
+                  className="perfil__boton-secundario"
+                  onClick={abrirEdicionVehiculo}
                 >
-                  Cancelar
+                  Editar matrícula
                 </button>
+              ) : (
+                <form
+                  className="perfil__formulario-vehiculo"
+                  onSubmit={guardarCambiosVehiculo}
+                >
+                  <header className="perfil__formulario-cabecera">
+                    <span className="perfil__etiqueta">
+                      Solicitud de cambio
+                    </span>
 
-                <button type="submit" className="perfil__boton-principal">
-                  Solicitar cambio
-                </button>
-              </div>
-            </form>
+                    <h3>Editar matrícula</h3>
+
+                    <p>
+                      El cambio deberá ser validado por el Ayuntamiento antes de
+                      poder volver a reservar o iniciar cargas.
+                    </p>
+                  </header>
+
+                  <label className="perfil__campo">
+                    <span>Matrícula</span>
+
+                    <input
+                      type="text"
+                      value={matriculaTemporal}
+                      onChange={(evento) =>
+                        setMatriculaTemporal(evento.target.value)
+                      }
+                      placeholder="0000 AAA"
+                      maxLength={10}
+                    />
+                  </label>
+
+                  <div className="perfil__advertencia-cambio">
+                    <span aria-hidden="true">!</span>
+
+                    <p>
+                      Al solicitar el cambio, la matrícula quedará pendiente de
+                      validación hasta que el Ayuntamiento la apruebe.
+                    </p>
+                  </div>
+
+                  <div className="perfil__formulario-acciones">
+                    <button
+                      type="button"
+                      className="perfil__boton-cancelar"
+                      onClick={cancelarEdicionVehiculo}
+                      disabled={guardandoVehiculo}
+                    >
+                      Cancelar
+                    </button>
+
+                    <button
+                      type="submit"
+                      className="perfil__boton-principal"
+                      disabled={guardandoVehiculo}
+                    >
+                      {guardandoVehiculo ? "Enviando..." : "Solicitar cambio"}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </>
           )}
         </section>
-
-        {/* =========================================
-            NOTIFICACIONES
-            ========================================= */}
 
         <section className="perfil__bloque">
           <header className="perfil__bloque-cabecera">
@@ -428,10 +460,6 @@ function PerfilPage() {
           </div>
         </section>
 
-        {/* =========================================
-            PENALIZACIONES
-            ========================================= */}
-
         <section className="perfil__bloque">
           <header className="perfil__bloque-cabecera">
             <span className="perfil__etiqueta">Uso responsable</span>
@@ -448,8 +476,8 @@ function PerfilPage() {
               <strong>Sin penalizaciones activas</strong>
 
               <p>
-                Tu cuenta puede reservar y utilizar los cargadores con
-                normalidad.
+                Tu cuenta puede utilizar el servicio con normalidad siempre que
+                el vehículo esté validado.
               </p>
             </div>
           </div>
@@ -458,10 +486,6 @@ function PerfilPage() {
             Ver historial de incidencias
           </button>
         </section>
-
-        {/* =========================================
-            SEGURIDAD
-            ========================================= */}
 
         <section className="perfil__bloque">
           <header className="perfil__bloque-cabecera">

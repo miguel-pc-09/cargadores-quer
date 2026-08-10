@@ -1,116 +1,97 @@
-import type {
-  DatosVehiculo,
-  EstadoValidacionVehiculo,
-  TipoVehiculo,
-} from "../types/user";
+import { supabase } from "./supabaseClient";
 
-export const CLAVE_VEHICULO_USUARIO = "cargaquer_perfil_vehiculo";
+import type { DatosVehiculo, EstadoValidacionVehiculo } from "../types/user";
 
-export const VEHICULO_INICIAL: DatosVehiculo = {
-  marcaModelo: "Hyundai Kona Eléctrico",
-  matricula: "0000 AAA",
-  tipo: "electrico",
-  estadoValidacion: "validado",
-};
-
-function esTipoVehiculoValido(tipo: unknown): tipo is TipoVehiculo {
-  return tipo === "electrico" || tipo === "hibrido-enchufable";
+interface VehiculoBaseDatos {
+  id: string;
+  usuario_id: string;
+  matricula: string;
+  estado_validacion: string;
 }
 
-function esEstadoValidacionValido(
-  estado: unknown,
+function esEstadoValidacionVehiculo(
+  estado: string,
 ): estado is EstadoValidacionVehiculo {
   return (
     estado === "validado" || estado === "pendiente" || estado === "rechazado"
   );
 }
 
-export function obtenerVehiculoUsuario(): DatosVehiculo {
-  try {
-    const vehiculoGuardado = localStorage.getItem(CLAVE_VEHICULO_USUARIO);
+function convertirVehiculo(vehiculo: VehiculoBaseDatos): DatosVehiculo {
+  return {
+    id: vehiculo.id,
+    usuarioId: vehiculo.usuario_id,
+    matricula: vehiculo.matricula,
+    estadoValidacion: esEstadoValidacionVehiculo(vehiculo.estado_validacion)
+      ? vehiculo.estado_validacion
+      : "pendiente",
+  };
+}
 
-    if (!vehiculoGuardado) {
-      return {
-        ...VEHICULO_INICIAL,
-      };
-    }
+export async function obtenerVehiculoUsuario(
+  usuarioId: string,
+): Promise<DatosVehiculo | null> {
+  const { data, error } = await supabase
+    .from("vehiculos")
+    .select("id, usuario_id, matricula, estado_validacion")
+    .eq("usuario_id", usuarioId)
+    .maybeSingle();
 
-    const datosGuardados = JSON.parse(
-      vehiculoGuardado,
-    ) as Partial<DatosVehiculo>;
-
-    return {
-      marcaModelo:
-        typeof datosGuardados.marcaModelo === "string" &&
-        datosGuardados.marcaModelo.trim()
-          ? datosGuardados.marcaModelo
-          : VEHICULO_INICIAL.marcaModelo,
-
-      matricula:
-        typeof datosGuardados.matricula === "string" &&
-        datosGuardados.matricula.trim()
-          ? datosGuardados.matricula
-          : VEHICULO_INICIAL.matricula,
-
-      tipo: esTipoVehiculoValido(datosGuardados.tipo)
-        ? datosGuardados.tipo
-        : VEHICULO_INICIAL.tipo,
-
-      estadoValidacion: esEstadoValidacionValido(
-        datosGuardados.estadoValidacion,
-      )
-        ? datosGuardados.estadoValidacion
-        : VEHICULO_INICIAL.estadoValidacion,
-    };
-  } catch {
-    return {
-      ...VEHICULO_INICIAL,
-    };
+  if (error) {
+    throw new Error(`No se ha podido obtener el vehículo: ${error.message}`);
   }
+
+  if (!data) {
+    return null;
+  }
+
+  return convertirVehiculo(data as VehiculoBaseDatos);
 }
 
-export function guardarVehiculoUsuario(vehiculo: DatosVehiculo): void {
-  localStorage.setItem(CLAVE_VEHICULO_USUARIO, JSON.stringify(vehiculo));
+export async function actualizarMatriculaVehiculo(
+  usuarioId: string,
+  matricula: string,
+): Promise<DatosVehiculo> {
+  const matriculaNormalizada = matricula
+    .trim()
+    .toUpperCase()
+    .replace(/[\s-]/g, "");
+
+  const { data, error } = await supabase
+    .from("vehiculos")
+    .update({
+      matricula: matriculaNormalizada,
+      estado_validacion: "pendiente",
+    })
+    .eq("usuario_id", usuarioId)
+    .select("id, usuario_id, matricula, estado_validacion")
+    .single();
+
+  if (error) {
+    throw new Error(
+      `No se ha podido actualizar la matrícula: ${error.message}`,
+    );
+  }
+
+  return convertirVehiculo(data as VehiculoBaseDatos);
 }
 
-export function vehiculoEstaValidado(): boolean {
-  return obtenerVehiculoUsuario().estadoValidacion === "validado";
+export async function vehiculoEstaValidado(
+  usuarioId: string,
+): Promise<boolean> {
+  const vehiculo = await obtenerVehiculoUsuario(usuarioId);
+
+  return vehiculo?.estadoValidacion === "validado";
 }
 
-export function vehiculoEstaPendiente(): boolean {
-  return obtenerVehiculoUsuario().estadoValidacion === "pendiente";
+export async function puedeUsuarioReservar(
+  usuarioId: string,
+): Promise<boolean> {
+  return vehiculoEstaValidado(usuarioId);
 }
 
-export function vehiculoEstaRechazado(): boolean {
-  return obtenerVehiculoUsuario().estadoValidacion === "rechazado";
-}
-
-export function puedeUsuarioIniciarCarga(): boolean {
-  return vehiculoEstaValidado();
-}
-
-export function validarVehiculoUsuario(): DatosVehiculo {
-  const vehiculoActual = obtenerVehiculoUsuario();
-
-  const vehiculoValidado: DatosVehiculo = {
-    ...vehiculoActual,
-    estadoValidacion: "validado",
-  };
-
-  guardarVehiculoUsuario(vehiculoValidado);
-
-  return vehiculoValidado;
-}
-
-export function rechazarVehiculoUsuario(): DatosVehiculo {
-  const vehiculoActual = obtenerVehiculoUsuario();
-
-  const vehiculoRechazado: DatosVehiculo = {
-    ...vehiculoActual,
-    estadoValidacion: "rechazado",
-  };
-
-  guardarVehiculoUsuario(vehiculoRechazado);
-
-  return vehiculoRechazado;
+export async function puedeUsuarioIniciarCarga(
+  usuarioId: string,
+): Promise<boolean> {
+  return vehiculoEstaValidado(usuarioId);
 }

@@ -1,11 +1,9 @@
-export type TipoVehiculo = "electrico" | "hibrido-enchufable";
-
 export type EstadoValidacionVehiculo = "validado" | "pendiente" | "rechazado";
 
 export interface DatosVehiculo {
-  marcaModelo: string;
+  id: string;
+  usuarioId: string;
   matricula: string;
-  tipo: TipoVehiculo;
   estadoValidacion: EstadoValidacionVehiculo;
 }
 
@@ -15,5 +13,5 @@ export interface DatosPerfilUsuario {
   apellidos: string;
   email: string;
   telefono: string;
-  vehiculo: DatosVehiculo;
+  vehiculo: DatosVehiculo | null;
 }

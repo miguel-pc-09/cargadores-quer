@@ -20,7 +20,13 @@ import {
   obtenerReservasToma,
 } from "../../services/reservationsService";
 
+import {
+  obtenerVehiculoUsuario,
+  puedeUsuarioReservar,
+} from "../../services/usersService";
+
 import type { Reserva } from "../../types/reservation";
+import type { DatosVehiculo } from "../../types/user";
 
 import "../../styles/ReservaToma/ReservaTomaPage.css";
 
@@ -275,11 +281,66 @@ function ReservaTomaPage() {
 
   const [mensajeError, setMensajeError] = useState("");
 
+  const [vehiculo, setVehiculo] = useState<DatosVehiculo | null>(null);
+
+  const [cargandoVehiculo, setCargandoVehiculo] = useState(true);
+
+  const [vehiculoValidado, setVehiculoValidado] = useState(false);
+
   const cargador = cargadoresSimulados.find(
     (cargadorActual) => cargadorActual.id === cargadorId,
   );
 
   const toma = cargador?.tomas.find((tomaActual) => tomaActual.id === tomaId);
+
+  useEffect(() => {
+    let activo = true;
+
+    async function cargarVehiculo() {
+      if (!usuarioId) {
+        if (activo) {
+          setVehiculo(null);
+          setVehiculoValidado(false);
+          setCargandoVehiculo(false);
+        }
+
+        return;
+      }
+
+      try {
+        setCargandoVehiculo(true);
+
+        const [vehiculoObtenido, estaValidado] = await Promise.all([
+          obtenerVehiculoUsuario(usuarioId),
+          puedeUsuarioReservar(usuarioId),
+        ]);
+
+        if (!activo) {
+          return;
+        }
+
+        setVehiculo(vehiculoObtenido);
+        setVehiculoValidado(estaValidado);
+      } catch {
+        if (!activo) {
+          return;
+        }
+
+        setVehiculo(null);
+        setVehiculoValidado(false);
+      } finally {
+        if (activo) {
+          setCargandoVehiculo(false);
+        }
+      }
+    }
+
+    void cargarVehiculo();
+
+    return () => {
+      activo = false;
+    };
+  }, [usuarioId]);
 
   useEffect(() => {
     if (!cargadorId || !tomaId) {
@@ -405,6 +466,24 @@ function ReservaTomaPage() {
       return;
     }
 
+    if (!vehiculoValidado) {
+      if (!vehiculo) {
+        setMensajeError(
+          "No hay ningún vehículo registrado y validado asociado a tu cuenta.",
+        );
+      } else if (vehiculo.estadoValidacion === "pendiente") {
+        setMensajeError(
+          "Tu matrícula está pendiente de validación por el Ayuntamiento. No puedes realizar reservas hasta que sea aprobada.",
+        );
+      } else {
+        setMensajeError(
+          "Tu vehículo no está validado. No puedes realizar reservas.",
+        );
+      }
+
+      return;
+    }
+
     if (!horaSeleccionada) {
       setMensajeError("Selecciona una hora disponible antes de confirmar.");
 
@@ -459,6 +538,8 @@ function ReservaTomaPage() {
     }
   };
 
+  const reservaBloqueada = cargandoVehiculo || !vehiculoValidado;
+
   return (
     <section className="reserva-toma">
       <Link
@@ -480,6 +561,16 @@ function ReservaTomaPage() {
           tu vehículo.
         </p>
       </header>
+
+      {!cargandoVehiculo && !vehiculoValidado && (
+        <div className="reserva-toma__error" role="alert">
+          {!vehiculo
+            ? "No puedes realizar reservas porque no tienes ningún vehículo validado asociado a tu cuenta."
+            : vehiculo.estadoValidacion === "pendiente"
+              ? `La matrícula ${vehiculo.matricula} está pendiente de validación por el Ayuntamiento. Hasta que sea aprobada no podrás realizar nuevas reservas.`
+              : `La matrícula ${vehiculo.matricula} no está validada. No puedes realizar nuevas reservas.`}
+        </div>
+      )}
 
       <div className="reserva-toma__contenido">
         <div className="reserva-toma__formulario">
@@ -575,14 +666,23 @@ function ReservaTomaPage() {
           <button
             type="button"
             className="reserva-toma__confirmar"
-            disabled={confirmando || !horaSeleccionada || reservaConfirmada}
+            disabled={
+              reservaBloqueada ||
+              confirmando ||
+              !horaSeleccionada ||
+              reservaConfirmada
+            }
             onClick={confirmarReserva}
           >
-            {confirmando
-              ? "Confirmando..."
-              : reservaConfirmada
-                ? "Reserva confirmada"
-                : "Confirmar reserva"}
+            {cargandoVehiculo
+              ? "Comprobando vehículo..."
+              : !vehiculoValidado
+                ? "Vehículo pendiente de validación"
+                : confirmando
+                  ? "Confirmando..."
+                  : reservaConfirmada
+                    ? "Reserva confirmada"
+                    : "Confirmar reserva"}
           </button>
 
           <p className="reserva-toma__condiciones">

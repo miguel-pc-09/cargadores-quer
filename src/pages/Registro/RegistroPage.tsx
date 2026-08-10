@@ -86,8 +86,10 @@ function RegistroPage() {
 
     setFormulario((estadoAnterior) => ({
       ...estadoAnterior,
+
       [tipoUsuario]: {
         ...estadoAnterior[tipoUsuario],
+
         [name]: value,
       },
     }));
@@ -100,10 +102,14 @@ function RegistroPage() {
 
     setFormulario((estadoAnterior) => ({
       ...estadoAnterior,
+
       tieneSegundoConductor: estaMarcado,
+
       segundoConductor: estaMarcado
         ? estadoAnterior.segundoConductor
-        : { ...usuarioVacio },
+        : {
+            ...usuarioVacio,
+          },
     }));
 
     if (!estaMarcado) {
@@ -243,12 +249,14 @@ function RegistroPage() {
 
     nuevosErrores = {
       ...nuevosErrores,
+
       ...validarUsuario(formulario.usuarioPrincipal, "usuarioPrincipal"),
     };
 
     if (formulario.tieneSegundoConductor) {
       nuevosErrores = {
         ...nuevosErrores,
+
         ...validarUsuario(formulario.segundoConductor, "segundoConductor"),
       };
 
@@ -272,6 +280,10 @@ function RegistroPage() {
 
   async function enviarSolicitud(evento: FormEvent<HTMLFormElement>) {
     evento.preventDefault();
+
+    if (enviando) {
+      return;
+    }
 
     setErrorGeneral("");
 
@@ -299,6 +311,7 @@ function RegistroPage() {
 
       await enviarSolicitudRegistro({
         cliente: clienteSeleccionado,
+
         formulario,
       });
 
@@ -306,11 +319,16 @@ function RegistroPage() {
         replace: true,
       });
     } catch (error) {
-      console.error("Error al enviar la solicitud:", error);
-
       setErrorGeneral(
-        "No se ha podido enviar la solicitud. Inténtalo de nuevo.",
+        error instanceof Error
+          ? error.message
+          : "No se ha podido enviar la solicitud. Inténtalo de nuevo.",
       );
+
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
+      });
     } finally {
       setEnviando(false);
     }
@@ -369,6 +387,7 @@ function RegistroPage() {
                 .filter((cliente) => cliente.activo)
                 .map((cliente) => ({
                   valor: cliente.id,
+
                   texto: cliente.nombre,
                 }))}
               error={errores.clienteId}

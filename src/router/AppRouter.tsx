@@ -4,6 +4,7 @@ import AdminLayout from "../layouts/AdminLayout";
 import PrivateLayout from "../layouts/PrivateLayout";
 
 import AdministracionPage from "../pages/Administracion/AdministracionPage";
+import ValidacionesPage from "../pages/Administracion/ValidacionesPage";
 import AyudaPage from "../pages/Ayuda/AyudaPage";
 import CargaActivaPage from "../pages/CargaActiva/CargaActivaPage";
 import CargadoresPage from "../pages/Cargadores/CargadoresPage";
@@ -24,10 +25,6 @@ import PrivateRoute from "./PrivateRoute";
 function AppRouter() {
   return (
     <Routes>
-      {/* =========================================
-          RUTAS PÚBLICAS
-          ========================================= */}
-
       <Route path="/login" element={<LoginPage />} />
 
       <Route path="/registro" element={<RegistroPage />} />
@@ -36,10 +33,6 @@ function AppRouter() {
         path="/recuperar-contrasena"
         element={<RecuperarContrasenaPage />}
       />
-
-      {/* =========================================
-          ÁREA PRIVADA DEL USUARIO
-          ========================================= */}
 
       <Route element={<PrivateRoute />}>
         <Route path="/panel" element={<PrivateLayout />}>
@@ -74,19 +67,13 @@ function AppRouter() {
         </Route>
       </Route>
 
-      {/* =========================================
-          ÁREA DEL AYUNTAMIENTO
-          ========================================= */}
-
       <Route element={<AdminRoute />}>
         <Route path="/administracion" element={<AdminLayout />}>
           <Route index element={<AdministracionPage />} />
+
+          <Route path="validaciones" element={<ValidacionesPage />} />
         </Route>
       </Route>
-
-      {/* =========================================
-          REDIRECCIONES
-          ========================================= */}
 
       <Route path="/" element={<Navigate to="/login" replace />} />
 

@@ -249,9 +249,10 @@ export async function obtenerPanelUsuario(usuarioId: string): Promise<{
   alertas: AlertaUsuario[];
   actividad: ActividadUsuario[];
 }> {
-  const [reservas, cargas] = await Promise.all([
+  const [reservas, cargas, vehiculo] = await Promise.all([
     obtenerReservasUsuario(usuarioId),
     obtenerCargasUsuario(usuarioId),
+    obtenerVehiculoUsuario(usuarioId),
   ]);
 
   const numeroTomas = cargadoresSimulados.reduce(
@@ -287,27 +288,35 @@ export async function obtenerPanelUsuario(usuarioId: string): Promise<{
     numeroPenalizaciones: 0,
   };
 
-  const vehiculo = obtenerVehiculoUsuario();
-
   const alertas: AlertaUsuario[] = [];
 
-  if (vehiculo.estadoValidacion === "pendiente") {
+  if (!vehiculo) {
+    alertas.push({
+      id: "vehiculo-no-encontrado",
+      tipo: "aviso",
+      titulo: "Vehículo no registrado",
+      mensaje:
+        "No hay ningún vehículo asociado a tu cuenta. Ponte en contacto con el Ayuntamiento.",
+    });
+  }
+
+  if (vehiculo?.estadoValidacion === "pendiente") {
     alertas.push({
       id: "vehiculo-pendiente",
       tipo: "aviso",
       titulo: "Vehículo pendiente de validación",
       mensaje:
-        "El Ayuntamiento debe validar los cambios del vehículo antes de permitir nuevas cargas.",
+        "El Ayuntamiento debe validar la matrícula antes de permitir nuevas reservas o cargas.",
     });
   }
 
-  if (vehiculo.estadoValidacion === "rechazado") {
+  if (vehiculo?.estadoValidacion === "rechazado") {
     alertas.push({
       id: "vehiculo-rechazado",
       tipo: "error",
       titulo: "Vehículo no validado",
       mensaje:
-        "La solicitud de cambio de vehículo ha sido rechazada. Revisa los datos desde tu perfil.",
+        "La validación del vehículo ha sido rechazada. Revisa la matrícula desde tu perfil.",
     });
   }
 

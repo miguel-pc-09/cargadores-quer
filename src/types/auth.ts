@@ -1,5 +1,7 @@
 export type RolUsuario = "usuario" | "administrador";
 
+export type EstadoCuenta = "pendiente" | "verificada" | "bloqueada";
+
 export interface UsuarioAutenticado {
   id: string;
   nombre: string;
@@ -7,6 +9,7 @@ export interface UsuarioAutenticado {
   email: string;
   telefono?: string;
   rol: RolUsuario;
+  estadoCuenta: EstadoCuenta;
   ayuntamiento?: string;
 }
 

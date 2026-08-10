@@ -32,6 +32,7 @@ import {
 } from "../../services/usersService";
 
 import type { Reserva } from "../../types/reservation";
+import type { DatosVehiculo } from "../../types/user";
 
 import "../../styles/DetalleCargador/DetalleCargadorPage.css";
 
@@ -112,13 +113,67 @@ function DetalleCargadorPage() {
 
   const [ahora, setAhora] = useState(new Date());
 
-  const vehiculo = obtenerVehiculoUsuario();
+  const [vehiculo, setVehiculo] = useState<DatosVehiculo | null>(null);
 
-  const vehiculoValidado = puedeUsuarioIniciarCarga();
+  const [cargandoVehiculo, setCargandoVehiculo] = useState(true);
+
+  const [vehiculoValidado, setVehiculoValidado] = useState(false);
 
   const cargador = cargadoresSimulados.find(
     (cargadorActual) => cargadorActual.id === cargadorId,
   );
+
+  useEffect(() => {
+    let activo = true;
+
+    async function cargarVehiculo() {
+      if (!usuarioId) {
+        if (activo) {
+          setVehiculo(null);
+          setVehiculoValidado(false);
+          setCargandoVehiculo(false);
+        }
+
+        return;
+      }
+
+      try {
+        setCargandoVehiculo(true);
+
+        const [vehiculoObtenido, estaValidado] = await Promise.all([
+          obtenerVehiculoUsuario(usuarioId),
+
+          puedeUsuarioIniciarCarga(usuarioId),
+        ]);
+
+        if (!activo) {
+          return;
+        }
+
+        setVehiculo(vehiculoObtenido);
+
+        setVehiculoValidado(estaValidado);
+      } catch {
+        if (!activo) {
+          return;
+        }
+
+        setVehiculo(null);
+
+        setVehiculoValidado(false);
+      } finally {
+        if (activo) {
+          setCargandoVehiculo(false);
+        }
+      }
+    }
+
+    void cargarVehiculo();
+
+    return () => {
+      activo = false;
+    };
+  }, [usuarioId]);
 
   useEffect(() => {
     if (!cargadorId || !usuarioId) {
@@ -201,7 +256,8 @@ function DetalleCargadorPage() {
     ? puedeIniciarCarga(reservaUsuario, ahora)
     : false;
 
-  const puedeComenzarCarga = puedeComenzarPorHorario && vehiculoValidado;
+  const puedeComenzarCarga =
+    puedeComenzarPorHorario && vehiculoValidado && !cargandoVehiculo;
 
   const reservaHaFinalizado =
     fechaHoraFin !== null && ahora.getTime() >= fechaHoraFin.getTime();
@@ -237,6 +293,16 @@ function DetalleCargadorPage() {
     setMensajeError("");
 
     try {
+      const puedeIniciar = await puedeUsuarioIniciarCarga(usuarioId);
+
+      if (!puedeIniciar) {
+        setVehiculoValidado(false);
+
+        throw new Error(
+          "El vehículo debe estar validado por el Ayuntamiento antes de iniciar una carga.",
+        );
+      }
+
       const reservaActivaActualizada = await marcarReservaComoActiva(
         reservaUsuario.id,
         usuarioId,
@@ -383,9 +449,9 @@ function DetalleCargadorPage() {
                       <strong>Vehículo pendiente de validación</strong>
 
                       <p>
-                        No puedes iniciar una carga con{" "}
-                        <strong>{vehiculo.marcaModelo}</strong> hasta que el
-                        Ayuntamiento valide el cambio de vehículo.
+                        {vehiculo
+                          ? `La matrícula ${vehiculo.matricula} debe ser validada por el Ayuntamiento antes de iniciar una carga.`
+                          : "No hay ningún vehículo validado asociado a tu cuenta."}
                       </p>
 
                       <Link
@@ -423,7 +489,7 @@ function DetalleCargadorPage() {
                 {reservaActiva
                   ? "Ya existe una carga activa para esta reserva."
                   : puedeComenzarPorHorario && !vehiculoValidado
-                    ? "Tu reserva sigue siendo válida, pero necesitas que el vehículo sea aprobado antes de iniciar la carga."
+                    ? "Tu reserva sigue siendo válida, pero necesitas que la matrícula sea aprobada antes de iniciar la carga."
                     : puedeComenzarCarga
                       ? `Puedes iniciar la carga hasta las ${reservaUsuario.horaFin}.`
                       : reservaHaFinalizado
