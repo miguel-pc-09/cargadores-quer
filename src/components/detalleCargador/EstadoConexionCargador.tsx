@@ -2,8 +2,8 @@ import type { EstadoCargador } from "../../types/charger";
 
 interface EstadoConexionCargadorProps {
   estado: EstadoCargador;
-  fabricante: string;
-  gestor: string;
+  fabricante?: string;
+  gestor?: string;
 }
 
 const contenidoEstado = {
@@ -33,6 +33,8 @@ function EstadoConexionCargador({
 }: EstadoConexionCargadorProps) {
   const contenido = contenidoEstado[estado];
 
+  const mostrarDatos = Boolean(fabricante?.trim()) || Boolean(gestor?.trim());
+
   return (
     <article
       className={`estado-conexion estado-conexion--${estado}`}
@@ -50,11 +52,15 @@ function EstadoConexionCargador({
         </div>
       </div>
 
-      <div className="estado-conexion__datos">
-        <span>{fabricante}</span>
-        <span>·</span>
-        <span>{gestor}</span>
-      </div>
+      {mostrarDatos && (
+        <div className="estado-conexion__datos">
+          {fabricante && <span>{fabricante}</span>}
+
+          {fabricante && gestor && <span>·</span>}
+
+          {gestor && <span>{gestor}</span>}
+        </div>
+      )}
     </article>
   );
 }

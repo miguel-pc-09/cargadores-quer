@@ -1,3 +1,5 @@
+import { supabase } from "./supabaseClient";
+
 import { puedeUsuarioReservar } from "./usersService";
 
 import type {
@@ -7,28 +9,23 @@ import type {
   ReservaConFechas,
 } from "../types/reservation";
 
-const CLAVE_RESERVAS = "cargaquer_reservas";
-const RETARDO_SIMULADO_MS = 300;
-
-function esperar(milisegundos: number) {
-  return new Promise<void>((resolve) => {
-    window.setTimeout(resolve, milisegundos);
-  });
-}
-
-function generarId() {
-  if (
-    typeof crypto !== "undefined" &&
-    typeof crypto.randomUUID === "function"
-  ) {
-    return crypto.randomUUID();
-  }
-
-  return `reserva-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+interface ReservaBaseDatos {
+  id: string;
+  usuario_id: string;
+  cargador_id: string;
+  toma_id: string;
+  fecha: string;
+  hora_inicio: string;
+  hora_fin: string;
+  estado: EstadoReserva;
+  creada_en: string;
+  actualizada_en: string | null;
 }
 
 function crearFechaHora(fecha: string, hora: string) {
-  return new Date(`${fecha}T${hora}:00`);
+  const horaNormalizada = normalizarHora(hora);
+
+  return new Date(`${fecha}T${horaNormalizada}:00`);
 }
 
 function convertirFechaAValor(fecha: Date) {
@@ -49,6 +46,10 @@ function convertirFechaAHora(fecha: Date) {
   return `${horas}:${minutos}`;
 }
 
+function normalizarHora(hora: string) {
+  return hora.slice(0, 5);
+}
+
 function calcularFechaHoraFin(
   fecha: string,
   horaInicio: string,
@@ -67,78 +68,81 @@ function calcularFechaHoraFin(
   };
 }
 
-function normalizarReserva(reserva: Partial<Reserva>): Reserva | null {
-  if (
-    !reserva.id ||
-    !reserva.usuarioId ||
-    !reserva.cargadorId ||
-    !reserva.tomaId ||
-    !reserva.fecha ||
-    !reserva.horaInicio ||
-    typeof reserva.duracionMinutos !== "number"
-  ) {
-    return null;
+function calcularFechaFinDesdeBaseDatos(
+  fecha: string,
+  horaInicio: string,
+  horaFin: string,
+) {
+  const inicio = crearFechaHora(fecha, horaInicio);
+
+  const fin = crearFechaHora(fecha, horaFin);
+
+  /*
+   * Si la hora final es igual o anterior a la inicial,
+   * significa que la reserva termina al día siguiente.
+   *
+   * Ejemplo:
+   * 23:00 -> 01:00
+   */
+  if (fin.getTime() <= inicio.getTime()) {
+    fin.setDate(fin.getDate() + 1);
   }
 
-  const datosFin = calcularFechaHoraFin(
+  return fin;
+}
+
+function calcularDuracionDesdeBaseDatos(
+  fecha: string,
+  horaInicio: string,
+  horaFin: string,
+) {
+  const inicio = crearFechaHora(fecha, horaInicio);
+
+  const fin = calcularFechaFinDesdeBaseDatos(fecha, horaInicio, horaFin);
+
+  return Math.round((fin.getTime() - inicio.getTime()) / 60_000);
+}
+
+function convertirReservaBaseDatos(reserva: ReservaBaseDatos): Reserva {
+  const horaInicio = normalizarHora(reserva.hora_inicio);
+
+  const horaFin = normalizarHora(reserva.hora_fin);
+
+  const fechaHoraFin = calcularFechaFinDesdeBaseDatos(
     reserva.fecha,
-    reserva.horaInicio,
-    reserva.duracionMinutos,
+    horaInicio,
+    horaFin,
+  );
+
+  const duracionMinutos = calcularDuracionDesdeBaseDatos(
+    reserva.fecha,
+    horaInicio,
+    horaFin,
   );
 
   return {
     id: reserva.id,
 
-    usuarioId: reserva.usuarioId,
+    usuarioId: reserva.usuario_id,
 
-    cargadorId: reserva.cargadorId,
+    cargadorId: reserva.cargador_id,
 
-    tomaId: reserva.tomaId,
+    tomaId: reserva.toma_id,
 
     fecha: reserva.fecha,
 
-    horaInicio: reserva.horaInicio,
+    horaInicio,
 
-    duracionMinutos: reserva.duracionMinutos,
+    duracionMinutos,
 
-    fechaFin: reserva.fechaFin ?? datosFin.fechaFin,
+    fechaFin: convertirFechaAValor(fechaHoraFin),
 
-    horaFin: reserva.horaFin ?? datosFin.horaFin,
+    horaFin,
 
-    creadaEn: reserva.creadaEn ?? new Date().toISOString(),
+    creadaEn: reserva.creada_en,
 
-    estado: reserva.estado ?? "confirmada",
+    estado: reserva.estado,
   };
-}
-
-function guardarReservas(reservas: Reserva[]) {
-  localStorage.setItem(CLAVE_RESERVAS, JSON.stringify(reservas));
-}
-
-function leerReservasGuardadas(): Reserva[] {
-  try {
-    const reservasGuardadas = localStorage.getItem(CLAVE_RESERVAS);
-
-    if (!reservasGuardadas) {
-      return [];
-    }
-
-    const resultado = JSON.parse(reservasGuardadas);
-
-    if (!Array.isArray(resultado)) {
-      return [];
-    }
-
-    const reservasNormalizadas = resultado
-      .map((reserva) => normalizarReserva(reserva as Partial<Reserva>))
-      .filter((reserva): reserva is Reserva => reserva !== null);
-
-    guardarReservas(reservasNormalizadas);
-
-    return reservasNormalizadas;
-  } catch {
-    return [];
-  }
 }
 
 function obtenerInicioReserva(reserva: Reserva) {
@@ -191,28 +195,40 @@ function calcularEstadoActual(reserva: Reserva): EstadoReserva {
   return "confirmada";
 }
 
-function actualizarEstados(reservas: Reserva[]): Reserva[] {
-  let hayCambios = false;
+async function actualizarEstados(reservas: Reserva[]): Promise<Reserva[]> {
+  const reservasActualizadas = await Promise.all(
+    reservas.map(async (reserva): Promise<Reserva> => {
+      const estadoActual = calcularEstadoActual(reserva);
 
-  const reservasActualizadas = reservas.map((reserva) => {
-    const estadoActual = calcularEstadoActual(reserva);
+      if (estadoActual === reserva.estado) {
+        return reserva;
+      }
 
-    if (estadoActual === reserva.estado) {
-      return reserva;
-    }
+      const { error } = await supabase
+        .from("reservas")
+        .update({
+          estado: estadoActual,
 
-    hayCambios = true;
+          actualizada_en: new Date().toISOString(),
+        })
+        .eq("id", reserva.id);
 
-    return {
-      ...reserva,
+      if (error) {
+        console.error(
+          `No se ha podido actualizar automáticamente la reserva ${reserva.id}:`,
+          error,
+        );
 
-      estado: estadoActual,
-    };
-  });
+        return reserva;
+      }
 
-  if (hayCambios) {
-    guardarReservas(reservasActualizadas);
-  }
+      return {
+        ...reserva,
+
+        estado: estadoActual,
+      };
+    }),
+  );
 
   return reservasActualizadas;
 }
@@ -235,53 +251,153 @@ function reservaSigueVigente(reserva: Reserva) {
   );
 }
 
-export async function obtenerReservas(): Promise<Reserva[]> {
-  await esperar(RETARDO_SIMULADO_MS);
+async function leerReservasBaseDatos(): Promise<Reserva[]> {
+  const { data, error } = await supabase.from("reservas").select(
+    `
+        id,
+        usuario_id,
+        cargador_id,
+        toma_id,
+        fecha,
+        hora_inicio,
+        hora_fin,
+        estado,
+        creada_en,
+        actualizada_en
+      `,
+  );
 
-  return actualizarEstados(leerReservasGuardadas());
+  if (error) {
+    throw new Error(`No se han podido cargar las reservas: ${error.message}`);
+  }
+
+  return ((data ?? []) as ReservaBaseDatos[]).map(convertirReservaBaseDatos);
+}
+
+export async function obtenerReservas(): Promise<Reserva[]> {
+  const reservas = await leerReservasBaseDatos();
+
+  return actualizarEstados(reservas);
 }
 
 export async function obtenerReservaPorId(
   reservaId: string,
   usuarioId?: string,
 ): Promise<Reserva | null> {
-  const reservas = await obtenerReservas();
+  let consulta = supabase
+    .from("reservas")
+    .select(
+      `
+          id,
+          usuario_id,
+          cargador_id,
+          toma_id,
+          fecha,
+          hora_inicio,
+          hora_fin,
+          estado,
+          creada_en,
+          actualizada_en
+        `,
+    )
+    .eq("id", reservaId);
 
-  const reservaEncontrada = reservas.find(
-    (reserva) =>
-      reserva.id === reservaId &&
-      (!usuarioId || reserva.usuarioId === usuarioId),
-  );
+  if (usuarioId) {
+    consulta = consulta.eq("usuario_id", usuarioId);
+  }
 
-  return reservaEncontrada ?? null;
+  const { data, error } = await consulta.maybeSingle();
+
+  if (error) {
+    throw new Error(`No se ha podido cargar la reserva: ${error.message}`);
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  const reserva = convertirReservaBaseDatos(data as ReservaBaseDatos);
+
+  const [reservaActualizada] = await actualizarEstados([reserva]);
+
+  return reservaActualizada ?? null;
 }
 
 export async function obtenerReservasUsuario(
   usuarioId: string,
 ): Promise<Reserva[]> {
-  const reservas = await obtenerReservas();
+  const { data, error } = await supabase
+    .from("reservas")
+    .select(
+      `
+        id,
+        usuario_id,
+        cargador_id,
+        toma_id,
+        fecha,
+        hora_inicio,
+        hora_fin,
+        estado,
+        creada_en,
+        actualizada_en
+      `,
+    )
+    .eq("usuario_id", usuarioId)
+    .order("fecha", {
+      ascending: true,
+    })
+    .order("hora_inicio", {
+      ascending: true,
+    });
 
-  return reservas
-    .filter((reserva) => reserva.usuarioId === usuarioId)
-    .sort(
-      (reservaA, reservaB) =>
-        obtenerInicioReserva(reservaA).getTime() -
-        obtenerInicioReserva(reservaB).getTime(),
-    );
+  if (error) {
+    throw new Error(`No se han podido cargar tus reservas: ${error.message}`);
+  }
+
+  const reservas = ((data ?? []) as ReservaBaseDatos[]).map(
+    convertirReservaBaseDatos,
+  );
+
+  return actualizarEstados(reservas);
 }
 
 export async function obtenerReservasToma(
   cargadorId: string,
   tomaId: string,
 ): Promise<Reserva[]> {
-  const reservas = await obtenerReservas();
+  const { data, error } = await supabase
+    .from("reservas")
+    .select(
+      `
+        id,
+        usuario_id,
+        cargador_id,
+        toma_id,
+        fecha,
+        hora_inicio,
+        hora_fin,
+        estado,
+        creada_en,
+        actualizada_en
+      `,
+    )
+    .eq("cargador_id", cargadorId)
+    .eq("toma_id", tomaId)
+    .in("estado", ["confirmada", "activa"]);
 
-  return reservas.filter(
-    (reserva) =>
-      reserva.cargadorId === cargadorId &&
-      reserva.tomaId === tomaId &&
-      reservaSigueVigente(reserva),
+  if (error) {
+    throw new Error(
+      `No se han podido cargar las reservas de esta toma: ${error.message}`,
+    );
+  }
+
+  const reservas = ((data ?? []) as ReservaBaseDatos[]).map(
+    convertirReservaBaseDatos,
   );
+
+  const actualizadas = await actualizarEstados(reservas);
+
+  return actualizadas.filter(reservaSigueVigente);
 }
 
 export async function crearReserva(
@@ -297,14 +413,26 @@ export async function crearReserva(
     );
   }
 
-  await esperar(RETARDO_SIMULADO_MS);
-
-  const reservas = actualizarEstados(leerReservasGuardadas());
+  if (
+    datosReserva.duracionMinutos < 30 ||
+    datosReserva.duracionMinutos > 4 * 60 ||
+    datosReserva.duracionMinutos % 30 !== 0
+  ) {
+    throw new Error(
+      "La duración de la reserva debe estar comprendida entre 30 minutos y 4 horas, en bloques de 30 minutos.",
+    );
+  }
 
   const fechaHoraInicio = crearFechaHora(
     datosReserva.fecha,
     datosReserva.horaInicio,
   );
+
+  if (fechaHoraInicio.getTime() < Date.now()) {
+    throw new Error(
+      "No puedes realizar una reserva en un horario que ya ha pasado.",
+    );
+  }
 
   const datosFin = calcularFechaHoraFin(
     datosReserva.fecha,
@@ -312,6 +440,17 @@ export async function crearReserva(
     datosReserva.duracionMinutos,
   );
 
+  /*
+   * Consultamos las reservas vigentes.
+   * Aquí ya vienen desde Supabase.
+   */
+  const reservas = await obtenerReservas();
+
+  /*
+   * Primera comprobación:
+   * ninguna otra reserva puede ocupar esta toma
+   * durante el mismo horario.
+   */
   const reservaSolapadaEnToma = reservas.find((reserva) => {
     if (
       reserva.cargadorId !== datosReserva.cargadorId ||
@@ -335,6 +474,11 @@ export async function crearReserva(
     );
   }
 
+  /*
+   * Segunda comprobación:
+   * el mismo usuario no puede tener dos reservas
+   * simultáneas aunque sean en cargadores diferentes.
+   */
   const reservaSolapadaDelUsuario = reservas.find((reserva) => {
     if (
       reserva.usuarioId !== datosReserva.usuarioId ||
@@ -357,36 +501,57 @@ export async function crearReserva(
     );
   }
 
-  const nuevaReserva: Reserva = {
-    ...datosReserva,
+  const ahora = new Date().toISOString();
 
-    id: generarId(),
+  const { data, error } = await supabase
+    .from("reservas")
+    .insert({
+      usuario_id: datosReserva.usuarioId,
 
-    fechaFin: datosFin.fechaFin,
+      cargador_id: datosReserva.cargadorId,
 
-    horaFin: datosFin.horaFin,
+      toma_id: datosReserva.tomaId,
 
-    creadaEn: new Date().toISOString(),
+      fecha: datosReserva.fecha,
 
-    estado: "confirmada",
-  };
+      hora_inicio: datosReserva.horaInicio,
 
-  guardarReservas([...reservas, nuevaReserva]);
+      hora_fin: datosFin.horaFin,
 
-  return nuevaReserva;
+      estado: "confirmada",
+
+      creada_en: ahora,
+
+      actualizada_en: ahora,
+    })
+    .select(
+      `
+        id,
+        usuario_id,
+        cargador_id,
+        toma_id,
+        fecha,
+        hora_inicio,
+        hora_fin,
+        estado,
+        creada_en,
+        actualizada_en
+      `,
+    )
+    .single();
+
+  if (error) {
+    throw new Error(`No se ha podido crear la reserva: ${error.message}`);
+  }
+
+  return convertirReservaBaseDatos(data as ReservaBaseDatos);
 }
 
 export async function cancelarReserva(
   reservaId: string,
   usuarioId: string,
 ): Promise<Reserva> {
-  await esperar(RETARDO_SIMULADO_MS);
-
-  const reservas = actualizarEstados(leerReservasGuardadas());
-
-  const reservaEncontrada = reservas.find(
-    (reserva) => reserva.id === reservaId && reserva.usuarioId === usuarioId,
-  );
+  const reservaEncontrada = await obtenerReservaPorId(reservaId, usuarioId);
 
   if (!reservaEncontrada) {
     throw new Error("No se ha encontrado la reserva.");
@@ -400,32 +565,57 @@ export async function cancelarReserva(
     throw new Error("Esta reserva ya no puede cancelarse.");
   }
 
-  const reservaCancelada: Reserva = {
-    ...reservaEncontrada,
+  const inicio = obtenerInicioReserva(reservaEncontrada);
 
-    estado: "cancelada",
-  };
+  if (Date.now() >= inicio.getTime()) {
+    throw new Error("La reserva ya ha comenzado y no puede cancelarse.");
+  }
 
-  const reservasActualizadas = reservas.map((reserva) =>
-    reserva.id === reservaId ? reservaCancelada : reserva,
-  );
+  const { data, error } = await supabase
+    .from("reservas")
+    .update({
+      estado: "cancelada",
 
-  guardarReservas(reservasActualizadas);
+      actualizada_en: new Date().toISOString(),
+    })
+    .eq("id", reservaId)
+    .eq("usuario_id", usuarioId)
+    .select(
+      `
+        id,
+        usuario_id,
+        cargador_id,
+        toma_id,
+        fecha,
+        hora_inicio,
+        hora_fin,
+        estado,
+        creada_en,
+        actualizada_en
+      `,
+    )
+    .single();
 
-  return reservaCancelada;
+  if (error) {
+    throw new Error(`No se ha podido cancelar la reserva: ${error.message}`);
+  }
+
+  return convertirReservaBaseDatos(data as ReservaBaseDatos);
 }
 
 export async function marcarReservaComoActiva(
   reservaId: string,
   usuarioId: string,
 ): Promise<Reserva> {
-  await esperar(RETARDO_SIMULADO_MS);
+  const usuarioPuedeReservar = await puedeUsuarioReservar(usuarioId);
 
-  const reservas = actualizarEstados(leerReservasGuardadas());
+  if (!usuarioPuedeReservar) {
+    throw new Error(
+      "Tu vehículo debe estar validado por el Ayuntamiento antes de poder iniciar una carga.",
+    );
+  }
 
-  const reservaEncontrada = reservas.find(
-    (reserva) => reserva.id === reservaId && reserva.usuarioId === usuarioId,
-  );
+  const reservaEncontrada = await obtenerReservaPorId(reservaId, usuarioId);
 
   if (!reservaEncontrada) {
     throw new Error("No se ha encontrado la reserva.");
@@ -445,32 +635,44 @@ export async function marcarReservaComoActiva(
     throw new Error("La reserva todavía no está dentro de su horario.");
   }
 
-  const reservaActiva: Reserva = {
-    ...reservaEncontrada,
+  const { data, error } = await supabase
+    .from("reservas")
+    .update({
+      estado: "activa",
 
-    estado: "activa",
-  };
+      actualizada_en: new Date().toISOString(),
+    })
+    .eq("id", reservaId)
+    .eq("usuario_id", usuarioId)
+    .eq("estado", "confirmada")
+    .select(
+      `
+        id,
+        usuario_id,
+        cargador_id,
+        toma_id,
+        fecha,
+        hora_inicio,
+        hora_fin,
+        estado,
+        creada_en,
+        actualizada_en
+      `,
+    )
+    .single();
 
-  const reservasActualizadas = reservas.map((reserva) =>
-    reserva.id === reservaId ? reservaActiva : reserva,
-  );
+  if (error) {
+    throw new Error(`No se ha podido iniciar la reserva: ${error.message}`);
+  }
 
-  guardarReservas(reservasActualizadas);
-
-  return reservaActiva;
+  return convertirReservaBaseDatos(data as ReservaBaseDatos);
 }
 
 export async function marcarReservaComoFinalizada(
   reservaId: string,
   usuarioId: string,
 ): Promise<Reserva> {
-  await esperar(RETARDO_SIMULADO_MS);
-
-  const reservas = leerReservasGuardadas();
-
-  const reservaEncontrada = reservas.find(
-    (reserva) => reserva.id === reservaId && reserva.usuarioId === usuarioId,
-  );
+  const reservaEncontrada = await obtenerReservaPorId(reservaId, usuarioId);
 
   if (!reservaEncontrada) {
     throw new Error("No se ha encontrado la reserva.");
@@ -480,19 +682,37 @@ export async function marcarReservaComoFinalizada(
     throw new Error("Esta reserva no tiene una carga activa.");
   }
 
-  const reservaFinalizada: Reserva = {
-    ...reservaEncontrada,
+  const { data, error } = await supabase
+    .from("reservas")
+    .update({
+      estado: "finalizada",
 
-    estado: "finalizada",
-  };
+      actualizada_en: new Date().toISOString(),
+    })
+    .eq("id", reservaId)
+    .eq("usuario_id", usuarioId)
+    .eq("estado", "activa")
+    .select(
+      `
+        id,
+        usuario_id,
+        cargador_id,
+        toma_id,
+        fecha,
+        hora_inicio,
+        hora_fin,
+        estado,
+        creada_en,
+        actualizada_en
+      `,
+    )
+    .single();
 
-  const reservasActualizadas = reservas.map((reserva) =>
-    reserva.id === reservaId ? reservaFinalizada : reserva,
-  );
+  if (error) {
+    throw new Error(`No se ha podido finalizar la reserva: ${error.message}`);
+  }
 
-  guardarReservas(reservasActualizadas);
-
-  return reservaFinalizada;
+  return convertirReservaBaseDatos(data as ReservaBaseDatos);
 }
 
 export async function obtenerReservaActivaDelCargador(
@@ -509,7 +729,11 @@ export async function obtenerReservaActivaDelCargador(
         reserva.cargadorId === cargadorId && reservaSigueVigente(reserva),
     )
     .map(convertirReservaConFechas)
-    .find((reserva) => reserva.fechaHoraFin.getTime() > ahora.getTime());
+    .filter((reserva) => reserva.fechaHoraFin.getTime() > ahora.getTime())
+    .sort(
+      (reservaA, reservaB) =>
+        reservaA.fechaHoraInicio.getTime() - reservaB.fechaHoraInicio.getTime(),
+    )[0];
 
   return reservaEncontrada ?? null;
 }

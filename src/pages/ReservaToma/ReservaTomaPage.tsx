@@ -11,9 +11,12 @@ import SelectorHoraReserva, {
   type FranjaHoraria,
 } from "../../components/reservas/SelectorHoraReserva";
 
-import { cargadoresSimulados } from "../../data/cargadores";
-
 import useAuth from "../../hooks/useAuth";
+
+import {
+  obtenerCargadorPorId,
+  obtenerTomaPorId,
+} from "../../services/chargersService";
 
 import {
   crearReserva,
@@ -25,6 +28,7 @@ import {
   puedeUsuarioReservar,
 } from "../../services/usersService";
 
+import type { Cargador, TomaCargador } from "../../types/charger";
 import type { Reserva } from "../../types/reservation";
 import type { DatosVehiculo } from "../../types/user";
 
@@ -257,13 +261,28 @@ function formatearFechaCompleta(valorFecha: string) {
 }
 
 function ReservaTomaPage() {
-  const { cargadorId, tomaId } = useParams();
+  const parametros = useParams<{
+    cargadorId: string;
+    tomaId: string;
+  }>();
+
+  const cargadorId = parametros.cargadorId;
+
+  const tomaId = parametros.tomaId;
 
   const { usuario } = useAuth();
 
   const usuarioId = usuario?.id ?? "";
 
   const diasDisponibles = useMemo(crearDiasDisponibles, []);
+
+  const [cargador, setCargador] = useState<Cargador | null>(null);
+
+  const [toma, setToma] = useState<TomaCargador | null>(null);
+
+  const [cargandoPunto, setCargandoPunto] = useState(true);
+
+  const [puntoNoEncontrado, setPuntoNoEncontrado] = useState(false);
 
   const [reservasToma, setReservasToma] = useState<Reserva[]>([]);
 
@@ -287,11 +306,81 @@ function ReservaTomaPage() {
 
   const [vehiculoValidado, setVehiculoValidado] = useState(false);
 
-  const cargador = cargadoresSimulados.find(
-    (cargadorActual) => cargadorActual.id === cargadorId,
-  );
+  useEffect(() => {
+    let activo = true;
 
-  const toma = cargador?.tomas.find((tomaActual) => tomaActual.id === tomaId);
+    async function cargarPunto() {
+      if (!cargadorId || !tomaId) {
+        if (activo) {
+          setPuntoNoEncontrado(true);
+
+          setCargandoPunto(false);
+        }
+
+        return;
+      }
+
+      const cargadorIdSeguro = cargadorId;
+
+      const tomaIdSeguro = tomaId;
+
+      try {
+        setCargandoPunto(true);
+
+        setPuntoNoEncontrado(false);
+
+        setMensajeError("");
+
+        const [cargadorObtenido, tomaObtenida] = await Promise.all([
+          obtenerCargadorPorId(cargadorIdSeguro),
+
+          obtenerTomaPorId(cargadorIdSeguro, tomaIdSeguro),
+        ]);
+
+        if (!activo) {
+          return;
+        }
+
+        if (!cargadorObtenido || !tomaObtenida) {
+          setCargador(null);
+
+          setToma(null);
+
+          setPuntoNoEncontrado(true);
+
+          return;
+        }
+
+        setCargador(cargadorObtenido);
+
+        setToma(tomaObtenida);
+      } catch (error) {
+        if (!activo) {
+          return;
+        }
+
+        setCargador(null);
+
+        setToma(null);
+
+        setMensajeError(
+          error instanceof Error
+            ? error.message
+            : "No hemos podido cargar la toma seleccionada.",
+        );
+      } finally {
+        if (activo) {
+          setCargandoPunto(false);
+        }
+      }
+    }
+
+    void cargarPunto();
+
+    return () => {
+      activo = false;
+    };
+  }, [cargadorId, tomaId]);
 
   useEffect(() => {
     let activo = true;
@@ -300,7 +389,9 @@ function ReservaTomaPage() {
       if (!usuarioId) {
         if (activo) {
           setVehiculo(null);
+
           setVehiculoValidado(false);
+
           setCargandoVehiculo(false);
         }
 
@@ -312,6 +403,7 @@ function ReservaTomaPage() {
 
         const [vehiculoObtenido, estaValidado] = await Promise.all([
           obtenerVehiculoUsuario(usuarioId),
+
           puedeUsuarioReservar(usuarioId),
         ]);
 
@@ -320,6 +412,7 @@ function ReservaTomaPage() {
         }
 
         setVehiculo(vehiculoObtenido);
+
         setVehiculoValidado(estaValidado);
       } catch {
         if (!activo) {
@@ -327,6 +420,7 @@ function ReservaTomaPage() {
         }
 
         setVehiculo(null);
+
         setVehiculoValidado(false);
       } finally {
         if (activo) {
@@ -347,17 +441,38 @@ function ReservaTomaPage() {
       return;
     }
 
-    const cargarReservas = async () => {
+    const cargadorIdSeguro = cargadorId;
+
+    const tomaIdSeguro = tomaId;
+
+    let activo = true;
+
+    async function cargarReservas() {
       try {
-        const reservas = await obtenerReservasToma(cargadorId, tomaId);
+        const reservas = await obtenerReservasToma(
+          cargadorIdSeguro,
+          tomaIdSeguro,
+        );
+
+        if (!activo) {
+          return;
+        }
 
         setReservasToma(reservas);
       } catch {
+        if (!activo) {
+          return;
+        }
+
         setMensajeError("No hemos podido consultar las reservas de esta toma.");
       }
-    };
+    }
 
     void cargarReservas();
+
+    return () => {
+      activo = false;
+    };
   }, [cargadorId, tomaId]);
 
   const franjasHorarias = useMemo(
@@ -421,9 +536,38 @@ function ReservaTomaPage() {
     ? `${horaFin} (día siguiente)`
     : horaFin;
 
-  if (!cargador || !toma || !cargadorId || !tomaId) {
+  if (!cargandoPunto && puntoNoEncontrado) {
     return <Navigate to="/panel/cargadores" replace />;
   }
+
+  if (cargandoPunto || !cargador || !toma) {
+    return (
+      <section className="reserva-toma">
+        <Link
+          to={
+            cargadorId ? `/panel/cargadores/${cargadorId}` : "/panel/cargadores"
+          }
+          className="reserva-toma__volver"
+        >
+          <span aria-hidden="true">←</span>
+
+          <span>Volver al cargador</span>
+        </Link>
+
+        {mensajeError ? (
+          <p className="reserva-toma__error" role="alert">
+            {mensajeError}
+          </p>
+        ) : (
+          <p>Cargando toma...</p>
+        )}
+      </section>
+    );
+  }
+
+  const cargadorIdSeguro = cargador.id;
+
+  const tomaIdSeguro = toma.id;
 
   const seleccionarDia = (dia: string) => {
     setDiaSeleccionado(dia);
@@ -512,16 +656,21 @@ function ReservaTomaPage() {
     try {
       await crearReserva({
         usuarioId,
-        cargadorId,
-        tomaId,
+
+        cargadorId: cargadorIdSeguro,
+
+        tomaId: tomaIdSeguro,
+
         fecha: diaSeleccionado,
+
         horaInicio: horaSeleccionada,
+
         duracionMinutos,
       });
 
       const reservasActualizadas = await obtenerReservasToma(
-        cargadorId,
-        tomaId,
+        cargadorIdSeguro,
+        tomaIdSeguro,
       );
 
       setReservasToma(reservasActualizadas);
@@ -538,7 +687,11 @@ function ReservaTomaPage() {
     }
   };
 
-  const reservaBloqueada = cargandoVehiculo || !vehiculoValidado;
+  const reservaBloqueada =
+    cargandoVehiculo ||
+    !vehiculoValidado ||
+    !toma.permiteReserva ||
+    toma.estado === "fuera-servicio";
 
   return (
     <section className="reserva-toma">
@@ -569,6 +722,18 @@ function ReservaTomaPage() {
             : vehiculo.estadoValidacion === "pendiente"
               ? `La matrícula ${vehiculo.matricula} está pendiente de validación por el Ayuntamiento. Hasta que sea aprobada no podrás realizar nuevas reservas.`
               : `La matrícula ${vehiculo.matricula} no está validada. No puedes realizar nuevas reservas.`}
+        </div>
+      )}
+
+      {!toma.permiteReserva && (
+        <div className="reserva-toma__error" role="alert">
+          Esta toma no permite reservas.
+        </div>
+      )}
+
+      {toma.estado === "fuera-servicio" && (
+        <div className="reserva-toma__error" role="alert">
+          Esta toma está fuera de servicio y no puede reservarse.
         </div>
       )}
 
@@ -678,11 +843,15 @@ function ReservaTomaPage() {
               ? "Comprobando vehículo..."
               : !vehiculoValidado
                 ? "Vehículo pendiente de validación"
-                : confirmando
-                  ? "Confirmando..."
-                  : reservaConfirmada
-                    ? "Reserva confirmada"
-                    : "Confirmar reserva"}
+                : !toma.permiteReserva
+                  ? "Reservas no disponibles"
+                  : toma.estado === "fuera-servicio"
+                    ? "Toma fuera de servicio"
+                    : confirmando
+                      ? "Confirmando..."
+                      : reservaConfirmada
+                        ? "Reserva confirmada"
+                        : "Confirmar reserva"}
           </button>
 
           <p className="reserva-toma__condiciones">

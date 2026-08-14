@@ -11,11 +11,11 @@ import {
 import EstadoConexionCargador from "../../components/detalleCargador/EstadoConexionCargador";
 import TarjetaTomaDetalle from "../../components/detalleCargador/TarjetaTomaDetalle";
 
-import { cargadoresSimulados } from "../../data/cargadores";
-
 import useAuth from "../../hooks/useAuth";
 
 import { iniciarCarga } from "../../services/cargasService";
+
+import { obtenerCargadorPorId } from "../../services/chargersService";
 
 import {
   marcarReservaComoActiva,
@@ -31,6 +31,7 @@ import {
   puedeUsuarioIniciarCarga,
 } from "../../services/usersService";
 
+import type { Cargador } from "../../types/charger";
 import type { Reserva } from "../../types/reservation";
 import type { DatosVehiculo } from "../../types/user";
 
@@ -91,7 +92,11 @@ function obtenerTiempoRestante(fechaObjetivo: Date, ahora: Date) {
 }
 
 function DetalleCargadorPage() {
-  const { cargadorId } = useParams();
+  const parametros = useParams<{
+    cargadorId: string;
+  }>();
+
+  const cargadorId = parametros.cargadorId;
 
   const [searchParams] = useSearchParams();
 
@@ -102,6 +107,12 @@ function DetalleCargadorPage() {
   const usuarioId = usuario?.id ?? "";
 
   const reservaId = searchParams.get("reservaId");
+
+  const [cargador, setCargador] = useState<Cargador | null>(null);
+
+  const [cargandoCargador, setCargandoCargador] = useState(true);
+
+  const [errorCargador, setErrorCargador] = useState("");
 
   const [reservaUsuario, setReservaUsuario] = useState<Reserva | null>(null);
 
@@ -119,9 +130,56 @@ function DetalleCargadorPage() {
 
   const [vehiculoValidado, setVehiculoValidado] = useState(false);
 
-  const cargador = cargadoresSimulados.find(
-    (cargadorActual) => cargadorActual.id === cargadorId,
-  );
+  useEffect(() => {
+    let activo = true;
+
+    async function cargarCargador() {
+      if (!cargadorId) {
+        if (activo) {
+          setCargador(null);
+          setCargandoCargador(false);
+        }
+
+        return;
+      }
+
+      try {
+        setCargandoCargador(true);
+
+        setErrorCargador("");
+
+        const cargadorObtenido = await obtenerCargadorPorId(cargadorId);
+
+        if (!activo) {
+          return;
+        }
+
+        setCargador(cargadorObtenido);
+      } catch (error) {
+        if (!activo) {
+          return;
+        }
+
+        setCargador(null);
+
+        setErrorCargador(
+          error instanceof Error
+            ? error.message
+            : "No se ha podido cargar el cargador.",
+        );
+      } finally {
+        if (activo) {
+          setCargandoCargador(false);
+        }
+      }
+    }
+
+    void cargarCargador();
+
+    return () => {
+      activo = false;
+    };
+  }, [cargadorId]);
 
   useEffect(() => {
     let activo = true;
@@ -130,7 +188,9 @@ function DetalleCargadorPage() {
       if (!usuarioId) {
         if (activo) {
           setVehiculo(null);
+
           setVehiculoValidado(false);
+
           setCargandoVehiculo(false);
         }
 
@@ -184,16 +244,24 @@ function DetalleCargadorPage() {
       return;
     }
 
-    const cargarReserva = async () => {
-      setCargandoReserva(true);
+    const cargadorIdSeguro = cargadorId;
 
-      setMensajeError("");
+    let activo = true;
 
+    async function cargarReserva() {
       try {
+        setCargandoReserva(true);
+
+        setMensajeError("");
+
         if (reservaId) {
           const reservaExacta = await obtenerReservaPorId(reservaId, usuarioId);
 
-          if (!reservaExacta || reservaExacta.cargadorId !== cargadorId) {
+          if (!activo) {
+            return;
+          }
+
+          if (!reservaExacta || reservaExacta.cargadorId !== cargadorIdSeguro) {
             setReservaUsuario(null);
 
             setMensajeError("No se ha encontrado la reserva seleccionada.");
@@ -208,20 +276,34 @@ function DetalleCargadorPage() {
 
         const siguienteReserva = await obtenerReservaActivaDelCargador(
           usuarioId,
-          cargadorId,
+          cargadorIdSeguro,
         );
+
+        if (!activo) {
+          return;
+        }
 
         setReservaUsuario(siguienteReserva);
       } catch {
+        if (!activo) {
+          return;
+        }
+
         setReservaUsuario(null);
 
         setMensajeError("No hemos podido consultar tus reservas.");
       } finally {
-        setCargandoReserva(false);
+        if (activo) {
+          setCargandoReserva(false);
+        }
       }
-    };
+    }
 
     void cargarReserva();
+
+    return () => {
+      activo = false;
+    };
   }, [cargadorId, reservaId, usuarioId]);
 
   useEffect(() => {
@@ -276,7 +358,7 @@ function DetalleCargadorPage() {
     fechaHoraFin !== null &&
     tomaReservada !== null;
 
-  const iniciarCargaUsuario = async () => {
+  async function iniciarCargaUsuario() {
     if (
       !usuarioId ||
       !reservaUsuario ||
@@ -288,11 +370,11 @@ function DetalleCargadorPage() {
       return;
     }
 
-    setIniciandoCarga(true);
-
-    setMensajeError("");
-
     try {
+      setIniciandoCarga(true);
+
+      setMensajeError("");
+
       const puedeIniciar = await puedeUsuarioIniciarCarga(usuarioId);
 
       if (!puedeIniciar) {
@@ -334,10 +416,47 @@ function DetalleCargadorPage() {
     } finally {
       setIniciandoCarga(false);
     }
-  };
+  }
+
+  if (cargandoCargador) {
+    return (
+      <section className="detalle-cargador-page">
+        <Link to="/panel/cargadores" className="detalle-cargador-page__volver">
+          <span aria-hidden="true">←</span>
+
+          <span>Volver a cargadores</span>
+        </Link>
+
+        <section
+          className="detalle-cargador-page__reserva detalle-cargador-page__reserva--cargando"
+          aria-live="polite"
+        >
+          <span className="detalle-cargador-page__reserva-spinner" />
+
+          <p>Cargando cargador...</p>
+        </section>
+      </section>
+    );
+  }
+
+  if (!cargador && !errorCargador) {
+    return <Navigate to="/panel/cargadores" replace />;
+  }
 
   if (!cargador) {
-    return <Navigate to="/panel/cargadores" replace />;
+    return (
+      <section className="detalle-cargador-page">
+        <Link to="/panel/cargadores" className="detalle-cargador-page__volver">
+          <span aria-hidden="true">←</span>
+
+          <span>Volver a cargadores</span>
+        </Link>
+
+        <p className="detalle-cargador-page__reserva-error" role="alert">
+          {errorCargador}
+        </p>
+      </section>
+    );
   }
 
   return (

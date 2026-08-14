@@ -19,6 +19,7 @@ function TarjetaCargador({ cargador }: TarjetaCargadorProps) {
 
           <div>
             <h2>{cargador.nombre}</h2>
+
             <p>{cargador.direccion}</p>
           </div>
         </div>
@@ -37,35 +38,41 @@ function TarjetaCargador({ cargador }: TarjetaCargadorProps) {
       </header>
 
       <div className="tarjeta-cargador__tomas">
-        {cargador.tomas.map((toma) => (
-          <div key={toma.id} className="tarjeta-cargador__toma">
+        {cargador.tomas.length === 0 ? (
+          <div className="tarjeta-cargador__toma">
             <div className="tarjeta-cargador__toma-informacion">
-              <strong>{toma.nombre}</strong>
+              <strong>Sin tomas disponibles</strong>
 
-              <span>
-                Hasta {toma.potenciaMaximaKw.toLocaleString("es-ES")} kW
-              </span>
-            </div>
-
-            <div className="tarjeta-cargador__toma-estado">
-              <EstadoToma estado={toma.estado} />
-
-              {toma.disponibleDesde && (
-                <span className="tarjeta-cargador__disponible">
-                  Disponible desde las {toma.disponibleDesde}
-                </span>
-              )}
+              <span>No hay tomas configuradas para este cargador.</span>
             </div>
           </div>
-        ))}
+        ) : (
+          cargador.tomas.map((toma) => (
+            <div key={toma.id} className="tarjeta-cargador__toma">
+              <div className="tarjeta-cargador__toma-informacion">
+                <strong>{toma.nombre}</strong>
+
+                <span>
+                  Hasta {toma.potenciaMaximaKw.toLocaleString("es-ES")} kW
+                </span>
+              </div>
+
+              <div className="tarjeta-cargador__toma-estado">
+                <EstadoToma estado={toma.estado} />
+
+                {toma.disponibleDesde && (
+                  <span className="tarjeta-cargador__disponible">
+                    Disponible desde las {toma.disponibleDesde}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       <footer className="tarjeta-cargador__pie">
-        <div>
-          <span>{cargador.fabricante}</span>
-
-          {cargador.permiteReserva && <span>Admite reserva</span>}
-        </div>
+        <div>{cargador.permiteReserva && <span>Admite reserva</span>}</div>
 
         <Link
           to={`/panel/cargadores/${cargador.id}`}

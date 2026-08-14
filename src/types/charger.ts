@@ -20,11 +20,12 @@ export interface TomaCargador {
 export interface Cargador {
   id: string;
   nombre: string;
-  ubicacion: string;
   direccion: string;
-  fabricante: string;
-  gestor: string;
   estado: EstadoCargador;
   permiteReserva: boolean;
   tomas: TomaCargador[];
+
+  ubicacion?: string;
+  fabricante?: string;
+  gestor?: string;
 }

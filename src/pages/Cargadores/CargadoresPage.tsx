@@ -1,14 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import AlertaUsuario from "../../components/panelUsuario/AlertaUsuario";
 import TarjetaCargador from "../../components/cargadores/TarjetaCargador";
-
-import { cargadoresSimulados } from "../../data/cargadores";
+import AlertaUsuario from "../../components/panelUsuario/AlertaUsuario";
 
 import useAuth from "../../hooks/useAuth";
 
+import { obtenerCargadores } from "../../services/chargersService";
 import { obtenerPanelUsuario } from "../../services/panelUsuarioService";
 
+import type { Cargador } from "../../types/charger";
 import type { AlertaUsuario as AlertaUsuarioTipo } from "../../types/panelUsuario";
 
 import "../../styles/Cargadores/CargadoresPage.css";
@@ -18,37 +18,84 @@ function CargadoresPage() {
 
   const usuarioId = usuario?.id ?? "";
 
+  const [cargadores, setCargadores] = useState<Cargador[]>([]);
+
   const [alertas, setAlertas] = useState<AlertaUsuarioTipo[]>([]);
 
-  useEffect(() => {
-    if (!usuarioId) {
-      setAlertas([]);
+  const [cargando, setCargando] = useState(true);
 
-      return;
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    let activo = true;
+
+    async function cargarDatos() {
+      try {
+        setCargando(true);
+
+        setError("");
+
+        const promesaCargadores = obtenerCargadores();
+
+        const promesaPanel = usuarioId
+          ? obtenerPanelUsuario(usuarioId)
+          : Promise.resolve(null);
+
+        const [cargadoresObtenidos, panel] = await Promise.all([
+          promesaCargadores,
+          promesaPanel,
+        ]);
+
+        if (!activo) {
+          return;
+        }
+
+        setCargadores(cargadoresObtenidos);
+
+        setAlertas(panel?.alertas ?? []);
+      } catch (errorCarga) {
+        if (!activo) {
+          return;
+        }
+
+        setCargadores([]);
+
+        setAlertas([]);
+
+        setError(
+          errorCarga instanceof Error
+            ? errorCarga.message
+            : "No se han podido cargar los cargadores.",
+        );
+      } finally {
+        if (activo) {
+          setCargando(false);
+        }
+      }
     }
 
-    const cargarAlertas = async () => {
-      try {
-        const panel = await obtenerPanelUsuario(usuarioId);
+    void cargarDatos();
 
-        setAlertas(panel.alertas);
-      } catch {
-        setAlertas([]);
-      }
+    return () => {
+      activo = false;
     };
-
-    void cargarAlertas();
   }, [usuarioId]);
 
-  const numeroTomas = cargadoresSimulados.reduce(
-    (total, cargador) => total + cargador.tomas.length,
-    0,
+  const numeroTomas = useMemo(
+    () =>
+      cargadores.reduce((total, cargador) => total + cargador.tomas.length, 0),
+    [cargadores],
   );
 
-  const numeroTomasLibres = cargadoresSimulados.reduce(
-    (total, cargador) =>
-      total + cargador.tomas.filter((toma) => toma.estado === "libre").length,
-    0,
+  const numeroTomasLibres = useMemo(
+    () =>
+      cargadores.reduce(
+        (total, cargador) =>
+          total +
+          cargador.tomas.filter((toma) => toma.estado === "libre").length,
+        0,
+      ),
+    [cargadores],
   );
 
   return (
@@ -67,7 +114,7 @@ function CargadoresPage() {
 
         <div className="cargadores-page__estadisticas">
           <div>
-            <strong>{cargadoresSimulados.length}</strong>
+            <strong>{cargadores.length}</strong>
 
             <span>ubicaciones</span>
           </div>
@@ -97,14 +144,46 @@ function CargadoresPage() {
         </section>
       )}
 
-      <section
-        className="cargadores-page__listado"
-        aria-label="Listado de cargadores"
-      >
-        {cargadoresSimulados.map((cargador) => (
-          <TarjetaCargador key={cargador.id} cargador={cargador} />
-        ))}
-      </section>
+      {error && (
+        <p
+          role="alert"
+          style={{
+            margin: "0 0 18px",
+            color: "var(--color-error)",
+          }}
+        >
+          {error}
+        </p>
+      )}
+
+      {cargando ? (
+        <p
+          style={{
+            color: "var(--color-texto-suave)",
+          }}
+        >
+          Cargando cargadores...
+        </p>
+      ) : (
+        <section
+          className="cargadores-page__listado"
+          aria-label="Listado de cargadores"
+        >
+          {cargadores.length === 0 ? (
+            <p
+              style={{
+                color: "var(--color-texto-suave)",
+              }}
+            >
+              No hay cargadores disponibles.
+            </p>
+          ) : (
+            cargadores.map((cargador) => (
+              <TarjetaCargador key={cargador.id} cargador={cargador} />
+            ))
+          )}
+        </section>
+      )}
     </section>
   );
 }
