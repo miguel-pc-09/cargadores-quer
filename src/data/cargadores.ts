@@ -10,6 +10,7 @@ export const cargadoresSimulados: Cargador[] = [
     gestor: "Ayuntamiento de Quer",
     estado: "conectado",
     permiteReserva: true,
+
     tomas: [
       {
         id: "centro-cultural-toma-1",
@@ -20,6 +21,7 @@ export const cargadoresSimulados: Cargador[] = [
       },
     ],
   },
+
   {
     id: "enebros",
     nombre: "Enebros",
@@ -29,6 +31,7 @@ export const cargadoresSimulados: Cargador[] = [
     gestor: "Ayuntamiento de Quer",
     estado: "conectado",
     permiteReserva: true,
+
     tomas: [
       {
         id: "enebros-toma-1",
@@ -37,16 +40,23 @@ export const cargadoresSimulados: Cargador[] = [
         potenciaMaximaKw: 7.4,
         permiteReserva: true,
       },
+
       {
         id: "enebros-toma-2",
         nombre: "Toma 2",
         estado: "ocupada",
         potenciaMaximaKw: 7.4,
         permiteReserva: true,
+
+        /*
+         * Simulación de un vehículo que está cargando actualmente.
+         */
         disponibleDesde: "14:30",
+        usuarioActual: "Usuario de demostración",
       },
     ],
   },
+
   {
     id: "piscina",
     nombre: "Piscina",
@@ -56,6 +66,7 @@ export const cargadoresSimulados: Cargador[] = [
     gestor: "Ayuntamiento de Quer",
     estado: "conectado",
     permiteReserva: true,
+
     tomas: [
       {
         id: "piscina-toma-1",
@@ -63,8 +74,14 @@ export const cargadoresSimulados: Cargador[] = [
         estado: "ocupada",
         potenciaMaximaKw: 7.4,
         permiteReserva: true,
+
+        /*
+         * Simulación de una carga actualmente en curso.
+         */
         disponibleDesde: "13:00",
+        usuarioActual: "Usuario de demostración",
       },
+
       {
         id: "piscina-toma-2",
         nombre: "Toma 2",
@@ -74,6 +91,7 @@ export const cargadoresSimulados: Cargador[] = [
       },
     ],
   },
+
   {
     id: "paez-de-castro",
     nombre: "Páez de Castro",
@@ -83,6 +101,7 @@ export const cargadoresSimulados: Cargador[] = [
     gestor: "Ayuntamiento de Quer",
     estado: "conectado",
     permiteReserva: true,
+
     tomas: [
       {
         id: "paez-de-castro-toma-1",
@@ -91,13 +110,19 @@ export const cargadoresSimulados: Cargador[] = [
         potenciaMaximaKw: 11,
         permiteReserva: true,
       },
+
       {
         id: "paez-de-castro-toma-2",
         nombre: "Toma 2",
         estado: "reservada",
         potenciaMaximaKw: 11,
         permiteReserva: true,
+
+        /*
+         * Simulación de una toma reservada por otro usuario.
+         */
         disponibleDesde: "17:00",
+        usuarioActual: "Usuario de demostración",
       },
     ],
   },

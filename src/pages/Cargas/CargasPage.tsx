@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
-import { cargadoresSimulados } from "../../data/cargadores";
 import useAuth from "../../hooks/useAuth";
 
 import { obtenerCargasUsuario } from "../../services/cargasService";
+import { obtenerCargadores } from "../../services/chargersService";
+
 import {
   calcularEstadisticasCargas,
   formatearCoste,
@@ -13,6 +14,7 @@ import {
 } from "../../services/estadisticasService";
 
 import type { Carga } from "../../types/carga";
+import type { Cargador } from "../../types/charger";
 
 import "../../styles/Cargas/CargasPage.css";
 
@@ -22,6 +24,10 @@ interface EstadoNavegacion {
 
 function formatearFechaHora(fechaIso: string) {
   const fecha = new Date(fechaIso);
+
+  if (Number.isNaN(fecha.getTime())) {
+    return "Fecha no disponible";
+  }
 
   return new Intl.DateTimeFormat("es-ES", {
     day: "2-digit",
@@ -39,15 +45,33 @@ function calcularDuracionReal(carga: Carga) {
     ? new Date(carga.fechaHoraFinReal).getTime()
     : Date.now();
 
+  if (Number.isNaN(inicio) || Number.isNaN(fin)) {
+    return 0;
+  }
+
   return Math.max(0, Math.round((fin - inicio) / 60_000));
 }
 
-function obtenerNombreCargador(carga: Carga) {
-  const cargador = cargadoresSimulados.find(
+function obtenerInformacionCargador(carga: Carga, cargadores: Cargador[]) {
+  const cargador = cargadores.find(
     (cargadorActual) => cargadorActual.id === carga.cargadorId,
   );
 
-  return cargador?.nombre ?? "Cargador no disponible";
+  if (!cargador) {
+    return {
+      cargador: "Cargador no disponible",
+      toma: "",
+    };
+  }
+
+  const toma = cargador.tomas.find(
+    (tomaActual) => tomaActual.id === carga.tomaId,
+  );
+
+  return {
+    cargador: cargador.nombre,
+    toma: toma?.nombre ?? "Toma no disponible",
+  };
 }
 
 function CargasPage() {
@@ -62,6 +86,8 @@ function CargasPage() {
 
   const [cargas, setCargas] = useState<Carga[]>([]);
 
+  const [cargadores, setCargadores] = useState<Cargador[]>([]);
+
   const [cargando, setCargando] = useState(true);
 
   const [mensajeExito, setMensajeExito] = useState(
@@ -71,9 +97,10 @@ function CargasPage() {
   const [mensajeError, setMensajeError] = useState("");
 
   useEffect(() => {
-    const cargarSesiones = async () => {
+    const cargarDatos = async () => {
       if (!usuarioId) {
         setCargas([]);
+        setCargadores([]);
         setCargando(false);
 
         return;
@@ -83,17 +110,24 @@ function CargasPage() {
       setMensajeError("");
 
       try {
-        const cargasUsuario = await obtenerCargasUsuario(usuarioId);
+        const [cargasUsuario, cargadoresMunicipales] = await Promise.all([
+          obtenerCargasUsuario(usuarioId),
+          obtenerCargadores(),
+        ]);
 
         setCargas(cargasUsuario);
-      } catch {
+
+        setCargadores(cargadoresMunicipales);
+      } catch (error) {
+        console.error("Error al cargar la información de Mis cargas:", error);
+
         setMensajeError("No hemos podido cargar tu historial de cargas.");
       } finally {
         setCargando(false);
       }
     };
 
-    void cargarSesiones();
+    void cargarDatos();
   }, [usuarioId]);
 
   useEffect(() => {
@@ -236,7 +270,7 @@ function CargasPage() {
 
                   <th>Fin</th>
 
-                  <th>Cargador</th>
+                  <th>Cargador / Toma</th>
 
                   <th>Duración</th>
 
@@ -251,6 +285,11 @@ function CargasPage() {
 
                   const duracionReal = calcularDuracionReal(carga);
 
+                  const informacionCargador = obtenerInformacionCargador(
+                    carga,
+                    cargadores,
+                  );
+
                   return (
                     <tr key={carga.id}>
                       <td>{formatearFechaHora(carga.fechaHoraInicio)}</td>
@@ -262,7 +301,11 @@ function CargasPage() {
                       </td>
 
                       <td className="mis-cargas__cargador">
-                        {obtenerNombreCargador(carga)}
+                        <strong>{informacionCargador.cargador}</strong>
+
+                        {informacionCargador.toma && (
+                          <span>{informacionCargador.toma}</span>
+                        )}
                       </td>
 
                       <td className="mis-cargas__duracion">

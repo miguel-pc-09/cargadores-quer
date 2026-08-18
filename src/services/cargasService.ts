@@ -1,44 +1,72 @@
-import type { Carga, DatosNuevaCarga } from "../types/carga";
+import { supabase } from "./supabaseClient";
 
-const CLAVE_CARGAS = "cargaquer_cargas";
+import type { Carga, DatosNuevaCarga, EstadoCarga } from "../types/carga";
 
-const RETARDO_SIMULADO_MS = 250;
-
-function esperar(milisegundos: number) {
-  return new Promise<void>((resolve) => {
-    window.setTimeout(resolve, milisegundos);
-  });
+interface CargaBaseDatos {
+  id: string;
+  usuario_id: string;
+  reserva_id: string | null;
+  cargador_id: string;
+  toma_id: string;
+  estado: string;
+  fecha_hora_inicio: string;
+  fecha_hora_fin_prevista: string | null;
+  fecha_hora_fin_real: string | null;
+  potencia_actual_kw: number | string | null;
+  energia_consumida_kwh: number | string | null;
+  coste_estimado: number | string | null;
+  creada_en: string;
 }
 
-function generarId() {
-  if (
-    typeof crypto !== "undefined" &&
-    typeof crypto.randomUUID === "function"
-  ) {
-    return crypto.randomUUID();
-  }
+function convertirEstadoCarga(estado: string): EstadoCarga {
+  switch (estado.trim().toLowerCase()) {
+    case "activa":
+      return "activa";
 
-  return `carga-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-}
+    case "finalizada":
+      return "finalizada";
 
-function leerCargasGuardadas(): Carga[] {
-  try {
-    const contenido = localStorage.getItem(CLAVE_CARGAS);
+    case "cancelada":
+      return "cancelada";
 
-    if (!contenido) {
-      return [];
-    }
-
-    const resultado = JSON.parse(contenido);
-
-    return Array.isArray(resultado) ? resultado : [];
-  } catch {
-    return [];
+    default:
+      return "finalizada";
   }
 }
 
-function guardarCargas(cargas: Carga[]) {
-  localStorage.setItem(CLAVE_CARGAS, JSON.stringify(cargas));
+function convertirCarga(carga: CargaBaseDatos): Carga {
+  const fechaHoraFinPrevista =
+    carga.fecha_hora_fin_prevista ??
+    carga.fecha_hora_fin_real ??
+    carga.fecha_hora_inicio;
+
+  return {
+    id: carga.id,
+
+    usuarioId: carga.usuario_id,
+
+    reservaId: carga.reserva_id ?? "",
+
+    cargadorId: carga.cargador_id,
+
+    tomaId: carga.toma_id,
+
+    estado: convertirEstadoCarga(carga.estado),
+
+    fechaHoraInicio: carga.fecha_hora_inicio,
+
+    fechaHoraFinPrevista,
+
+    fechaHoraFinReal: carga.fecha_hora_fin_real,
+
+    potenciaMaximaKw: Number(carga.potencia_actual_kw) || 0,
+
+    potenciaActualKw: Number(carga.potencia_actual_kw) || 0,
+
+    energiaConsumidaKwh: Number(carga.energia_consumida_kwh) || 0,
+
+    creadaEn: carga.creada_en,
+  };
 }
 
 function calcularEnergiaConsumida(carga: Carga) {
@@ -48,12 +76,16 @@ function calcularEnergiaConsumida(carga: Carga) {
     ? new Date(carga.fechaHoraFinReal).getTime()
     : Date.now();
 
+  if (Number.isNaN(inicio) || Number.isNaN(fin)) {
+    return carga.energiaConsumidaKwh;
+  }
+
   const horasTranscurridas = Math.max(0, (fin - inicio) / 3_600_000);
 
   return Number((horasTranscurridas * carga.potenciaActualKw).toFixed(2));
 }
 
-function actualizarCargaCalculada(carga: Carga): Carga {
+function actualizarEnergiaCargaActiva(carga: Carga): Carga {
   if (carga.estado !== "activa") {
     return carga;
   }
@@ -66,49 +98,196 @@ function actualizarCargaCalculada(carga: Carga): Carga {
 }
 
 export async function obtenerCargas(): Promise<Carga[]> {
-  await esperar(RETARDO_SIMULADO_MS);
+  const { data, error } = await supabase
+    .from("cargas")
+    .select(
+      `
+        id,
+        usuario_id,
+        reserva_id,
+        cargador_id,
+        toma_id,
+        estado,
+        fecha_hora_inicio,
+        fecha_hora_fin_prevista,
+        fecha_hora_fin_real,
+        potencia_actual_kw,
+        energia_consumida_kwh,
+        coste_estimado,
+        creada_en
+      `,
+    )
+    .order("fecha_hora_inicio", {
+      ascending: false,
+    });
 
-  const cargasActualizadas = leerCargasGuardadas().map(
-    actualizarCargaCalculada,
-  );
+  if (error) {
+    throw new Error(`No se han podido cargar las sesiones: ${error.message}`);
+  }
 
-  guardarCargas(cargasActualizadas);
-
-  return cargasActualizadas;
+  return ((data ?? []) as CargaBaseDatos[])
+    .map(convertirCarga)
+    .map(actualizarEnergiaCargaActiva);
 }
 
 export async function obtenerCargasUsuario(
   usuarioId: string,
 ): Promise<Carga[]> {
-  const cargas = await obtenerCargas();
+  const { data, error } = await supabase
+    .from("cargas")
+    .select(
+      `
+        id,
+        usuario_id,
+        reserva_id,
+        cargador_id,
+        toma_id,
+        estado,
+        fecha_hora_inicio,
+        fecha_hora_fin_prevista,
+        fecha_hora_fin_real,
+        potencia_actual_kw,
+        energia_consumida_kwh,
+        coste_estimado,
+        creada_en
+      `,
+    )
+    .eq("usuario_id", usuarioId)
+    .order("fecha_hora_inicio", {
+      ascending: false,
+    });
 
-  return cargas
-    .filter((carga) => carga.usuarioId === usuarioId)
-    .sort(
-      (cargaA, cargaB) =>
-        new Date(cargaB.fechaHoraInicio).getTime() -
-        new Date(cargaA.fechaHoraInicio).getTime(),
-    );
+  if (error) {
+    throw new Error(`No se han podido cargar tus sesiones: ${error.message}`);
+  }
+
+  return ((data ?? []) as CargaBaseDatos[])
+    .map(convertirCarga)
+    .map(actualizarEnergiaCargaActiva);
 }
 
 export async function obtenerCargaPorId(
   cargaId: string,
 ): Promise<Carga | null> {
-  const cargas = await obtenerCargas();
+  const { data, error } = await supabase
+    .from("cargas")
+    .select(
+      `
+        id,
+        usuario_id,
+        reserva_id,
+        cargador_id,
+        toma_id,
+        estado,
+        fecha_hora_inicio,
+        fecha_hora_fin_prevista,
+        fecha_hora_fin_real,
+        potencia_actual_kw,
+        energia_consumida_kwh,
+        coste_estimado,
+        creada_en
+      `,
+    )
+    .eq("id", cargaId)
+    .maybeSingle();
 
-  return cargas.find((carga) => carga.id === cargaId) ?? null;
+  if (error) {
+    throw new Error(`No se ha podido obtener la carga: ${error.message}`);
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  return actualizarEnergiaCargaActiva(convertirCarga(data as CargaBaseDatos));
+}
+
+export async function obtenerCargaActiva(
+  usuarioId: string,
+  cargaId: string,
+): Promise<Carga | null> {
+  if (!usuarioId || !cargaId) {
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from("cargas")
+    .select(
+      `
+        id,
+        usuario_id,
+        reserva_id,
+        cargador_id,
+        toma_id,
+        estado,
+        fecha_hora_inicio,
+        fecha_hora_fin_prevista,
+        fecha_hora_fin_real,
+        potencia_actual_kw,
+        energia_consumida_kwh,
+        coste_estimado,
+        creada_en
+      `,
+    )
+    .eq("id", cargaId)
+    .eq("usuario_id", usuarioId)
+    .eq("estado", "activa")
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(
+      `No se ha podido obtener la carga activa: ${error.message}`,
+    );
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  return actualizarEnergiaCargaActiva(convertirCarga(data as CargaBaseDatos));
 }
 
 export async function obtenerCargaActivaPorReserva(
   reservaId: string,
 ): Promise<Carga | null> {
-  const cargas = await obtenerCargas();
+  if (!reservaId) {
+    return null;
+  }
 
-  return (
-    cargas.find(
-      (carga) => carga.reservaId === reservaId && carga.estado === "activa",
-    ) ?? null
-  );
+  const { data, error } = await supabase
+    .from("cargas")
+    .select(
+      `
+        id,
+        usuario_id,
+        reserva_id,
+        cargador_id,
+        toma_id,
+        estado,
+        fecha_hora_inicio,
+        fecha_hora_fin_prevista,
+        fecha_hora_fin_real,
+        potencia_actual_kw,
+        energia_consumida_kwh,
+        coste_estimado,
+        creada_en
+      `,
+    )
+    .eq("reserva_id", reservaId)
+    .eq("estado", "activa")
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(
+      `No se ha podido comprobar la carga activa: ${error.message}`,
+    );
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  return actualizarEnergiaCargaActiva(convertirCarga(data as CargaBaseDatos));
 }
 
 export async function obtenerCargaActivaUsuarioEnToma(
@@ -116,105 +295,188 @@ export async function obtenerCargaActivaUsuarioEnToma(
   cargadorId: string,
   tomaId: string,
 ): Promise<Carga | null> {
-  const cargas = await obtenerCargas();
+  const { data, error } = await supabase
+    .from("cargas")
+    .select(
+      `
+        id,
+        usuario_id,
+        reserva_id,
+        cargador_id,
+        toma_id,
+        estado,
+        fecha_hora_inicio,
+        fecha_hora_fin_prevista,
+        fecha_hora_fin_real,
+        potencia_actual_kw,
+        energia_consumida_kwh,
+        coste_estimado,
+        creada_en
+      `,
+    )
+    .eq("usuario_id", usuarioId)
+    .eq("cargador_id", cargadorId)
+    .eq("toma_id", tomaId)
+    .eq("estado", "activa")
+    .maybeSingle();
 
-  return (
-    cargas.find(
-      (carga) =>
-        carga.usuarioId === usuarioId &&
-        carga.cargadorId === cargadorId &&
-        carga.tomaId === tomaId &&
-        carga.estado === "activa",
-    ) ?? null
-  );
+  if (error) {
+    throw new Error(
+      `No se ha podido comprobar la carga activa: ${error.message}`,
+    );
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  return actualizarEnergiaCargaActiva(convertirCarga(data as CargaBaseDatos));
 }
 
 export async function iniciarCarga(
   datosCarga: DatosNuevaCarga,
 ): Promise<Carga> {
-  await esperar(RETARDO_SIMULADO_MS);
+  if (datosCarga.reservaId) {
+    const cargaExistente = await obtenerCargaActivaPorReserva(
+      datosCarga.reservaId,
+    );
 
-  const cargas = leerCargasGuardadas();
-
-  const cargaExistente = cargas.find(
-    (carga) =>
-      carga.reservaId === datosCarga.reservaId && carga.estado === "activa",
-  );
-
-  if (cargaExistente) {
-    return cargaExistente;
+    if (cargaExistente) {
+      return cargaExistente;
+    }
   }
 
   const potenciaActualKw = Number(
     (datosCarga.potenciaMaximaKw * (0.82 + Math.random() * 0.15)).toFixed(1),
   );
 
-  const nuevaCarga: Carga = {
-    ...datosCarga,
+  const { data, error } = await supabase
+    .from("cargas")
+    .insert({
+      usuario_id: datosCarga.usuarioId,
 
-    id: generarId(),
+      reserva_id: datosCarga.reservaId || null,
 
-    estado: "activa",
+      cargador_id: datosCarga.cargadorId,
 
-    fechaHoraFinReal: null,
+      toma_id: datosCarga.tomaId,
 
-    potenciaActualKw,
+      estado: "activa",
 
-    energiaConsumidaKwh: 0,
+      fecha_hora_inicio: datosCarga.fechaHoraInicio,
 
-    creadaEn: new Date().toISOString(),
-  };
+      fecha_hora_fin_prevista: datosCarga.fechaHoraFinPrevista,
 
-  guardarCargas([...cargas, nuevaCarga]);
+      fecha_hora_fin_real: null,
 
-  return nuevaCarga;
-}
+      potencia_actual_kw: potenciaActualKw,
 
-export async function finalizarCarga(cargaId: string): Promise<Carga> {
-  await esperar(RETARDO_SIMULADO_MS);
+      energia_consumida_kwh: 0,
 
-  const cargas = leerCargasGuardadas();
+      coste_estimado: null,
+    })
+    .select(
+      `
+        id,
+        usuario_id,
+        reserva_id,
+        cargador_id,
+        toma_id,
+        estado,
+        fecha_hora_inicio,
+        fecha_hora_fin_prevista,
+        fecha_hora_fin_real,
+        potencia_actual_kw,
+        energia_consumida_kwh,
+        coste_estimado,
+        creada_en
+      `,
+    )
+    .single();
 
-  const cargaEncontrada = cargas.find((carga) => carga.id === cargaId);
-
-  if (!cargaEncontrada) {
-    throw new Error("No se ha encontrado la carga.");
+  if (error) {
+    throw new Error(`No se ha podido iniciar la carga: ${error.message}`);
   }
 
-  if (cargaEncontrada.estado !== "activa") {
-    throw new Error("La carga ya no está activa.");
+  return convertirCarga(data as CargaBaseDatos);
+}
+
+export async function finalizarCarga(
+  cargaId: string,
+  usuarioId: string,
+): Promise<Carga> {
+  const cargaEncontrada = await obtenerCargaActiva(usuarioId, cargaId);
+
+  if (!cargaEncontrada) {
+    throw new Error("No se ha encontrado la carga activa.");
   }
 
   const fechaHoraFinReal = new Date().toISOString();
 
-  const cargaFinalizada: Carga = {
+  const energiaConsumidaKwh = calcularEnergiaConsumida({
     ...cargaEncontrada,
-
-    estado: "finalizada",
-
     fechaHoraFinReal,
+  });
 
-    energiaConsumidaKwh: calcularEnergiaConsumida({
-      ...cargaEncontrada,
-      fechaHoraFinReal,
-    }),
-  };
+  const { data, error } = await supabase
+    .from("cargas")
+    .update({
+      estado: "finalizada",
+      fecha_hora_fin_real: fechaHoraFinReal,
+      energia_consumida_kwh: energiaConsumidaKwh,
+    })
+    .eq("id", cargaId)
+    .eq("usuario_id", usuarioId)
+    .eq("estado", "activa")
+    .select(
+      `
+        id,
+        usuario_id,
+        reserva_id,
+        cargador_id,
+        toma_id,
+        estado,
+        fecha_hora_inicio,
+        fecha_hora_fin_prevista,
+        fecha_hora_fin_real,
+        potencia_actual_kw,
+        energia_consumida_kwh,
+        coste_estimado,
+        creada_en
+      `,
+    )
+    .single();
 
-  const cargasActualizadas = cargas.map((carga) =>
-    carga.id === cargaId ? cargaFinalizada : carga,
-  );
+  if (error) {
+    throw new Error(`No se ha podido finalizar la carga: ${error.message}`);
+  }
 
-  guardarCargas(cargasActualizadas);
+  const cargaFinalizada = convertirCarga(data as CargaBaseDatos);
+
+  if (cargaFinalizada.reservaId) {
+    const { error: errorReserva } = await supabase
+      .from("reservas")
+      .update({
+        estado: "finalizada",
+        actualizada_en: fechaHoraFinReal,
+      })
+      .eq("id", cargaFinalizada.reservaId)
+      .eq("usuario_id", usuarioId)
+      .eq("estado", "activa");
+
+    if (errorReserva) {
+      console.error(
+        "La carga se ha finalizado, pero no se ha podido actualizar la reserva:",
+        errorReserva,
+      );
+    }
+  }
 
   return cargaFinalizada;
 }
 
 export async function cancelarCarga(cargaId: string): Promise<Carga> {
-  await esperar(RETARDO_SIMULADO_MS);
-
-  const cargas = leerCargasGuardadas();
-
-  const cargaEncontrada = cargas.find((carga) => carga.id === cargaId);
+  const cargaEncontrada = await obtenerCargaPorId(cargaId);
 
   if (!cargaEncontrada) {
     throw new Error("No se ha encontrado la carga.");
@@ -226,26 +488,46 @@ export async function cancelarCarga(cargaId: string): Promise<Carga> {
 
   const fechaHoraFinReal = new Date().toISOString();
 
-  const cargaCancelada: Carga = {
+  const energiaConsumidaKwh = calcularEnergiaConsumida({
     ...cargaEncontrada,
 
-    estado: "cancelada",
-
     fechaHoraFinReal,
+  });
 
-    energiaConsumidaKwh: calcularEnergiaConsumida({
-      ...cargaEncontrada,
-      fechaHoraFinReal,
-    }),
-  };
+  const { data, error } = await supabase
+    .from("cargas")
+    .update({
+      estado: "cancelada",
 
-  const cargasActualizadas = cargas.map((carga) =>
-    carga.id === cargaId ? cargaCancelada : carga,
-  );
+      fecha_hora_fin_real: fechaHoraFinReal,
 
-  guardarCargas(cargasActualizadas);
+      energia_consumida_kwh: energiaConsumidaKwh,
+    })
+    .eq("id", cargaId)
+    .select(
+      `
+        id,
+        usuario_id,
+        reserva_id,
+        cargador_id,
+        toma_id,
+        estado,
+        fecha_hora_inicio,
+        fecha_hora_fin_prevista,
+        fecha_hora_fin_real,
+        potencia_actual_kw,
+        energia_consumida_kwh,
+        coste_estimado,
+        creada_en
+      `,
+    )
+    .single();
 
-  return cargaCancelada;
+  if (error) {
+    throw new Error(`No se ha podido cancelar la carga: ${error.message}`);
+  }
+
+  return convertirCarga(data as CargaBaseDatos);
 }
 
 export function calcularEnergiaTotal(cargas: Carga[]) {

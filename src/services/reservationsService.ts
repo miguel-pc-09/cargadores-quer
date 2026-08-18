@@ -2,6 +2,10 @@ import { supabase } from "./supabaseClient";
 
 import { puedeUsuarioReservar } from "./usersService";
 
+import { obtenerCargadores } from "./chargersService";
+
+import { cargadoresSimulados } from "../data/cargadores";
+
 import type {
   DatosNuevaReserva,
   EstadoReserva,
@@ -77,13 +81,6 @@ function calcularFechaFinDesdeBaseDatos(
 
   const fin = crearFechaHora(fecha, horaFin);
 
-  /*
-   * Si la hora final es igual o anterior a la inicial,
-   * significa que la reserva termina al día siguiente.
-   *
-   * Ejemplo:
-   * 23:00 -> 01:00
-   */
   if (fin.getTime() <= inicio.getTime()) {
     fin.setDate(fin.getDate() + 1);
   }
@@ -185,11 +182,20 @@ function calcularEstadoActual(reserva: Reserva): EstadoReserva {
     return "activa";
   }
 
-  if (
-    reserva.estado === "confirmada" &&
-    ahora.getTime() >= fechaHoraFin.getTime()
-  ) {
-    return "caducada";
+  if (reserva.estado === "confirmada") {
+    const fechaHoraInicio = obtenerInicioReserva(reserva);
+
+    const fechaCreacion = new Date(reserva.creadaEn);
+
+    const inicioMargen = Number.isNaN(fechaCreacion.getTime())
+      ? fechaHoraInicio.getTime()
+      : Math.max(fechaHoraInicio.getTime(), fechaCreacion.getTime());
+
+    const limiteInicio = new Date(inicioMargen + 15 * 60_000);
+
+    if (ahora.getTime() >= limiteInicio.getTime()) {
+      return "caducada";
+    }
   }
 
   return "confirmada";
@@ -202,6 +208,13 @@ async function actualizarEstados(reservas: Reserva[]): Promise<Reserva[]> {
 
       if (estadoActual === reserva.estado) {
         return reserva;
+      }
+
+      if (reserva.id.startsWith("demo-reserva-")) {
+        return {
+          ...reserva,
+          estado: estadoActual,
+        };
       }
 
       const { error } = await supabase
@@ -251,6 +264,168 @@ function reservaSigueVigente(reserva: Reserva) {
   );
 }
 
+function normalizarTexto(texto: string) {
+  return texto
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function buscarCargadorSimuladoPorNombre(nombre: string) {
+  const nombreNormalizado = normalizarTexto(nombre);
+
+  return cargadoresSimulados.find(
+    (cargador) => normalizarTexto(cargador.nombre) === nombreNormalizado,
+  );
+}
+
+function crearReservaDemostracion(
+  cargadorId: string,
+  tomaId: string,
+  fecha: string,
+  horaInicio: string,
+  duracionMinutos: number,
+  numero: number,
+): Reserva {
+  const datosFin = calcularFechaHoraFin(fecha, horaInicio, duracionMinutos);
+
+  return {
+    id: `demo-reserva-${numero}`,
+
+    usuarioId: `demo-usuario-${numero}`,
+
+    cargadorId,
+
+    tomaId,
+
+    fecha,
+
+    horaInicio,
+
+    duracionMinutos,
+
+    fechaFin: datosFin.fechaFin,
+
+    horaFin: datosFin.horaFin,
+
+    creadaEn: new Date().toISOString(),
+
+    estado: "confirmada",
+  };
+}
+
+async function obtenerReservasDemostracion(
+  cargadorId: string,
+  tomaId: string,
+  fecha: string,
+): Promise<Reserva[]> {
+  const cargadores = await obtenerCargadores();
+
+  const cargador = cargadores.find((item) => item.id === cargadorId);
+
+  if (!cargador) {
+    return [];
+  }
+
+  const cargadorSimulado = buscarCargadorSimuladoPorNombre(cargador.nombre);
+
+  if (!cargadorSimulado) {
+    return [];
+  }
+
+  const tomaReal = cargador.tomas.find((toma) => toma.id === tomaId);
+
+  if (!tomaReal) {
+    return [];
+  }
+
+  const tomaSimulada = cargadorSimulado.tomas.find(
+    (toma) => normalizarTexto(toma.nombre) === normalizarTexto(tomaReal.nombre),
+  );
+
+  if (!tomaSimulada) {
+    return [];
+  }
+
+  if (
+    normalizarTexto(cargadorSimulado.nombre) === "enebros" &&
+    normalizarTexto(tomaSimulada.nombre) === "toma 2"
+  ) {
+    return [
+      crearReservaDemostracion(cargadorId, tomaId, fecha, "10:00", 120, 1),
+    ];
+  }
+
+  if (
+    normalizarTexto(cargadorSimulado.nombre) === "piscina" &&
+    normalizarTexto(tomaSimulada.nombre) === "toma 1"
+  ) {
+    return [
+      crearReservaDemostracion(cargadorId, tomaId, fecha, "11:00", 120, 2),
+    ];
+  }
+
+  if (
+    normalizarTexto(cargadorSimulado.nombre) === "paez de castro" &&
+    normalizarTexto(tomaSimulada.nombre) === "toma 2"
+  ) {
+    return [
+      crearReservaDemostracion(cargadorId, tomaId, fecha, "16:00", 120, 3),
+    ];
+  }
+
+  return [];
+}
+
+async function obtenerReservasDeTomaCompletas(
+  cargadorId: string,
+  tomaId: string,
+  fecha?: string,
+): Promise<Reserva[]> {
+  const { data, error } = await supabase
+    .from("reservas")
+    .select(
+      `
+        id,
+        usuario_id,
+        cargador_id,
+        toma_id,
+        fecha,
+        hora_inicio,
+        hora_fin,
+        estado,
+        creada_en,
+        actualizada_en
+      `,
+    )
+    .eq("cargador_id", cargadorId)
+    .eq("toma_id", tomaId)
+    .in("estado", ["confirmada", "activa"]);
+
+  if (error) {
+    throw new Error(
+      `No se han podido cargar las reservas de esta toma: ${error.message}`,
+    );
+  }
+
+  let reservas = ((data ?? []) as ReservaBaseDatos[]).map(
+    convertirReservaBaseDatos,
+  );
+
+  if (fecha) {
+    const reservasDemo = await obtenerReservasDemostracion(
+      cargadorId,
+      tomaId,
+      fecha,
+    );
+
+    reservas = [...reservas, ...reservasDemo];
+  }
+
+  return actualizarEstados(reservas);
+}
+
 async function leerReservasBaseDatos(): Promise<Reserva[]> {
   const { data, error } = await supabase.from("reservas").select(
     `
@@ -284,21 +459,25 @@ export async function obtenerReservaPorId(
   reservaId: string,
   usuarioId?: string,
 ): Promise<Reserva | null> {
+  if (reservaId.startsWith("demo-reserva-")) {
+    return null;
+  }
+
   let consulta = supabase
     .from("reservas")
     .select(
       `
-          id,
-          usuario_id,
-          cargador_id,
-          toma_id,
-          fecha,
-          hora_inicio,
-          hora_fin,
-          estado,
-          creada_en,
-          actualizada_en
-        `,
+        id,
+        usuario_id,
+        cargador_id,
+        toma_id,
+        fecha,
+        hora_inicio,
+        hora_fin,
+        estado,
+        creada_en,
+        actualizada_en
+      `,
     )
     .eq("id", reservaId);
 
@@ -354,50 +533,23 @@ export async function obtenerReservasUsuario(
     throw new Error(`No se han podido cargar tus reservas: ${error.message}`);
   }
 
-  const reservas = ((data ?? []) as ReservaBaseDatos[]).map(
-    convertirReservaBaseDatos,
-  );
+  const reservas = (data ?? []) as ReservaBaseDatos[];
 
-  return actualizarEstados(reservas);
+  return actualizarEstados(reservas.map(convertirReservaBaseDatos));
 }
 
 export async function obtenerReservasToma(
   cargadorId: string,
   tomaId: string,
+  fecha?: string,
 ): Promise<Reserva[]> {
-  const { data, error } = await supabase
-    .from("reservas")
-    .select(
-      `
-        id,
-        usuario_id,
-        cargador_id,
-        toma_id,
-        fecha,
-        hora_inicio,
-        hora_fin,
-        estado,
-        creada_en,
-        actualizada_en
-      `,
-    )
-    .eq("cargador_id", cargadorId)
-    .eq("toma_id", tomaId)
-    .in("estado", ["confirmada", "activa"]);
-
-  if (error) {
-    throw new Error(
-      `No se han podido cargar las reservas de esta toma: ${error.message}`,
-    );
-  }
-
-  const reservas = ((data ?? []) as ReservaBaseDatos[]).map(
-    convertirReservaBaseDatos,
+  const reservas = await obtenerReservasDeTomaCompletas(
+    cargadorId,
+    tomaId,
+    fecha,
   );
 
-  const actualizadas = await actualizarEstados(reservas);
-
-  return actualizadas.filter(reservaSigueVigente);
+  return reservas.filter(reservaSigueVigente);
 }
 
 export async function crearReserva(
@@ -428,9 +580,11 @@ export async function crearReserva(
     datosReserva.horaInicio,
   );
 
-  if (fechaHoraInicio.getTime() < Date.now()) {
+  const finPrimerBloque = new Date(fechaHoraInicio.getTime() + 30 * 60_000);
+
+  if (finPrimerBloque.getTime() <= Date.now()) {
     throw new Error(
-      "No puedes realizar una reserva en un horario que ya ha pasado.",
+      "No puedes realizar una reserva en un bloque horario que ya ha finalizado.",
     );
   }
 
@@ -440,17 +594,12 @@ export async function crearReserva(
     datosReserva.duracionMinutos,
   );
 
-  /*
-   * Consultamos las reservas vigentes.
-   * Aquí ya vienen desde Supabase.
-   */
-  const reservas = await obtenerReservas();
+  const reservas = await obtenerReservasToma(
+    datosReserva.cargadorId,
+    datosReserva.tomaId,
+    datosReserva.fecha,
+  );
 
-  /*
-   * Primera comprobación:
-   * ninguna otra reserva puede ocupar esta toma
-   * durante el mismo horario.
-   */
   const reservaSolapadaEnToma = reservas.find((reserva) => {
     if (
       reserva.cargadorId !== datosReserva.cargadorId ||
@@ -469,17 +618,20 @@ export async function crearReserva(
   });
 
   if (reservaSolapadaEnToma) {
+    if (reservaSolapadaEnToma.id.startsWith("demo-reserva-")) {
+      throw new Error(
+        `Este horario está ocupado por otro usuario. La toma está reservada desde las ${reservaSolapadaEnToma.horaInicio} hasta las ${reservaSolapadaEnToma.horaFin}.`,
+      );
+    }
+
     throw new Error(
       `Esta toma ya está reservada desde las ${reservaSolapadaEnToma.horaInicio} hasta las ${reservaSolapadaEnToma.horaFin}.`,
     );
   }
 
-  /*
-   * Segunda comprobación:
-   * el mismo usuario no puede tener dos reservas
-   * simultáneas aunque sean en cargadores diferentes.
-   */
-  const reservaSolapadaDelUsuario = reservas.find((reserva) => {
+  const reservasUsuario = await obtenerReservasUsuario(datosReserva.usuarioId);
+
+  const reservaSolapadaDelUsuario = reservasUsuario.find((reserva) => {
     if (
       reserva.usuarioId !== datosReserva.usuarioId ||
       !reservaSigueVigente(reserva)
@@ -526,17 +678,17 @@ export async function crearReserva(
     })
     .select(
       `
-        id,
-        usuario_id,
-        cargador_id,
-        toma_id,
-        fecha,
-        hora_inicio,
-        hora_fin,
-        estado,
-        creada_en,
-        actualizada_en
-      `,
+          id,
+          usuario_id,
+          cargador_id,
+          toma_id,
+          fecha,
+          hora_inicio,
+          hora_fin,
+          estado,
+          creada_en,
+          actualizada_en
+        `,
     )
     .single();
 
@@ -582,17 +734,17 @@ export async function cancelarReserva(
     .eq("usuario_id", usuarioId)
     .select(
       `
-        id,
-        usuario_id,
-        cargador_id,
-        toma_id,
-        fecha,
-        hora_inicio,
-        hora_fin,
-        estado,
-        creada_en,
-        actualizada_en
-      `,
+          id,
+          usuario_id,
+          cargador_id,
+          toma_id,
+          fecha,
+          hora_inicio,
+          hora_fin,
+          estado,
+          creada_en,
+          actualizada_en
+        `,
     )
     .single();
 
@@ -629,10 +781,21 @@ export async function marcarReservaComoActiva(
 
   const inicio = obtenerInicioReserva(reservaEncontrada);
 
-  const fin = obtenerFinReserva(reservaEncontrada);
+  const fechaCreacion = new Date(reservaEncontrada.creadaEn);
 
-  if (ahora.getTime() < inicio.getTime() || ahora.getTime() >= fin.getTime()) {
-    throw new Error("La reserva todavía no está dentro de su horario.");
+  const inicioMargen = Number.isNaN(fechaCreacion.getTime())
+    ? inicio.getTime()
+    : Math.max(inicio.getTime(), fechaCreacion.getTime());
+
+  const limiteInicio = new Date(inicioMargen + 15 * 60_000);
+
+  if (
+    ahora.getTime() < inicio.getTime() ||
+    ahora.getTime() >= limiteInicio.getTime()
+  ) {
+    throw new Error(
+      "La reserva solo puede iniciarse durante los primeros 15 minutos de su horario.",
+    );
   }
 
   const { data, error } = await supabase
@@ -647,17 +810,17 @@ export async function marcarReservaComoActiva(
     .eq("estado", "confirmada")
     .select(
       `
-        id,
-        usuario_id,
-        cargador_id,
-        toma_id,
-        fecha,
-        hora_inicio,
-        hora_fin,
-        estado,
-        creada_en,
-        actualizada_en
-      `,
+          id,
+          usuario_id,
+          cargador_id,
+          toma_id,
+          fecha,
+          hora_inicio,
+          hora_fin,
+          estado,
+          creada_en,
+          actualizada_en
+        `,
     )
     .single();
 
@@ -694,17 +857,17 @@ export async function marcarReservaComoFinalizada(
     .eq("estado", "activa")
     .select(
       `
-        id,
-        usuario_id,
-        cargador_id,
-        toma_id,
-        fecha,
-        hora_inicio,
-        hora_fin,
-        estado,
-        creada_en,
-        actualizada_en
-      `,
+          id,
+          usuario_id,
+          cargador_id,
+          toma_id,
+          fecha,
+          hora_inicio,
+          hora_fin,
+          estado,
+          creada_en,
+          actualizada_en
+        `,
     )
     .single();
 
@@ -745,11 +908,17 @@ export function puedeIniciarCarga(reserva: Reserva, fechaActual = new Date()) {
 
   const fechaHoraInicio = obtenerInicioReserva(reserva);
 
-  const fechaHoraFin = obtenerFinReserva(reserva);
+  const fechaCreacion = new Date(reserva.creadaEn);
+
+  const inicioMargen = Number.isNaN(fechaCreacion.getTime())
+    ? fechaHoraInicio.getTime()
+    : Math.max(fechaHoraInicio.getTime(), fechaCreacion.getTime());
+
+  const limiteInicio = new Date(inicioMargen + 15 * 60_000);
 
   return (
     fechaActual.getTime() >= fechaHoraInicio.getTime() &&
-    fechaActual.getTime() < fechaHoraFin.getTime()
+    fechaActual.getTime() < limiteInicio.getTime()
   );
 }
 

@@ -144,18 +144,23 @@ function franjaEstaReservada(
   );
 }
 
-function horaYaHaPasado(fechaSeleccionada: string, hora: string) {
+function horaYaHaPasado(fechaSeleccionada: string, hora: string, ahora: Date) {
   const inicioFranja = crearFechaHora(fechaSeleccionada, hora);
 
-  return inicioFranja.getTime() < new Date().getTime();
+  const finFranja = new Date(
+    inicioFranja.getTime() + INCREMENTO_DURACION * 60_000,
+  );
+
+  return finFranja.getTime() <= ahora.getTime();
 }
 
 function crearFranjasHorarias(
   fechaSeleccionada: string,
   reservas: Reserva[],
+  ahora: Date,
 ): FranjaHoraria[] {
   return crearTodasLasHoras().map((hora) => {
-    if (horaYaHaPasado(fechaSeleccionada, hora)) {
+    if (horaYaHaPasado(fechaSeleccionada, hora, ahora)) {
       return {
         hora,
         estado: "pasada",
@@ -305,6 +310,18 @@ function ReservaTomaPage() {
   const [cargandoVehiculo, setCargandoVehiculo] = useState(true);
 
   const [vehiculoValidado, setVehiculoValidado] = useState(false);
+
+  const [ahora, setAhora] = useState(() => new Date());
+
+  useEffect(() => {
+    const intervalo = window.setInterval(() => {
+      setAhora(new Date());
+    }, 15_000);
+
+    return () => {
+      window.clearInterval(intervalo);
+    };
+  }, []);
 
   useEffect(() => {
     let activo = true;
@@ -476,8 +493,8 @@ function ReservaTomaPage() {
   }, [cargadorId, tomaId]);
 
   const franjasHorarias = useMemo(
-    () => crearFranjasHorarias(diaSeleccionado, reservasToma),
-    [diaSeleccionado, reservasToma],
+    () => crearFranjasHorarias(diaSeleccionado, reservasToma, ahora),
+    [diaSeleccionado, reservasToma, ahora],
   );
 
   const primeraHoraDisponible = useMemo(

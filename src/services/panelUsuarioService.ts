@@ -1,5 +1,4 @@
-import { cargadoresSimulados } from "../data/cargadores";
-
+import { obtenerCargadores } from "./chargersService";
 import { obtenerCargasUsuario } from "./cargasService";
 import { obtenerReservasUsuario } from "./reservationsService";
 import { obtenerVehiculoUsuario } from "./usersService";
@@ -11,12 +10,17 @@ import type {
   ResumenUsuario,
 } from "../types/panelUsuario";
 import type { Reserva } from "../types/reservation";
+import type { Cargador } from "../types/charger";
 
 function crearFechaHora(fecha: string, hora: string) {
   return new Date(`${fecha}T${hora}:00`);
 }
 
 function formatearFecha(fecha: Date) {
+  if (Number.isNaN(fecha.getTime())) {
+    return "Fecha no disponible";
+  }
+
   return new Intl.DateTimeFormat("es-ES", {
     day: "numeric",
     month: "long",
@@ -25,6 +29,10 @@ function formatearFecha(fecha: Date) {
 }
 
 function formatearHora(fecha: Date) {
+  if (Number.isNaN(fecha.getTime())) {
+    return "--:--";
+  }
+
   return new Intl.DateTimeFormat("es-ES", {
     hour: "2-digit",
     minute: "2-digit",
@@ -32,9 +40,11 @@ function formatearHora(fecha: Date) {
 }
 
 function formatearDuracion(minutosTotales: number) {
-  const horas = Math.floor(minutosTotales / 60);
+  const minutosSeguros = Math.max(0, Math.round(minutosTotales));
 
-  const minutos = minutosTotales % 60;
+  const horas = Math.floor(minutosSeguros / 60);
+
+  const minutos = minutosSeguros % 60;
 
   if (horas === 0) {
     return `${minutos} min`;
@@ -47,15 +57,19 @@ function formatearDuracion(minutosTotales: number) {
   return `${horas} h ${minutos} min`;
 }
 
-function obtenerNombreCargador(cargadorId: string) {
+function obtenerNombreCargador(cargadores: Cargador[], cargadorId: string) {
   return (
-    cargadoresSimulados.find((cargador) => cargador.id === cargadorId)
-      ?.nombre ?? "Cargador"
+    cargadores.find((cargador) => cargador.id === cargadorId)?.nombre ??
+    "Cargador"
   );
 }
 
-function obtenerNombreToma(cargadorId: string, tomaId: string) {
-  const cargador = cargadoresSimulados.find(
+function obtenerNombreToma(
+  cargadores: Cargador[],
+  cargadorId: string,
+  tomaId: string,
+) {
+  const cargador = cargadores.find(
     (cargadorActual) => cargadorActual.id === cargadorId,
   );
 
@@ -69,26 +83,47 @@ function calcularDuracionCarga(carga: Carga) {
     ? new Date(carga.fechaHoraFinReal).getTime()
     : Date.now();
 
+  if (Number.isNaN(inicio) || Number.isNaN(fin)) {
+    return 0;
+  }
+
   return Math.max(0, Math.round((fin - inicio) / 60_000));
 }
 
-function crearActividadReservas(reservas: Reserva[]): ActividadUsuario[] {
+function crearActividadReservas(
+  reservas: Reserva[],
+  cargadores: Cargador[],
+): ActividadUsuario[] {
   return reservas.map((reserva) => {
     const fechaCreacion = new Date(reserva.creadaEn);
 
-    const nombreCargador = obtenerNombreCargador(reserva.cargadorId);
+    const nombreCargador = obtenerNombreCargador(
+      cargadores,
+      reserva.cargadorId,
+    );
 
-    const nombreToma = obtenerNombreToma(reserva.cargadorId, reserva.tomaId);
+    const nombreToma = obtenerNombreToma(
+      cargadores,
+      reserva.cargadorId,
+      reserva.tomaId,
+    );
 
     if (reserva.estado === "cancelada") {
       return {
         id: `reserva-cancelada-${reserva.id}`,
+
         tipo: "reserva-cancelada",
+
         titulo: "Reserva cancelada",
+
         ubicacion: nombreCargador,
+
         toma: nombreToma,
+
         fecha: formatearFecha(fechaCreacion),
+
         hora: formatearHora(fechaCreacion),
+
         detalle: `Reserva prevista para ${formatearFecha(
           crearFechaHora(reserva.fecha, reserva.horaInicio),
         )} a las ${reserva.horaInicio}`,
@@ -97,12 +132,19 @@ function crearActividadReservas(reservas: Reserva[]): ActividadUsuario[] {
 
     return {
       id: `reserva-creada-${reserva.id}`,
+
       tipo: "reserva-creada",
+
       titulo: "Reserva creada",
+
       ubicacion: nombreCargador,
+
       toma: nombreToma,
+
       fecha: formatearFecha(fechaCreacion),
+
       hora: formatearHora(fechaCreacion),
+
       detalle: `Reserva para ${formatearFecha(
         crearFechaHora(reserva.fecha, reserva.horaInicio),
       )} de ${reserva.horaInicio} a ${reserva.horaFin}`,
@@ -110,26 +152,44 @@ function crearActividadReservas(reservas: Reserva[]): ActividadUsuario[] {
   });
 }
 
-function crearActividadCargas(cargas: Carga[]): ActividadUsuario[] {
+function crearActividadCargas(
+  cargas: Carga[],
+  cargadores: Cargador[],
+): ActividadUsuario[] {
   const actividades: ActividadUsuario[] = [];
 
   cargas.forEach((carga) => {
     const inicio = new Date(carga.fechaHoraInicio);
 
-    const nombreCargador = obtenerNombreCargador(carga.cargadorId);
+    const nombreCargador = obtenerNombreCargador(cargadores, carga.cargadorId);
 
-    const nombreToma = obtenerNombreToma(carga.cargadorId, carga.tomaId);
+    const nombreToma = obtenerNombreToma(
+      cargadores,
+      carga.cargadorId,
+      carga.tomaId,
+    );
 
     actividades.push({
       id: `carga-iniciada-${carga.id}`,
+
       tipo: "carga-iniciada",
-      titulo: "Carga iniciada",
+
+      titulo: carga.estado === "activa" ? "Carga iniciada" : "Sesión de carga",
+
       ubicacion: nombreCargador,
+
       toma: nombreToma,
+
       fecha: formatearFecha(inicio),
+
       hora: formatearHora(inicio),
+
       detalle: `Potencia actual: ${carga.potenciaActualKw.toLocaleString(
         "es-ES",
+        {
+          minimumFractionDigits: 1,
+          maximumFractionDigits: 1,
+        },
       )} kW`,
     });
 
@@ -138,13 +198,20 @@ function crearActividadCargas(cargas: Carga[]): ActividadUsuario[] {
 
       actividades.push({
         id: `carga-finalizada-${carga.id}`,
+
         tipo: "carga-finalizada",
+
         titulo:
           carga.estado === "cancelada" ? "Carga detenida" : "Carga finalizada",
+
         ubicacion: nombreCargador,
+
         toma: nombreToma,
+
         fecha: formatearFecha(fin),
+
         hora: formatearHora(fin),
+
         detalle: `Duración: ${formatearDuracion(
           calcularDuracionCarga(carga),
         )} · ${carga.energiaConsumidaKwh.toLocaleString("es-ES", {
@@ -159,7 +226,11 @@ function crearActividadCargas(cargas: Carga[]): ActividadUsuario[] {
 }
 
 function obtenerFechaActividad(actividad: ActividadUsuario) {
-  const partesFecha = actividad.fecha.split(" de ");
+  const fechaTexto = actividad.fecha.trim();
+
+  const horaTexto = actividad.hora.trim();
+
+  const partesFecha = fechaTexto.split(" de ");
 
   if (partesFecha.length !== 3) {
     return 0;
@@ -188,15 +259,17 @@ function obtenerFechaActividad(actividad: ActividadUsuario) {
     return 0;
   }
 
-  const [horaTexto, minutoTexto] = actividad.hora.split(":");
+  const [hora, minuto] = horaTexto.split(":");
 
-  return new Date(
+  const fecha = new Date(
     Number(anioTexto),
     mes,
     Number(diaTexto),
-    Number(horaTexto),
-    Number(minutoTexto),
-  ).getTime();
+    Number(hora),
+    Number(minuto),
+  );
+
+  return Number.isNaN(fecha.getTime()) ? 0 : fecha.getTime();
 }
 
 function obtenerProximaReserva(reservas: Reserva[]) {
@@ -209,9 +282,13 @@ function obtenerProximaReserva(reservas: Reserva[]) {
     )
     .map((reserva) => ({
       reserva,
+
       fechaHora: crearFechaHora(reserva.fecha, reserva.horaInicio),
     }))
-    .filter(({ fechaHora }) => fechaHora.getTime() >= ahora)
+    .filter(
+      ({ fechaHora }) =>
+        !Number.isNaN(fechaHora.getTime()) && fechaHora.getTime() >= ahora,
+    )
     .sort(
       (reservaA, reservaB) =>
         reservaA.fechaHora.getTime() - reservaB.fechaHora.getTime(),
@@ -244,24 +321,46 @@ function obtenerProximaReserva(reservas: Reserva[]) {
   return `${formatearFecha(fechaReserva)} a las ${proxima.reserva.horaInicio}`;
 }
 
+function obtenerEstadoUsuario(
+  vehiculoEstado: string | undefined,
+): ResumenUsuario["estado"] {
+  switch (vehiculoEstado) {
+    case "rechazado":
+      return "penalizado";
+
+    case "pendiente":
+      return "advertencia";
+
+    default:
+      return "correcto";
+  }
+}
+
 export async function obtenerPanelUsuario(usuarioId: string): Promise<{
   resumen: ResumenUsuario;
   alertas: AlertaUsuario[];
   actividad: ActividadUsuario[];
 }> {
-  const [reservas, cargas, vehiculo] = await Promise.all([
+  const [reservas, cargas, vehiculo, cargadores] = await Promise.all([
     obtenerReservasUsuario(usuarioId),
+
     obtenerCargasUsuario(usuarioId),
+
     obtenerVehiculoUsuario(usuarioId),
+
+    obtenerCargadores(),
   ]);
 
-  const numeroTomas = cargadoresSimulados.reduce(
+  const numeroTomas = cargadores.reduce(
     (total, cargador) => total + cargador.tomas.length,
     0,
   );
 
   const energiaAcumulada = Number(
     cargas
+      .filter(
+        (carga) => carga.estado === "finalizada" || carga.estado === "activa",
+      )
       .reduce((total, carga) => total + carga.energiaConsumidaKwh, 0)
       .toFixed(2),
   );
@@ -270,12 +369,16 @@ export async function obtenerPanelUsuario(usuarioId: string): Promise<{
     (reserva) => reserva.estado === "confirmada" || reserva.estado === "activa",
   );
 
+  const estadoVehiculo = vehiculo?.estadoValidacion;
+
   const resumen: ResumenUsuario = {
-    numeroCargadores: cargadoresSimulados.length,
+    numeroCargadores: cargadores.length,
 
     numeroTomas,
 
-    numeroCargas: cargas.length,
+    numeroCargas: cargas.filter(
+      (carga) => carga.estado === "finalizada" || carga.estado === "activa",
+    ).length,
 
     energiaAcumulada,
 
@@ -283,9 +386,9 @@ export async function obtenerPanelUsuario(usuarioId: string): Promise<{
 
     proximaReserva: obtenerProximaReserva(reservas),
 
-    estado: "correcto",
+    estado: obtenerEstadoUsuario(estadoVehiculo),
 
-    numeroPenalizaciones: 0,
+    numeroPenalizaciones: estadoVehiculo === "rechazado" ? 1 : 0,
   };
 
   const alertas: AlertaUsuario[] = [];
@@ -293,8 +396,11 @@ export async function obtenerPanelUsuario(usuarioId: string): Promise<{
   if (!vehiculo) {
     alertas.push({
       id: "vehiculo-no-encontrado",
+
       tipo: "aviso",
+
       titulo: "Vehículo no registrado",
+
       mensaje:
         "No hay ningún vehículo asociado a tu cuenta. Ponte en contacto con el Ayuntamiento.",
     });
@@ -303,8 +409,11 @@ export async function obtenerPanelUsuario(usuarioId: string): Promise<{
   if (vehiculo?.estadoValidacion === "pendiente") {
     alertas.push({
       id: "vehiculo-pendiente",
+
       tipo: "aviso",
+
       titulo: "Vehículo pendiente de validación",
+
       mensaje:
         "El Ayuntamiento debe validar la matrícula antes de permitir nuevas reservas o cargas.",
     });
@@ -313,16 +422,20 @@ export async function obtenerPanelUsuario(usuarioId: string): Promise<{
   if (vehiculo?.estadoValidacion === "rechazado") {
     alertas.push({
       id: "vehiculo-rechazado",
+
       tipo: "error",
+
       titulo: "Vehículo no validado",
+
       mensaje:
         "La validación del vehículo ha sido rechazada. Revisa la matrícula desde tu perfil.",
     });
   }
 
   const actividad = [
-    ...crearActividadReservas(reservas),
-    ...crearActividadCargas(cargas),
+    ...crearActividadReservas(reservas, cargadores),
+
+    ...crearActividadCargas(cargas, cargadores),
   ]
     .sort(
       (actividadA, actividadB) =>
@@ -332,7 +445,9 @@ export async function obtenerPanelUsuario(usuarioId: string): Promise<{
 
   return {
     resumen,
+
     alertas,
+
     actividad,
   };
 }

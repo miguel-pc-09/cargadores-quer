@@ -13,6 +13,7 @@ export interface TomaCargador {
   estado: EstadoToma;
   potenciaMaximaKw: number;
   permiteReserva: boolean;
+  tipoConector?: string;
   disponibleDesde?: string;
   usuarioActual?: string;
 }

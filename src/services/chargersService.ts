@@ -1,5 +1,7 @@
 import { supabase } from "./supabaseClient";
 
+import { cargadoresSimulados } from "../data/cargadores";
+
 import type {
   Cargador,
   EstadoCargador,
@@ -77,6 +79,81 @@ function convertirToma(toma: TomaBaseDatos): TomaCargador {
   };
 }
 
+function normalizarTexto(texto: string) {
+  return texto
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function buscarCargadorSimulado(nombre: string) {
+  const nombreNormalizado = normalizarTexto(nombre);
+
+  return cargadoresSimulados.find(
+    (cargador) => normalizarTexto(cargador.nombre) === nombreNormalizado,
+  );
+}
+
+function aplicarDemostracion(
+  cargadorReal: Cargador,
+  cargadorSimulado: Cargador | undefined,
+): Cargador {
+  if (!cargadorSimulado) {
+    return cargadorReal;
+  }
+
+  const tomas = cargadorReal.tomas.map((tomaReal, indice) => {
+    const tomaSimulada =
+      cargadorSimulado.tomas.find(
+        (toma) =>
+          normalizarTexto(toma.nombre) === normalizarTexto(tomaReal.nombre),
+      ) ?? cargadorSimulado.tomas[indice];
+
+    if (!tomaSimulada) {
+      return tomaReal;
+    }
+
+    /*
+     * La demostración modifica únicamente el estado visual.
+     *
+     * El ID continúa siendo el ID real de Supabase para que las
+     * páginas de detalle y reserva sigan funcionando correctamente.
+     */
+    return {
+      ...tomaReal,
+
+      estado: tomaSimulada.estado,
+
+      disponibleDesde: tomaSimulada.disponibleDesde,
+
+      usuarioActual: tomaSimulada.usuarioActual,
+    };
+  });
+
+  return {
+    ...cargadorReal,
+
+    ubicacion: cargadorSimulado.ubicacion,
+
+    fabricante: cargadorSimulado.fabricante,
+
+    gestor: cargadorSimulado.gestor,
+
+    tomas,
+  };
+}
+
+function crearCargadoresDesdeDatosSimulados(): Cargador[] {
+  return cargadoresSimulados.map((cargador) => ({
+    ...cargador,
+
+    tomas: cargador.tomas.map((toma) => ({
+      ...toma,
+    })),
+  }));
+}
+
 export async function obtenerCargadores(): Promise<Cargador[]> {
   const [resultadoCargadores, resultadoTomas] = await Promise.all([
     supabase
@@ -110,13 +187,26 @@ export async function obtenerCargadores(): Promise<Cargador[]> {
       }),
   ]);
 
+  /*
+   * Si no hay cargadores configurados en Supabase, utilizamos los
+   * datos de demostración para que la aplicación nunca aparezca
+   * completamente vacía durante una presentación.
+   */
   if (resultadoCargadores.error) {
+    if (cargadoresSimulados.length > 0) {
+      return crearCargadoresDesdeDatosSimulados();
+    }
+
     throw new Error(
       `No se han podido cargar los cargadores: ${resultadoCargadores.error.message}`,
     );
   }
 
   if (resultadoTomas.error) {
+    if (cargadoresSimulados.length > 0) {
+      return crearCargadoresDesdeDatosSimulados();
+    }
+
     throw new Error(
       `No se han podido cargar las tomas: ${resultadoTomas.error.message}`,
     );
@@ -126,7 +216,15 @@ export async function obtenerCargadores(): Promise<Cargador[]> {
 
   const tomas = (resultadoTomas.data ?? []) as TomaBaseDatos[];
 
-  return cargadores.map((cargador): Cargador => {
+  /*
+   * Si Supabase está correctamente conectado pero todavía no tiene
+   * cargadores, mostramos los datos de demostración.
+   */
+  if (cargadores.length === 0) {
+    return crearCargadoresDesdeDatosSimulados();
+  }
+
+  const cargadoresReales = cargadores.map((cargador): Cargador => {
     const tomasCargador = tomas
       .filter((toma) => toma.cargador_id === cargador.id)
       .map(convertirToma);
@@ -145,6 +243,10 @@ export async function obtenerCargadores(): Promise<Cargador[]> {
       tomas: tomasCargador,
     };
   });
+
+  return cargadoresReales.map((cargador) =>
+    aplicarDemostracion(cargador, buscarCargadorSimulado(cargador.nombre)),
+  );
 }
 
 export async function obtenerCargadorPorId(

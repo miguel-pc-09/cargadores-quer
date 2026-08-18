@@ -51,20 +51,40 @@ export interface IncidenciaAdministracion {
   telefonoInstaladora: string;
 }
 
+export interface MovimientoAdministracion {
+  id: string;
+  fecha: string;
+  usuario: string;
+  accion: string;
+  cargador: string;
+  estado: "correcto" | "pendiente" | "incidencia";
+}
+
+export interface ResumenAdministracion {
+  usuariosRegistrados: number;
+  usuariosActivos: number;
+  cargasRealizadas: number;
+  energiaSuministradaKwh: number;
+  validacionesPendientes: number;
+  incidenciasAbiertas: number;
+  cargadores: number;
+  tomas: number;
+  movimientos: MovimientoAdministracion[];
+}
+
 interface PerfilValidacionBD {
   id: string;
   nombre: string | null;
   apellidos: string | null;
   dni: string | null;
   email: string | null;
-  estado_cuenta: "pendiente" | "verificada" | "bloqueada";
+  estado_cuenta: string;
 }
 
 interface VehiculoValidacionBD {
   id: string;
   usuario_id: string;
   matricula: string;
-  estado_validacion: "pendiente" | "validado" | "rechazado";
   perfiles: PerfilValidacionBD | PerfilValidacionBD[] | null;
 }
 
@@ -87,13 +107,13 @@ interface CargaUsuarioBD {
   energia_consumida_kwh: number | string | null;
 }
 
-interface CargadorAdministracionBD {
+interface CargadorBD {
   id: string;
   nombre: string;
   activo: boolean;
 }
 
-interface TomaAdministracionBD {
+interface TomaBD {
   id: string;
   cargador_id: string;
   nombre: string;
@@ -101,14 +121,14 @@ interface TomaAdministracionBD {
   estado: string | null;
 }
 
-interface CargaAdministracionBD {
+interface CargaBD {
   cargador_id: string;
   toma_id: string;
   fecha_hora_inicio: string | null;
   energia_consumida_kwh: number | string | null;
 }
 
-interface IncidenciaAdministracionBD {
+interface IncidenciaBD {
   id: string;
   cargador_id: string;
   toma_id: string | null;
@@ -131,57 +151,345 @@ interface TomaIncidenciaBD {
   nombre: string;
 }
 
-function obtenerPerfil(
+const DEMO = "demo-admin-";
+
+const DEMO_VALIDACIONES: ValidacionPendiente[] = [
+  {
+    vehiculoId: DEMO + "vehiculo-1",
+    usuarioId: DEMO + "usuario-1",
+    nombre: "Laura",
+    apellidos: "García Martín",
+    dni: "12345678A",
+    email: "laura.garcia@demo.cargaquer.es",
+    matricula: "1234LGM",
+  },
+  {
+    vehiculoId: DEMO + "vehiculo-2",
+    usuarioId: DEMO + "usuario-2",
+    nombre: "Javier",
+    apellidos: "Sánchez López",
+    dni: "23456789B",
+    email: "javier.sanchez@demo.cargaquer.es",
+    matricula: "5678JSL",
+  },
+];
+
+const DEMO_USUARIOS: UsuarioAdministracion[] = [
+  [
+    "1",
+    "Laura",
+    "García Martín",
+    "12345678A",
+    "laura.garcia@demo.cargaquer.es",
+    "1234LGM",
+    14,
+    82.46,
+    "verificada",
+  ],
+  [
+    "2",
+    "Javier",
+    "Sánchez López",
+    "23456789B",
+    "javier.sanchez@demo.cargaquer.es",
+    "5678JSL",
+    9,
+    61.2,
+    "verificada",
+  ],
+  [
+    "3",
+    "Ana",
+    "Martínez Pérez",
+    "34567890C",
+    "ana.martinez@demo.cargaquer.es",
+    "9012AMP",
+    21,
+    143.74,
+    "verificada",
+  ],
+  [
+    "4",
+    "Carlos",
+    "Ruiz Gómez",
+    "45678901D",
+    "carlos.ruiz@demo.cargaquer.es",
+    "3456CRG",
+    7,
+    48.91,
+    "verificada",
+  ],
+  [
+    "5",
+    "Marta",
+    "Fernández Díaz",
+    "56789012E",
+    "marta.fernandez@demo.cargaquer.es",
+    "7890MFD",
+    18,
+    112.37,
+    "verificada",
+  ],
+  [
+    "6",
+    "David",
+    "Moreno Castro",
+    "67890123F",
+    "david.moreno@demo.cargaquer.es",
+    "2468DMC",
+    11,
+    76.55,
+    "verificada",
+  ],
+  [
+    "7",
+    "Elena",
+    "Navarro Ruiz",
+    "78901234G",
+    "elena.navarro@demo.cargaquer.es",
+    "1357ENR",
+    13,
+    91.08,
+    "bloqueada",
+  ],
+  [
+    "8",
+    "Miguel",
+    "Torres Vega",
+    "89012345H",
+    "miguel.torres@demo.cargaquer.es",
+    "8024MTV",
+    16,
+    105.69,
+    "verificada",
+  ],
+].map(
+  ([
+    id,
+    nombre,
+    apellidos,
+    dni,
+    email,
+    matricula,
+    cargas,
+    energia,
+    estado,
+  ]) => ({
+    id: DEMO + "usuario-" + id,
+    nombre: nombre as string,
+    apellidos: apellidos as string,
+    dni: dni as string,
+    email: email as string,
+    matricula: matricula as string,
+    numeroCargas: cargas as number,
+    energiaConsumidaKwh: energia as number,
+    estadoCuenta: estado as "verificada" | "bloqueada",
+  }),
+);
+
+const DEMO_TOMAS: TomaAdministracion[] = [
+  ["1", "Enebros", "Toma 1", "libre", 22, 0, false, 18, 76, 384, 842.35],
+  ["2", "Enebros", "Toma 2", "ocupada", 22, 1, true, 22, 91, 421, 931.72],
+  [
+    "3",
+    "Centro Cultural",
+    "Toma 1",
+    "reservada",
+    11,
+    0,
+    false,
+    13,
+    58,
+    277,
+    502.41,
+  ],
+  [
+    "4",
+    "Centro Cultural",
+    "Toma 2",
+    "libre",
+    11,
+    0,
+    false,
+    11,
+    47,
+    239,
+    421.88,
+  ],
+  [
+    "5",
+    "Piscina",
+    "Toma 1",
+    "fuera de servicio",
+    22,
+    2,
+    true,
+    3,
+    21,
+    167,
+    318.42,
+  ],
+  ["6", "Piscina", "Toma 2", "libre", 22, 0, false, 9, 39, 198, 392.17],
+  ["7", "Ayuntamiento", "Toma 1", "libre", 7.4, 0, false, 6, 24, 121, 184.63],
+].map(
+  ([
+    id,
+    cargadorNombre,
+    tomaNombre,
+    estado,
+    potencia,
+    numeroIncidencias,
+    tieneIncidenciaAbierta,
+    cargasSemana,
+    cargasMes,
+    cargasAnio,
+    energia,
+  ]) => ({
+    id: DEMO + "toma-" + id,
+    cargadorId:
+      DEMO +
+      "cargador-" +
+      (id === "1" || id === "2"
+        ? "1"
+        : id === "3" || id === "4"
+          ? "2"
+          : id === "5" || id === "6"
+            ? "3"
+            : "4"),
+    cargadorNombre: cargadorNombre as string,
+    tomaNombre: tomaNombre as string,
+    estado: estado as string,
+    potenciaMaximaKw: potencia as number,
+    numeroIncidencias: numeroIncidencias as number,
+    tieneIncidenciaAbierta: tieneIncidenciaAbierta as boolean,
+    cargasSemana: cargasSemana as number,
+    cargasMes: cargasMes as number,
+    cargasAnio: cargasAnio as number,
+    energiaSuministradaKwh: energia as number,
+  }),
+);
+
+const DEMO_INCIDENCIAS: IncidenciaAdministracion[] = [
+  {
+    id: DEMO + "incidencia-1",
+    cargadorId: DEMO + "cargador-1",
+    cargadorNombre: "Enebros",
+    tomaNombre: "Toma 2",
+    tipo: "Error de comunicación",
+    descripcion:
+      "La toma ha perdido comunicación con el sistema de gestión y requiere comprobación remota.",
+    estado: "Abierta",
+    empresaSuministradora: "Iberdrola Smart Charging",
+    telefonoSuministradora: "900 123 456",
+    empresaInstaladora: "ElectroQuer Servicios",
+    telefonoInstaladora: "949 000 111",
+  },
+  {
+    id: DEMO + "incidencia-2",
+    cargadorId: DEMO + "cargador-3",
+    cargadorNombre: "Piscina",
+    tomaNombre: "Toma 1",
+    tipo: "Toma fuera de servicio",
+    descripcion:
+      "La toma se ha puesto fuera de servicio después de detectar una anomalía durante una sesión.",
+    estado: "En revisión",
+    empresaSuministradora: "Endesa X Way",
+    telefonoSuministradora: "900 456 789",
+    empresaInstaladora: "ElectroQuer Servicios",
+    telefonoInstaladora: "949 000 111",
+  },
+  {
+    id: DEMO + "incidencia-3",
+    cargadorId: DEMO + "cargador-3",
+    cargadorNombre: "Piscina",
+    tomaNombre: "Cargador completo",
+    tipo: "Mantenimiento preventivo",
+    descripcion:
+      "Se ha programado una revisión preventiva del equipo por acumulación de avisos de mantenimiento.",
+    estado: "Abierta",
+    empresaSuministradora: "Endesa X Way",
+    telefonoSuministradora: "900 456 789",
+    empresaInstaladora: "ElectroQuer Servicios",
+    telefonoInstaladora: "949 000 111",
+  },
+];
+
+const DEMO_MOVIMIENTOS: MovimientoAdministracion[] = [
+  [
+    "1",
+    "16/08/2026, 08:42",
+    "Ana Martínez",
+    "Carga finalizada",
+    "Centro Cultural",
+    "correcto",
+  ],
+  [
+    "2",
+    "16/08/2026, 08:15",
+    "Laura García",
+    "Nueva reserva",
+    "Enebros",
+    "correcto",
+  ],
+  [
+    "3",
+    "16/08/2026, 07:51",
+    "Javier Sánchez",
+    "Cambio de vehículo",
+    "—",
+    "pendiente",
+  ],
+  [
+    "4",
+    "15/08/2026, 22:34",
+    "Sistema",
+    "Incidencia registrada",
+    "Piscina",
+    "incidencia",
+  ],
+  [
+    "5",
+    "15/08/2026, 19:20",
+    "Miguel Torres",
+    "Carga finalizada",
+    "Enebros",
+    "correcto",
+  ],
+].map(([id, fecha, usuario, accion, cargador, estado]) => ({
+  id: DEMO + "movimiento-" + id,
+  fecha: fecha as string,
+  usuario: usuario as string,
+  accion: accion as string,
+  cargador: cargador as string,
+  estado: estado as "correcto" | "pendiente" | "incidencia",
+}));
+
+const esDemo = (id: string) => id.startsWith(DEMO);
+
+const obtenerPerfil = (
   perfiles: VehiculoValidacionBD["perfiles"],
-): PerfilValidacionBD | null {
-  if (Array.isArray(perfiles)) {
-    return perfiles[0] ?? null;
-  }
+): PerfilValidacionBD | null =>
+  Array.isArray(perfiles) ? (perfiles[0] ?? null) : perfiles;
 
-  return perfiles;
-}
+const obtenerFecha = (texto: string | null) => (texto ? new Date(texto) : null);
 
-function obtenerInicioSemana(fecha: Date) {
+const incidenciaAbierta = (estado: string | null) => {
+  const normalizado = estado?.trim().toLowerCase() ?? "";
+
+  return normalizado !== "resuelta" && normalizado !== "cerrada";
+};
+
+const obtenerInicioSemana = (fecha: Date) => {
   const inicio = new Date(fecha);
 
   const dia = inicio.getDay();
 
-  const diferencia = dia === 0 ? -6 : 1 - dia;
-
-  inicio.setDate(inicio.getDate() + diferencia);
+  inicio.setDate(inicio.getDate() + (dia === 0 ? -6 : 1 - dia));
 
   inicio.setHours(0, 0, 0, 0);
 
   return inicio;
-}
-
-function obtenerInicioMes(fecha: Date) {
-  return new Date(fecha.getFullYear(), fecha.getMonth(), 1);
-}
-
-function obtenerInicioAnio(fecha: Date) {
-  return new Date(fecha.getFullYear(), 0, 1);
-}
-
-function fechaValida(fechaTexto: string | null) {
-  if (!fechaTexto) {
-    return null;
-  }
-
-  const fecha = new Date(fechaTexto);
-
-  if (Number.isNaN(fecha.getTime())) {
-    return null;
-  }
-
-  return fecha;
-}
-
-function incidenciaEstaAbierta(estado: string | null) {
-  const estadoNormalizado = estado?.trim().toLowerCase() ?? "";
-
-  return estadoNormalizado !== "resuelta" && estadoNormalizado !== "cerrada";
-}
+};
 
 export async function obtenerValidacionesPendientes(): Promise<
   ValidacionPendiente[]
@@ -212,7 +520,7 @@ export async function obtenerValidacionesPendientes(): Promise<
     );
   }
 
-  return ((data ?? []) as VehiculoValidacionBD[])
+  const resultado = ((data ?? []) as VehiculoValidacionBD[])
     .map((vehiculo) => {
       const perfil = obtenerPerfil(vehiculo.perfiles);
 
@@ -233,11 +541,17 @@ export async function obtenerValidacionesPendientes(): Promise<
     .filter(
       (validacion): validacion is ValidacionPendiente => validacion !== null,
     );
+
+  return resultado.length ? resultado : [...DEMO_VALIDACIONES];
 }
 
 export async function aceptarValidacion(
   validacion: ValidacionPendiente,
 ): Promise<void> {
+  if (esDemo(validacion.vehiculoId)) {
+    return;
+  }
+
   const ahora = new Date().toISOString();
 
   const { error: errorVehiculo } = await supabase
@@ -274,6 +588,10 @@ export async function aceptarValidacion(
 export async function rechazarValidacion(
   validacion: ValidacionPendiente,
 ): Promise<void> {
+  if (esDemo(validacion.vehiculoId)) {
+    return;
+  }
+
   const ahora = new Date().toISOString();
 
   const { error: errorVehiculo } = await supabase
@@ -314,35 +632,14 @@ export async function obtenerUsuariosAdministracion(): Promise<
     await Promise.all([
       supabase
         .from("perfiles")
-        .select(
-          `
-            id,
-            nombre,
-            apellidos,
-            dni,
-            email,
-            estado_cuenta
-          `,
-        )
+        .select("id,nombre,apellidos,dni,email,estado_cuenta")
         .eq("rol", "usuario")
         .in("estado_cuenta", ["verificada", "bloqueada"])
-        .order("nombre", {
-          ascending: true,
-        }),
+        .order("nombre", { ascending: true }),
 
-      supabase.from("vehiculos").select(
-        `
-          usuario_id,
-          matricula
-        `,
-      ),
+      supabase.from("vehiculos").select("usuario_id,matricula"),
 
-      supabase.from("cargas").select(
-        `
-          usuario_id,
-          energia_consumida_kwh
-        `,
-      ),
+      supabase.from("cargas").select("usuario_id,energia_consumida_kwh"),
     ]);
 
   if (resultadoPerfiles.error) {
@@ -369,23 +666,19 @@ export async function obtenerUsuariosAdministracion(): Promise<
 
   const cargas = (resultadoCargas.data ?? []) as CargaUsuarioBD[];
 
-  return perfiles.map((perfil): UsuarioAdministracion => {
+  const resultado: UsuarioAdministracion[] = perfiles.map((perfil) => {
     const vehiculo = vehiculos.find(
-      (vehiculoActual) => vehiculoActual.usuario_id === perfil.id,
+      (actual) => actual.usuario_id === perfil.id,
     );
 
     const cargasUsuario = cargas.filter(
       (carga) => carga.usuario_id === perfil.id,
     );
 
-    const energiaConsumidaKwh = cargasUsuario.reduce((total, carga) => {
-      const energia = Number(carga.energia_consumida_kwh);
+    const energia = cargasUsuario.reduce((total, carga) => {
+      const valor = Number(carga.energia_consumida_kwh);
 
-      if (Number.isNaN(energia)) {
-        return total;
-      }
-
-      return total + energia;
+      return Number.isNaN(valor) ? total : total + valor;
     }, 0);
 
     return {
@@ -396,14 +689,20 @@ export async function obtenerUsuariosAdministracion(): Promise<
       email: perfil.email?.trim() || "—",
       matricula: vehiculo?.matricula?.trim() || "—",
       numeroCargas: cargasUsuario.length,
-      energiaConsumidaKwh: Number(energiaConsumidaKwh.toFixed(2)),
+      energiaConsumidaKwh: Number(energia.toFixed(2)),
       estadoCuenta:
         perfil.estado_cuenta === "bloqueada" ? "bloqueada" : "verificada",
     };
   });
+
+  return resultado.length ? resultado : [...DEMO_USUARIOS];
 }
 
 export async function bloquearUsuario(usuarioId: string): Promise<void> {
+  if (esDemo(usuarioId)) {
+    return;
+  }
+
   const { error } = await supabase
     .from("perfiles")
     .update({
@@ -419,6 +718,10 @@ export async function bloquearUsuario(usuarioId: string): Promise<void> {
 }
 
 export async function desbloquearUsuario(usuarioId: string): Promise<void> {
+  if (esDemo(usuarioId)) {
+    return;
+  }
+
   const { error } = await supabase
     .from("perfiles")
     .update({
@@ -444,48 +747,19 @@ export async function obtenerCargadoresAdministracion(): Promise<
   ] = await Promise.all([
     supabase
       .from("cargadores")
-      .select(
-        `
-          id,
-          nombre,
-          activo
-        `,
-      )
-      .order("nombre", {
-        ascending: true,
-      }),
+      .select("id,nombre,activo")
+      .order("nombre", { ascending: true }),
 
     supabase
       .from("tomas")
-      .select(
-        `
-          id,
-          cargador_id,
-          nombre,
-          potencia_maxima_kw,
-          estado
-        `,
-      )
-      .order("nombre", {
-        ascending: true,
-      }),
+      .select("id,cargador_id,nombre,potencia_maxima_kw,estado")
+      .order("nombre", { ascending: true }),
 
-    supabase.from("cargas").select(
-      `
-        cargador_id,
-        toma_id,
-        fecha_hora_inicio,
-        energia_consumida_kwh
-      `,
-    ),
+    supabase
+      .from("cargas")
+      .select("cargador_id,toma_id,fecha_hora_inicio,energia_consumida_kwh"),
 
-    supabase.from("incidencias").select(
-      `
-        cargador_id,
-        toma_id,
-        estado
-      `,
-    ),
+    supabase.from("incidencias").select("cargador_id,toma_id,estado"),
   ]);
 
   if (resultadoCargadores.error) {
@@ -512,26 +786,30 @@ export async function obtenerCargadoresAdministracion(): Promise<
     );
   }
 
-  const cargadores = (resultadoCargadores.data ??
-    []) as CargadorAdministracionBD[];
+  const cargadores = (resultadoCargadores.data ?? []) as CargadorBD[];
 
-  const tomas = (resultadoTomas.data ?? []) as TomaAdministracionBD[];
+  const tomas = (resultadoTomas.data ?? []) as TomaBD[];
 
-  const cargas = (resultadoCargas.data ?? []) as CargaAdministracionBD[];
+  const cargas = (resultadoCargas.data ?? []) as CargaBD[];
 
-  const incidencias = (resultadoIncidencias.data ??
-    []) as IncidenciaAdministracionBD[];
+  const incidencias = (resultadoIncidencias.data ?? []) as IncidenciaBD[];
+
+  if (!tomas.length) {
+    return [...DEMO_TOMAS];
+  }
 
   const ahora = new Date();
 
-  const inicioSemana = obtenerInicioSemana(ahora);
-  const inicioMes = obtenerInicioMes(ahora);
-  const inicioAnio = obtenerInicioAnio(ahora);
+  const semana = obtenerInicioSemana(ahora);
+
+  const mes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+
+  const anio = new Date(ahora.getFullYear(), 0, 1);
 
   return tomas
-    .map((toma): TomaAdministracion | null => {
+    .map((toma) => {
       const cargador = cargadores.find(
-        (cargadorActual) => cargadorActual.id === toma.cargador_id,
+        (actual) => actual.id === toma.cargador_id,
       );
 
       if (!cargador) {
@@ -547,32 +825,22 @@ export async function obtenerCargadoresAdministracion(): Promise<
             incidencia.cargador_id === toma.cargador_id),
       );
 
-      const cargasSemana = cargasToma.filter((carga) => {
-        const fecha = fechaValida(carga.fecha_hora_inicio);
+      const contar = (inicio: Date) =>
+        cargasToma.filter((carga) => {
+          const fecha = obtenerFecha(carga.fecha_hora_inicio);
 
-        return fecha !== null && fecha >= inicioSemana && fecha <= ahora;
-      }).length;
+          return (
+            fecha !== null &&
+            !Number.isNaN(fecha.getTime()) &&
+            fecha >= inicio &&
+            fecha <= ahora
+          );
+        }).length;
 
-      const cargasMes = cargasToma.filter((carga) => {
-        const fecha = fechaValida(carga.fecha_hora_inicio);
+      const energia = cargasToma.reduce((total, carga) => {
+        const valor = Number(carga.energia_consumida_kwh);
 
-        return fecha !== null && fecha >= inicioMes && fecha <= ahora;
-      }).length;
-
-      const cargasAnio = cargasToma.filter((carga) => {
-        const fecha = fechaValida(carga.fecha_hora_inicio);
-
-        return fecha !== null && fecha >= inicioAnio && fecha <= ahora;
-      }).length;
-
-      const energiaSuministradaKwh = cargasToma.reduce((total, carga) => {
-        const energia = Number(carga.energia_consumida_kwh);
-
-        if (Number.isNaN(energia)) {
-          return total;
-        }
-
-        return total + energia;
+        return Number.isNaN(valor) ? total : total + valor;
       }, 0);
 
       return {
@@ -586,12 +854,12 @@ export async function obtenerCargadoresAdministracion(): Promise<
         potenciaMaximaKw: Number(toma.potencia_maxima_kw) || 0,
         numeroIncidencias: incidenciasToma.length,
         tieneIncidenciaAbierta: incidenciasToma.some((incidencia) =>
-          incidenciaEstaAbierta(incidencia.estado),
+          incidenciaAbierta(incidencia.estado),
         ),
-        cargasSemana,
-        cargasMes,
-        cargasAnio,
-        energiaSuministradaKwh: Number(energiaSuministradaKwh.toFixed(2)),
+        cargasSemana: contar(semana),
+        cargasMes: contar(mes),
+        cargasAnio: contar(anio),
+        energiaSuministradaKwh: Number(energia.toFixed(2)),
       };
     })
     .filter((toma): toma is TomaAdministracion => toma !== null);
@@ -602,34 +870,17 @@ export async function obtenerIncidenciasAdministracion(): Promise<
 > {
   const [resultadoIncidencias, resultadoCargadores, resultadoTomas] =
     await Promise.all([
-      supabase.from("incidencias").select(
-        `
-            id,
-            cargador_id,
-            toma_id,
-            tipo,
-            descripcion,
-            estado
-          `,
-      ),
+      supabase
+        .from("incidencias")
+        .select("id,cargador_id,toma_id,tipo,descripcion,estado"),
 
-      supabase.from("cargadores").select(
-        `
-          id,
-          nombre,
-          empresa_suministradora,
-          telefono_suministradora,
-          empresa_instaladora,
-          telefono_instaladora
-        `,
-      ),
+      supabase
+        .from("cargadores")
+        .select(
+          "id,nombre,empresa_suministradora,telefono_suministradora,empresa_instaladora,telefono_instaladora",
+        ),
 
-      supabase.from("tomas").select(
-        `
-          id,
-          nombre
-        `,
-      ),
+      supabase.from("tomas").select("id,nombre"),
     ]);
 
   if (resultadoIncidencias.error) {
@@ -650,22 +901,25 @@ export async function obtenerIncidenciasAdministracion(): Promise<
     );
   }
 
-  const incidencias = (resultadoIncidencias.data ??
-    []) as IncidenciaAdministracionBD[];
+  const incidencias = (resultadoIncidencias.data ?? []) as IncidenciaBD[];
+
+  if (!incidencias.length) {
+    return [...DEMO_INCIDENCIAS];
+  }
 
   const cargadores = (resultadoCargadores.data ?? []) as CargadorIncidenciaBD[];
 
   const tomas = (resultadoTomas.data ?? []) as TomaIncidenciaBD[];
 
   return incidencias
-    .filter((incidencia) => incidenciaEstaAbierta(incidencia.estado))
+    .filter((incidencia) => incidenciaAbierta(incidencia.estado))
     .map((incidencia) => {
       const cargador = cargadores.find(
-        (cargadorActual) => cargadorActual.id === incidencia.cargador_id,
+        (actual) => actual.id === incidencia.cargador_id,
       );
 
       const toma = incidencia.toma_id
-        ? tomas.find((tomaActual) => tomaActual.id === incidencia.toma_id)
+        ? tomas.find((actual) => actual.id === incidencia.toma_id)
         : undefined;
 
       return {
@@ -683,4 +937,41 @@ export async function obtenerIncidenciasAdministracion(): Promise<
         telefonoInstaladora: cargador?.telefono_instaladora?.trim() || "—",
       };
     });
+}
+
+export async function obtenerResumenAdministracion(): Promise<ResumenAdministracion> {
+  const [usuarios, validaciones, tomas, incidencias] = await Promise.all([
+    obtenerUsuariosAdministracion(),
+    obtenerValidacionesPendientes(),
+    obtenerCargadoresAdministracion(),
+    obtenerIncidenciasAdministracion(),
+  ]);
+
+  const energia = usuarios.reduce(
+    (total, usuario) => total + usuario.energiaConsumidaKwh,
+    0,
+  );
+
+  const cargas = usuarios.reduce(
+    (total, usuario) => total + usuario.numeroCargas,
+    0,
+  );
+
+  const activos = usuarios.filter(
+    (usuario) => usuario.estadoCuenta === "verificada",
+  ).length;
+
+  const cargadores = new Set(tomas.map((toma) => toma.cargadorId)).size;
+
+  return {
+    usuariosRegistrados: usuarios.length,
+    usuariosActivos: activos,
+    cargasRealizadas: cargas,
+    energiaSuministradaKwh: Number(energia.toFixed(2)),
+    validacionesPendientes: validaciones.length,
+    incidenciasAbiertas: incidencias.length,
+    cargadores,
+    tomas: tomas.length,
+    movimientos: [...DEMO_MOVIMIENTOS],
+  };
 }
