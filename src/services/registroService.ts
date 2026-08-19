@@ -12,6 +12,20 @@ function normalizarMatricula(matricula: string) {
   return matricula.trim().toUpperCase().replace(/[\s-]/g, "");
 }
 
+function normalizarDocumento(documento: string) {
+  return documento.trim().toUpperCase().replace(/[\s-]/g, "");
+}
+
+async function crearHashDocumento(documento: string) {
+  const contenido = new TextEncoder().encode(normalizarDocumento(documento));
+
+  const resumen = await crypto.subtle.digest("SHA-256", contenido);
+
+  return Array.from(new Uint8Array(resumen))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 function obtenerMensajeError(mensaje: string) {
   const mensajeMinusculas = mensaje.toLowerCase();
 
@@ -40,6 +54,8 @@ export async function enviarSolicitudRegistro(
 
   const matricula = normalizarMatricula(formulario.matricula);
 
+  const dniProtegido = await crearHashDocumento(usuario.dni);
+
   const { data, error } = await supabase.auth.signUp({
     email,
 
@@ -53,7 +69,7 @@ export async function enviarSolicitudRegistro(
 
         telefono: usuario.telefono.trim(),
 
-        dni: usuario.dni.trim().toUpperCase(),
+        dni: dniProtegido,
 
         cliente: cliente.nombre,
 
@@ -74,22 +90,33 @@ export async function enviarSolicitudRegistro(
     throw new Error("No se ha podido crear la solicitud de acceso.");
   }
 
-  /*
-   * Al tener desactivado Confirm email,
-   * Supabase inicia una sesión temporal
-   * inmediatamente después del registro.
-   *
-   * El solicitante todavía NO está aprobado,
-   * por lo que cerramos esa sesión antes
-   * de devolverlo al Login.
-   */
-  if (data.session) {
-    const { error: errorCierre } = await supabase.auth.signOut();
-
-    if (errorCierre) {
-      throw new Error(
-        "La solicitud se ha creado, pero no se ha podido cerrar la sesión temporal.",
+  try {
+    if (data.session) {
+      const { error: errorAviso } = await supabase.functions.invoke(
+        "procesar-solicitudes",
+        {
+          body: {
+            origen: "registro",
+          },
+        },
       );
+
+      if (errorAviso) {
+        console.error(
+          "La solicitud se ha creado, pero no se ha podido enviar el aviso inmediato:",
+          errorAviso,
+        );
+      }
+    }
+  } finally {
+    if (data.session) {
+      const { error: errorCierre } = await supabase.auth.signOut();
+
+      if (errorCierre) {
+        throw new Error(
+          "La solicitud se ha creado, pero no se ha podido cerrar la sesión temporal.",
+        );
+      }
     }
   }
 }

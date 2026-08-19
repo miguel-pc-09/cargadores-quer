@@ -13,24 +13,27 @@ const EMAIL_FROM = Deno.env.get("EMAIL_FROM") ?? "";
 
 const CRON_SECRET = Deno.env.get("CRON_SECRET") ?? "";
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-cron-secret",
+};
+
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: {
     persistSession: false,
+
     autoRefreshToken: false,
   },
 });
 
 interface SolicitudPendiente {
   id: string;
-
   usuario_id: string;
-
   nombre: string;
-
   apellidos: string;
-
   email: string;
-
   matricula: string;
 }
 
@@ -94,8 +97,7 @@ function plantillaCorreo(titulo: string, contenido: string) {
                 margin-bottom:26px;
               "
             >
-              CARGA ELÉCTRICA MUNICIPAL ·
-              AYUNTAMIENTO DE QUER
+              CARGA ELÉCTRICA MUNICIPAL · AYUNTAMIENTO DE QUER
             </div>
 
             <h1
@@ -128,8 +130,7 @@ function plantillaCorreo(titulo: string, contenido: string) {
               margin:18px 0 0;
             "
           >
-            Este es un aviso
-            automático de CargaQuer.
+            Este es un aviso automático de CargaQuer.
           </p>
 
         </div>
@@ -138,6 +139,32 @@ function plantillaCorreo(titulo: string, contenido: string) {
 
     </html>
   `;
+}
+
+async function obtenerUsuarioSolicitante(request: Request) {
+  const autorizacion = request.headers.get("authorization");
+
+  if (!autorizacion?.toLowerCase().startsWith("bearer ")) {
+    return null;
+  }
+
+  const token = autorizacion.slice(7).trim();
+
+  if (!token) {
+    return null;
+  }
+
+  const {
+    data: { user },
+
+    error,
+  } = await supabase.auth.getUser(token);
+
+  if (error || !user) {
+    return null;
+  }
+
+  return user;
 }
 
 async function avisoYaEnviado(
@@ -262,15 +289,17 @@ async function procesarCorreo(
 }
 
 Deno.serve(async (request) => {
-  if (request.method !== "POST") {
-    return new Response("Método no permitido", {
-      status: 405,
+  if (request.method === "OPTIONS") {
+    return new Response("ok", {
+      headers: corsHeaders,
     });
   }
 
-  if (!CRON_SECRET || request.headers.get("x-cron-secret") !== CRON_SECRET) {
-    return new Response("No autorizado", {
-      status: 401,
+  if (request.method !== "POST") {
+    return new Response("Método no permitido", {
+      status: 405,
+
+      headers: corsHeaders,
     });
   }
 
@@ -287,17 +316,41 @@ Deno.serve(async (request) => {
       },
       {
         status: 500,
+
+        headers: corsHeaders,
       },
     );
   }
 
-  const { data, error } = await supabase
+  const llamadaCron =
+    Boolean(CRON_SECRET) &&
+    request.headers.get("x-cron-secret") === CRON_SECRET;
+
+  const usuarioSolicitante = llamadaCron
+    ? null
+    : await obtenerUsuarioSolicitante(request);
+
+  if (!llamadaCron && !usuarioSolicitante) {
+    return new Response("No autorizado", {
+      status: 401,
+
+      headers: corsHeaders,
+    });
+  }
+
+  let consulta = supabase
     .from("solicitudes_registro")
     .select("id,usuario_id,nombre,apellidos,email,matricula")
     .eq("estado", "pendiente")
     .order("creado_en", {
       ascending: true,
     });
+
+  if (usuarioSolicitante) {
+    consulta = consulta.eq("usuario_id", usuarioSolicitante.id);
+  }
+
+  const { data, error } = await consulta;
 
   if (error) {
     return Response.json(
@@ -308,6 +361,8 @@ Deno.serve(async (request) => {
       },
       {
         status: 500,
+
+        headers: corsHeaders,
       },
     );
   }
@@ -317,6 +372,8 @@ Deno.serve(async (request) => {
   let correosUsuario = 0;
 
   let correosAdministrador = 0;
+
+  let errores = 0;
 
   for (const solicitud of solicitudes) {
     const nombreCompleto = escaparHtml(
@@ -338,44 +395,43 @@ Deno.serve(async (request) => {
         "Solicitud recibida",
 
         `
-              <p>
-                Hola
-                ${escaparHtml(solicitud.nombre)},
-              </p>
+          <p>
+            Hola ${escaparHtml(solicitud.nombre)},
+          </p>
 
-              <p>
-                Hemos recibido
-                correctamente tu
-                solicitud de acceso
-                a CargaQuer.
-              </p>
+          <p>
+            Hemos recibido correctamente tu solicitud de acceso a CargaQuer.
+          </p>
 
-              <p>
-                El Ayuntamiento de
-                Quer debe revisarla
-                antes de que puedas
-                acceder al servicio.
-              </p>
+          <p>
+            El Ayuntamiento de Quer debe revisarla antes de que puedas
+            acceder al servicio.
+          </p>
 
-              <p>
-                <strong>
-                  Matrícula:
-                </strong>
-                ${matricula}
-              </p>
+          <p>
+            <strong>Matrícula:</strong>
+            ${matricula}
+          </p>
 
-              <p>
-                Te enviaremos otro
-                correo cuando tu
-                solicitud haya sido
-                aprobada.
-              </p>
-            `,
+          <p>
+            Te enviaremos otro correo cuando tu solicitud haya sido aprobada.
+          </p>
+        `,
       ),
     );
 
     if (usuarioEnviado) {
       correosUsuario++;
+    } else if (
+      !(await avisoYaEnviado(
+        "solicitud_recibida",
+
+        solicitud.id,
+
+        solicitud.email,
+      ))
+    ) {
+      errores++;
     }
 
     const administradorEnviado = await procesarCorreo(
@@ -391,39 +447,25 @@ Deno.serve(async (request) => {
         "Nueva solicitud pendiente de aprobación",
 
         `
-              <p>
-                Se ha registrado
-                una nueva solicitud
-                de acceso a
-                CargaQuer.
-              </p>
+          <p>
+            Se ha registrado una nueva solicitud de acceso a CargaQuer.
+          </p>
 
-              <p>
-                <strong>
-                  Usuario:
-                </strong>
-                ${nombreCompleto}
-                <br>
+          <p>
+            <strong>Usuario:</strong>
+            ${nombreCompleto}<br>
 
-                <strong>
-                  Correo:
-                </strong>
-                ${escaparHtml(solicitud.email)}
-                <br>
+            <strong>Correo:</strong>
+            ${escaparHtml(solicitud.email)}<br>
 
-                <strong>
-                  Matrícula:
-                </strong>
-                ${matricula}
-              </p>
+            <strong>Matrícula:</strong>
+            ${matricula}
+          </p>
 
-              <p>
-                Entra en el panel
-                de administración
-                para aceptarla o
-                rechazarla.
-              </p>
-            `,
+          <p>
+            Entra en el panel de administración para aceptarla o rechazarla.
+          </p>
+        `,
       ),
 
       {
@@ -435,16 +477,33 @@ Deno.serve(async (request) => {
 
     if (administradorEnviado) {
       correosAdministrador++;
+    } else if (
+      !(await avisoYaEnviado(
+        "nuevo_usuario_admin",
+
+        solicitud.id,
+
+        ADMIN_EMAIL,
+      ))
+    ) {
+      errores++;
     }
   }
 
-  return Response.json({
-    ok: true,
+  return Response.json(
+    {
+      ok: errores === 0,
 
-    solicitudesPendientes: solicitudes.length,
+      solicitudesPendientes: solicitudes.length,
 
-    correosUsuario,
+      correosUsuario,
 
-    correosAdministrador,
-  });
+      correosAdministrador,
+
+      errores,
+    },
+    {
+      headers: corsHeaders,
+    },
+  );
 });

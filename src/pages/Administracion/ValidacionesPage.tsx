@@ -173,7 +173,7 @@ function ValidacionesPage() {
                 <tr>
                   <th>Nombre</th>
 
-                  <th>DNI / NIE</th>
+                  <th>Documento</th>
 
                   <th>Correo</th>
 
@@ -200,7 +200,7 @@ function ValidacionesPage() {
                           <strong>{obtenerNombreCompleto(validacion)}</strong>
                         </td>
 
-                        <td>{validacion.dni}</td>
+                        <td>{validacion.dniProtegido}</td>
 
                         <td>{validacion.email}</td>
 

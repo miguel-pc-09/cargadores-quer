@@ -76,6 +76,7 @@ function AuthProvider({ children }: AuthProviderProps) {
 
       if (!sesion?.user) {
         setUsuario(null);
+
         setCargandoSesion(false);
 
         return;
@@ -90,6 +91,15 @@ function AuthProvider({ children }: AuthProviderProps) {
               setUsuario(usuarioSesion);
             }
           } catch {
+            /*
+             * Durante signUp Supabase crea una sesión temporal.
+             * Si la solicitud aún no está aprobada, no se convierte
+             * nunca en usuario autenticado de la aplicación.
+             *
+             * registroService cerrará esa sesión después de enviar
+             * el correo de solicitud.
+             */
+
             if (activo) {
               setUsuario(null);
             }
@@ -126,10 +136,15 @@ function AuthProvider({ children }: AuthProviderProps) {
   const value = useMemo<AuthContextValue>(
     () => ({
       usuario,
+
       cargandoSesion,
+
       autenticado: usuario !== null,
+
       esAdministrador: usuario?.rol === "administrador",
+
       iniciarSesion,
+
       cerrarSesion,
     }),
     [usuario, cargandoSesion, iniciarSesion, cerrarSesion],

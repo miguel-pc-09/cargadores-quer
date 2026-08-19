@@ -10,7 +10,7 @@ export interface ValidacionPendiente {
   usuarioId: string;
   nombre: string;
   apellidos: string;
-  dni: string;
+  dniProtegido: string;
   email: string;
   matricula: string;
 }
@@ -37,7 +37,7 @@ const DEMO_VALIDACIONES: ValidacionPendiente[] = [
 
     apellidos: "García Martín",
 
-    dni: "12345678A",
+    dniProtegido: "Documento protegido",
 
     email: "laura.garcia@demo.cargaquer.es",
 
@@ -53,7 +53,7 @@ const DEMO_VALIDACIONES: ValidacionPendiente[] = [
 
     apellidos: "Sánchez López",
 
-    dni: "23456789B",
+    dniProtegido: "Documento protegido",
 
     email: "javier.sanchez@demo.cargaquer.es",
 
@@ -63,6 +63,20 @@ const DEMO_VALIDACIONES: ValidacionPendiente[] = [
 
 function esDemo(solicitudId: string) {
   return solicitudId.startsWith(DEMO);
+}
+
+function formatearDocumentoProtegido(valor: string | null) {
+  const hash = valor?.trim() ?? "";
+
+  if (!hash) {
+    return "Protegido";
+  }
+
+  if (hash.length <= 18) {
+    return "Protegido";
+  }
+
+  return `${hash.slice(0, 8)}…${hash.slice(-8)}`;
 }
 
 export async function obtenerValidacionesPendientes(): Promise<
@@ -92,7 +106,7 @@ export async function obtenerValidacionesPendientes(): Promise<
 
       apellidos: solicitud.apellidos.trim(),
 
-      dni: solicitud.dni?.trim() || "—",
+      dniProtegido: formatearDocumentoProtegido(solicitud.dni),
 
       email: solicitud.email.trim() || "—",
 
@@ -116,6 +130,22 @@ export async function aceptarValidacion(
 
   if (error) {
     throw new Error(`No se ha podido aprobar la solicitud: ${error.message}`);
+  }
+
+  const { error: errorAviso } = await supabase.functions.invoke(
+    "procesar-avisos",
+    {
+      body: {
+        origen: "aprobacion",
+      },
+    },
+  );
+
+  if (errorAviso) {
+    console.error(
+      "La solicitud se ha aprobado, pero no se ha podido enviar el correo de aprobación de forma inmediata:",
+      errorAviso,
+    );
   }
 }
 

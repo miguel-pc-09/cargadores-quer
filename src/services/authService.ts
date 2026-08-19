@@ -97,14 +97,14 @@ async function obtenerPerfilUsuario(
     .from("perfiles")
     .select(
       `
-          id,
-          nombre,
-          apellidos,
-          telefono,
-          rol,
-          cliente,
-          estado_cuenta
-        `,
+        id,
+        nombre,
+        apellidos,
+        telefono,
+        rol,
+        cliente,
+        estado_cuenta
+      `,
     )
     .eq("id", usuarioId)
     .maybeSingle();
@@ -149,7 +149,14 @@ function comprobarAcceso(usuario: UsuarioAutenticado) {
 export async function obtenerUsuarioPorSesion(
   usuarioAuth: User,
 ): Promise<UsuarioAutenticado> {
-  return obtenerPerfilUsuario(usuarioAuth.id, usuarioAuth.email ?? "");
+  const usuario = await obtenerPerfilUsuario(
+    usuarioAuth.id,
+    usuarioAuth.email ?? "",
+  );
+
+  comprobarAcceso(usuario);
+
+  return usuario;
 }
 
 export async function iniciarSesion(
@@ -173,8 +180,6 @@ export async function iniciarSesion(
 
   try {
     const usuario = await obtenerUsuarioPorSesion(data.user);
-
-    comprobarAcceso(usuario);
 
     return {
       usuario,
@@ -209,8 +214,6 @@ export async function obtenerSesionActual(): Promise<SesionUsuario | null> {
 
   try {
     const usuario = await obtenerUsuarioPorSesion(sesion.user);
-
-    comprobarAcceso(usuario);
 
     return {
       usuario,

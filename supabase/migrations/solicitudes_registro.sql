@@ -3,6 +3,8 @@
 -- Solicitudes de registro pendientes de aprobación municipal
 -- ============================================================
 
+create extension if not exists pgcrypto;
+
 create table if not exists public.solicitudes_registro (
   id uuid primary key default gen_random_uuid(),
 
@@ -17,6 +19,9 @@ create table if not exists public.solicitudes_registro (
 
   telefono text,
 
+  -- El DNI nunca se guarda en claro.
+  -- Esta columna conserva el nombre existente, pero almacena
+  -- únicamente un SHA-256 hexadecimal de 64 caracteres.
   dni text,
 
   email text not null,
@@ -50,21 +55,135 @@ create table if not exists public.solicitudes_registro (
 );
 
 alter table public.solicitudes_registro
-enable row level security;
+  enable row level security;
 
 
 -- ============================================================
--- El usuario autenticado puede consultar SU propia solicitud.
--- Esto permite mostrar correctamente "pendiente" o "rechazada"
--- cuando intenta iniciar sesión.
+-- PROTEGER DNI YA EXISTENTES
+-- ============================================================
+
+update public.solicitudes_registro
+set dni = encode(
+  digest(
+    upper(
+      regexp_replace(
+        trim(dni),
+        '[[:space:]-]',
+        '',
+        'g'
+      )
+    ),
+    'sha256'
+  ),
+  'hex'
+)
+where dni is not null
+  and trim(dni) <> ''
+  and dni !~ '^[0-9a-fA-F]{64}$';
+
+
+update public.perfiles
+set dni = encode(
+  digest(
+    upper(
+      regexp_replace(
+        trim(dni),
+        '[[:space:]-]',
+        '',
+        'g'
+      )
+    ),
+    'sha256'
+  ),
+  'hex'
+)
+where dni is not null
+  and trim(dni) <> ''
+  and dni !~ '^[0-9a-fA-F]{64}$';
+
+
+-- ============================================================
+-- LIMPIAR DATOS CREADOS POR EL FLUJO ANTIGUO
+--
+-- Una solicitud pendiente NO debe existir aún ni en perfiles
+-- ni en vehiculos.
+-- ============================================================
+
+delete from public.vehiculos v
+using public.solicitudes_registro s
+where v.usuario_id = s.usuario_id
+  and s.estado = 'pendiente';
+
+
+delete from public.perfiles p
+using public.solicitudes_registro s
+where p.id = s.usuario_id
+  and p.rol = 'usuario'
+  and s.estado = 'pendiente';
+
+
+-- ============================================================
+-- ELIMINAR TRIGGERS ANTIGUOS
+--
+-- Se elimina cualquier trigger personalizado de auth.users
+-- cuya función cree perfiles o vehículos.
+-- ============================================================
+
+drop trigger if exists cargaquer_nuevo_usuario
+on auth.users;
+
+
+do $$
+declare
+  trigger_actual record;
+  definicion_funcion text;
+begin
+
+  for trigger_actual in
+
+    select
+      t.tgname,
+      t.tgfoid
+
+    from pg_trigger t
+
+    where t.tgrelid = 'auth.users'::regclass
+      and not t.tgisinternal
+
+  loop
+
+    definicion_funcion :=
+      pg_get_functiondef(trigger_actual.tgfoid);
+
+    if
+      definicion_funcion ilike '%perfiles%'
+      or definicion_funcion ilike '%vehiculos%'
+    then
+
+      execute format(
+        'drop trigger if exists %I on auth.users',
+        trigger_actual.tgname
+      );
+
+    end if;
+
+  end loop;
+
+end;
+$$;
+
+
+-- ============================================================
+-- POLÍTICAS solicitudes_registro
 -- ============================================================
 
 drop policy if exists
-"solicitud propia lectura"
+  "solicitud propia lectura"
 on public.solicitudes_registro;
 
+
 create policy
-"solicitud propia lectura"
+  "solicitud propia lectura"
 on public.solicitudes_registro
 for select
 to authenticated
@@ -73,16 +192,13 @@ using (
 );
 
 
--- ============================================================
--- El administrador puede consultar todas las solicitudes.
--- ============================================================
-
 drop policy if exists
-"administradores leen solicitudes"
+  "administradores leen solicitudes"
 on public.solicitudes_registro;
 
+
 create policy
-"administradores leen solicitudes"
+  "administradores leen solicitudes"
 on public.solicitudes_registro
 for select
 to authenticated
@@ -93,7 +209,6 @@ using (
     from public.perfiles p
 
     where p.id = auth.uid()
-
       and p.rol = 'administrador'
   )
 );
@@ -102,17 +217,15 @@ using (
 -- ============================================================
 -- REGISTRO
 --
--- Cuando Supabase crea el usuario en auth.users:
+-- Al registrarse:
 --
 -- SÍ:
---   crea solicitudes_registro
+--   auth.users
+--   solicitudes_registro
 --
 -- NO:
---   crea perfiles
---   crea vehiculos
---
--- Los datos definitivos solamente se crean cuando
--- el Ayuntamiento aprueba la solicitud.
+--   perfiles
+--   vehiculos
 -- ============================================================
 
 create or replace function
@@ -124,19 +237,12 @@ set search_path = public
 as $$
 declare
   v_nombre text;
-
   v_apellidos text;
-
   v_telefono text;
-
   v_dni text;
-
   v_cliente text;
-
   v_tipo_usuario text;
-
   v_filiacion text;
-
   v_matricula text;
 begin
 
@@ -148,6 +254,7 @@ begin
       )
     );
 
+
   v_apellidos :=
     trim(
       coalesce(
@@ -155,6 +262,7 @@ begin
         ''
       )
     );
+
 
   v_telefono :=
     nullif(
@@ -167,9 +275,10 @@ begin
       ''
     );
 
+
   v_dni :=
     nullif(
-      upper(
+      lower(
         trim(
           coalesce(
             new.raw_user_meta_data ->> 'dni',
@@ -180,6 +289,34 @@ begin
       ''
     );
 
+
+  -- Compatibilidad por seguridad:
+  -- si algún cliente antiguo envía el DNI en claro,
+  -- se convierte a SHA-256 antes de guardarlo.
+
+  if v_dni is not null
+     and v_dni !~ '^[0-9a-f]{64}$'
+  then
+
+    v_dni :=
+      encode(
+        digest(
+          upper(
+            regexp_replace(
+              v_dni,
+              '[[:space:]-]',
+              '',
+              'g'
+            )
+          ),
+          'sha256'
+        ),
+        'hex'
+      );
+
+  end if;
+
+
   v_cliente :=
     trim(
       coalesce(
@@ -187,6 +324,7 @@ begin
         'Ayuntamiento de Quer'
       )
     );
+
 
   v_tipo_usuario :=
     nullif(
@@ -199,6 +337,7 @@ begin
       ''
     );
 
+
   v_filiacion :=
     nullif(
       trim(
@@ -209,6 +348,7 @@ begin
       ),
       ''
     );
+
 
   v_matricula :=
     upper(
@@ -232,8 +372,10 @@ begin
     or coalesce(new.email, '') = ''
     or v_matricula = ''
   then
+
     raise exception
       'Faltan datos obligatorios para crear la solicitud de registro.';
+
   end if;
 
 
@@ -247,7 +389,8 @@ begin
     cliente,
     tipo_usuario,
     filiacion,
-    matricula
+    matricula,
+    estado
   )
   values (
     new.id,
@@ -259,22 +402,18 @@ begin
     v_cliente,
     v_tipo_usuario,
     v_filiacion,
-    v_matricula
+    v_matricula,
+    'pendiente'
   );
 
 
   return new;
+
 end;
 $$;
 
 
-drop trigger if exists
-cargaquer_nuevo_usuario
-on auth.users;
-
-
-create trigger
-cargaquer_nuevo_usuario
+create trigger cargaquer_nuevo_usuario
 after insert
 on auth.users
 for each row
@@ -285,17 +424,7 @@ public.cargaquer_crear_solicitud_registro();
 -- ============================================================
 -- APROBAR SOLICITUD
 --
--- El Ayuntamiento pulsa Aceptar.
---
--- En una única transacción:
---
--- 1. comprueba que quien lo ejecuta es administrador
--- 2. obtiene la solicitud
--- 3. crea el perfil
--- 4. crea el vehículo
--- 5. marca la solicitud como aprobada
---
--- Si cualquiera de esos pasos falla, no se guarda ninguno.
+-- Solo aquí nacen perfil y vehículo.
 -- ============================================================
 
 create or replace function
@@ -312,36 +441,46 @@ declare
 begin
 
   if not exists (
+
     select 1
 
     from public.perfiles p
 
     where p.id = auth.uid()
-
       and p.rol = 'administrador'
+
   )
   then
+
     raise exception
       'No tienes permisos para aprobar solicitudes.';
+
   end if;
 
 
   select *
   into v_solicitud
+
   from public.solicitudes_registro
+
   where id = p_solicitud_id
+
   for update;
 
 
   if not found then
+
     raise exception
       'No se ha encontrado la solicitud.';
+
   end if;
 
 
   if v_solicitud.estado <> 'pendiente' then
+
     raise exception
       'La solicitud ya ha sido procesada.';
+
   end if;
 
 
@@ -391,9 +530,7 @@ begin
 
   set
     estado = 'aprobada',
-
     motivo_rechazo = null,
-
     actualizado_en = now()
 
   where id = p_solicitud_id;
@@ -404,8 +541,6 @@ $$;
 
 -- ============================================================
 -- RECHAZAR SOLICITUD
---
--- No crea ni perfil ni vehículo.
 -- ============================================================
 
 create or replace function
@@ -420,17 +555,20 @@ as $$
 begin
 
   if not exists (
+
     select 1
 
     from public.perfiles p
 
     where p.id = auth.uid()
-
       and p.rol = 'administrador'
+
   )
   then
+
     raise exception
       'No tienes permisos para rechazar solicitudes.';
+
   end if;
 
 
@@ -445,43 +583,85 @@ begin
     actualizado_en = now()
 
   where id = p_solicitud_id
-
     and estado = 'pendiente';
 
 
   if not found then
+
     raise exception
       'La solicitud no existe o ya ha sido procesada.';
+
   end if;
 
 end;
 $$;
 
 
-revoke all
-on function
-public.cargaquer_aprobar_solicitud(uuid)
-from public, anon;
+-- ============================================================
+-- PERMISOS
+--
+-- Las políticas RLS continúan controlando qué filas puede usar
+-- cada usuario.
+-- ============================================================
+
+grant usage
+on schema public
+to authenticated, service_role;
 
 
-revoke all
-on function
-public.cargaquer_rechazar_solicitud(uuid)
-from public, anon;
-
-
-grant execute
-on function
-public.cargaquer_aprobar_solicitud(uuid)
+grant select
+on public.cargadores, public.tomas
 to authenticated;
 
 
-grant execute
-on function
-public.cargaquer_rechazar_solicitud(uuid)
+grant select, insert, update
+on public.reservas, public.cargas
+to authenticated;
+
+
+grant select, update
+on public.perfiles, public.vehiculos
 to authenticated;
 
 
 grant select
 on public.solicitudes_registro
+to authenticated;
+
+
+grant select, insert, update, delete
+on public.solicitudes_registro
+to service_role;
+
+
+grant select, insert, update
+on public.avisos_email
+to service_role;
+
+
+-- ============================================================
+-- PERMISOS FUNCIONES
+-- ============================================================
+
+revoke all
+on function
+public.cargaquer_aprobar_solicitud(uuid)
+from public, anon;
+
+
+revoke all
+on function
+public.cargaquer_rechazar_solicitud(uuid)
+from public, anon;
+
+
+grant execute
+on function
+public.cargaquer_aprobar_solicitud(uuid)
+to authenticated;
+
+
+grant execute
+on function
+public.cargaquer_rechazar_solicitud(uuid)
 to authenticated;
