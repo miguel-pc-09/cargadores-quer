@@ -21,20 +21,72 @@ interface PerfilSupabase {
   estado_cuenta: EstadoCuenta;
 }
 
+interface SolicitudAccesoBD {
+  estado: "pendiente" | "aprobada" | "rechazada";
+
+  motivo_rechazo: string | null;
+}
+
 function convertirPerfilEnUsuario(
   perfil: PerfilSupabase,
   email: string,
 ): UsuarioAutenticado {
   return {
     id: perfil.id,
+
     nombre: perfil.nombre ?? "",
+
     apellidos: perfil.apellidos ?? "",
+
     email,
+
     telefono: perfil.telefono ?? undefined,
+
     rol: perfil.rol,
+
     estadoCuenta: perfil.estado_cuenta,
+
     ayuntamiento: perfil.cliente ?? undefined,
   };
+}
+
+async function comprobarSolicitudSinPerfil(usuarioId: string) {
+  const { data, error } = await supabase
+    .from("solicitudes_registro")
+    .select("estado,motivo_rechazo")
+    .eq("usuario_id", usuarioId)
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(
+      `No se ha podido comprobar el estado de tu solicitud: ${error.message}`,
+    );
+  }
+
+  const solicitud = data as SolicitudAccesoBD | null;
+
+  if (!solicitud) {
+    throw new Error(
+      "No existe una solicitud de acceso asociada a esta cuenta.",
+    );
+  }
+
+  if (solicitud.estado === "pendiente") {
+    throw new Error(
+      "Tu solicitud todavía está pendiente de aprobación por el Ayuntamiento.",
+    );
+  }
+
+  if (solicitud.estado === "rechazada") {
+    throw new Error(
+      solicitud.motivo_rechazo?.trim() ||
+        "Tu solicitud de acceso ha sido rechazada por el Ayuntamiento.",
+    );
+  }
+
+  throw new Error(
+    "Tu solicitud figura como aprobada, pero el perfil todavía no está disponible.",
+  );
 }
 
 async function obtenerPerfilUsuario(
@@ -45,17 +97,17 @@ async function obtenerPerfilUsuario(
     .from("perfiles")
     .select(
       `
-        id,
-        nombre,
-        apellidos,
-        telefono,
-        rol,
-        cliente,
-        estado_cuenta
-      `,
+          id,
+          nombre,
+          apellidos,
+          telefono,
+          rol,
+          cliente,
+          estado_cuenta
+        `,
     )
     .eq("id", usuarioId)
-    .single();
+    .maybeSingle();
 
   if (error) {
     throw new Error(
@@ -64,6 +116,8 @@ async function obtenerPerfilUsuario(
   }
 
   if (!data) {
+    await comprobarSolicitudSinPerfil(usuarioId);
+
     throw new Error("No existe el perfil asociado al usuario.");
   }
 
@@ -105,6 +159,7 @@ export async function iniciarSesion(
 
   const { data, error } = await supabase.auth.signInWithPassword({
     email,
+
     password: credenciales.contrasena,
   });
 
@@ -159,6 +214,7 @@ export async function obtenerSesionActual(): Promise<SesionUsuario | null> {
 
     return {
       usuario,
+
       iniciadaEn: sesion.user.last_sign_in_at ?? new Date().toISOString(),
     };
   } catch {

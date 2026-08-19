@@ -5,7 +5,7 @@ import {
   obtenerValidacionesPendientes,
   rechazarValidacion,
   type ValidacionPendiente,
-} from "../../services/adminService";
+} from "../../services/solicitudesRegistroService";
 
 import "../../styles/Administracion/ValidacionesPage.css";
 
@@ -54,7 +54,7 @@ function ValidacionesPage() {
     }
 
     try {
-      setProcesandoId(validacion.vehiculoId);
+      setProcesandoId(validacion.solicitudId);
 
       setError("");
 
@@ -63,17 +63,17 @@ function ValidacionesPage() {
       await aceptarValidacion(validacion);
 
       setValidaciones((actuales) =>
-        actuales.filter((item) => item.vehiculoId !== validacion.vehiculoId),
+        actuales.filter((item) => item.solicitudId !== validacion.solicitudId),
       );
 
       setMensaje(
-        `La matrícula ${validacion.matricula} ha sido validada y la cuenta ya puede acceder al servicio.`,
+        `La solicitud de ${validacion.nombre} ${validacion.apellidos} ha sido aprobada. La matrícula ${validacion.matricula} ya puede acceder al servicio.`,
       );
     } catch (errorValidacion) {
       setError(
         errorValidacion instanceof Error
           ? errorValidacion.message
-          : "No se ha podido aceptar la validación.",
+          : "No se ha podido aceptar la solicitud.",
       );
     } finally {
       setProcesandoId(null);
@@ -86,7 +86,7 @@ function ValidacionesPage() {
     }
 
     try {
-      setProcesandoId(validacion.vehiculoId);
+      setProcesandoId(validacion.solicitudId);
 
       setError("");
 
@@ -95,15 +95,17 @@ function ValidacionesPage() {
       await rechazarValidacion(validacion);
 
       setValidaciones((actuales) =>
-        actuales.filter((item) => item.vehiculoId !== validacion.vehiculoId),
+        actuales.filter((item) => item.solicitudId !== validacion.solicitudId),
       );
 
-      setMensaje(`La matrícula ${validacion.matricula} ha sido rechazada.`);
+      setMensaje(
+        `La solicitud de la matrícula ${validacion.matricula} ha sido rechazada.`,
+      );
     } catch (errorValidacion) {
       setError(
         errorValidacion instanceof Error
           ? errorValidacion.message
-          : "No se ha podido rechazar la validación.",
+          : "No se ha podido rechazar la solicitud.",
       );
     } finally {
       setProcesandoId(null);
@@ -190,10 +192,10 @@ function ValidacionesPage() {
                   </tr>
                 ) : (
                   validaciones.map((validacion) => {
-                    const procesando = procesandoId === validacion.vehiculoId;
+                    const procesando = procesandoId === validacion.solicitudId;
 
                     return (
-                      <tr key={validacion.vehiculoId}>
+                      <tr key={validacion.solicitudId}>
                         <td>
                           <strong>{obtenerNombreCompleto(validacion)}</strong>
                         </td>

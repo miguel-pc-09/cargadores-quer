@@ -1,10 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 
 import {
-  obtenerResumenAdministracion,
   type MovimientoAdministracion,
   type ResumenAdministracion,
 } from "../../services/adminService";
+
+import { obtenerResumenAdministracionConSolicitudes } from "../../services/solicitudesRegistroService";
 
 import "../../styles/Administracion/AdministracionPage.css";
 
@@ -54,7 +55,7 @@ function AdministracionPage() {
 
       setError("");
 
-      const resultado = await obtenerResumenAdministracion();
+      const resultado = await obtenerResumenAdministracionConSolicitudes();
 
       setResumen(resultado);
     } catch (errorCarga) {
@@ -132,7 +133,7 @@ function AdministracionPage() {
 
               <strong>{resumen.validacionesPendientes}</strong>
 
-              <small>Cambios de vehículo</small>
+              <small>Solicitudes de acceso</small>
             </article>
 
             <article className="administracion__metrica administracion__metrica--incidencia">

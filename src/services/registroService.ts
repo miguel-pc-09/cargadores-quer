@@ -19,6 +19,13 @@ function obtenerMensajeError(mensaje: string) {
     return "Ya existe una cuenta registrada con este correo electrónico.";
   }
 
+  if (
+    mensajeMinusculas.includes("duplicate key") ||
+    mensajeMinusculas.includes("solicitudes_registro")
+  ) {
+    return "Ya existe una solicitud asociada a estos datos.";
+  }
+
   return "No se ha podido completar el registro.";
 }
 
@@ -64,6 +71,25 @@ export async function enviarSolicitudRegistro(
   }
 
   if (!data.user) {
-    throw new Error("No se ha podido crear el usuario.");
+    throw new Error("No se ha podido crear la solicitud de acceso.");
+  }
+
+  /*
+   * Al tener desactivado Confirm email,
+   * Supabase inicia una sesión temporal
+   * inmediatamente después del registro.
+   *
+   * El solicitante todavía NO está aprobado,
+   * por lo que cerramos esa sesión antes
+   * de devolverlo al Login.
+   */
+  if (data.session) {
+    const { error: errorCierre } = await supabase.auth.signOut();
+
+    if (errorCierre) {
+      throw new Error(
+        "La solicitud se ha creado, pero no se ha podido cerrar la sesión temporal.",
+      );
+    }
   }
 }
