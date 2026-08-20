@@ -8,6 +8,8 @@ import "../../styles/Login/LoginPage.css";
 
 type Tema = "oscuro" | "claro";
 
+const TEMA_GUARDADO = "cargaquer-tema";
+
 function LoginPage() {
   const navigate = useNavigate();
 
@@ -27,19 +29,15 @@ function LoginPage() {
   const [enviando, setEnviando] = useState(false);
 
   const [tema, setTema] = useState<Tema>(() => {
-    const temaGuardado = localStorage.getItem("tema-cargaquer");
+    const temaGuardado = localStorage.getItem(TEMA_GUARDADO);
 
     return temaGuardado === "claro" ? "claro" : "oscuro";
   });
 
   useEffect(() => {
-    if (tema === "claro") {
-      document.documentElement.setAttribute("data-tema", "claro");
-    } else {
-      document.documentElement.removeAttribute("data-tema");
-    }
+    document.documentElement.dataset.tema = tema;
 
-    localStorage.setItem("tema-cargaquer", tema);
+    localStorage.setItem(TEMA_GUARDADO, tema);
   }, [tema]);
 
   const cambiarTema = () => {

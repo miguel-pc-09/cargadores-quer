@@ -1,8 +1,12 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 
 import { Link } from "react-router-dom";
 
 import "../../styles/RecuperarContrasena/RecuperarContrasenaPage.css";
+
+type Tema = "oscuro" | "claro";
+
+const TEMA_GUARDADO = "cargaquer-tema";
 
 function RecuperarContrasenaPage() {
   const [email, setEmail] = useState("");
@@ -12,6 +16,22 @@ function RecuperarContrasenaPage() {
   const [enviado, setEnviado] = useState(false);
 
   const [error, setError] = useState("");
+
+  const [tema, setTema] = useState<Tema>(() => {
+    const temaGuardado = localStorage.getItem(TEMA_GUARDADO);
+
+    return temaGuardado === "claro" ? "claro" : "oscuro";
+  });
+
+  useEffect(() => {
+    document.documentElement.dataset.tema = tema;
+
+    localStorage.setItem(TEMA_GUARDADO, tema);
+  }, [tema]);
+
+  const cambiarTema = () => {
+    setTema((temaActual) => (temaActual === "oscuro" ? "claro" : "oscuro"));
+  };
 
   const enviarFormulario = async (evento: FormEvent<HTMLFormElement>) => {
     evento.preventDefault();
@@ -32,13 +52,6 @@ function RecuperarContrasenaPage() {
 
     setEnviando(true);
 
-    /*
-     * Simulación temporal.
-     *
-     * Cuando conectemos Supabase, aquí se
-     * sustituirá por el envío real del correo
-     * de recuperación de contraseña.
-     */
     await new Promise<void>((resolve) => {
       window.setTimeout(resolve, 700);
     });
@@ -49,6 +62,18 @@ function RecuperarContrasenaPage() {
 
   return (
     <main className="recuperar">
+      <button
+        type="button"
+        className="recuperar__tema"
+        onClick={cambiarTema}
+        aria-label={
+          tema === "oscuro" ? "Activar modo claro" : "Activar modo oscuro"
+        }
+        title={tema === "oscuro" ? "Activar modo claro" : "Activar modo oscuro"}
+      >
+        {tema === "oscuro" ? "☀" : "☾"}
+      </button>
+
       <section className="recuperar__contenido">
         <header className="recuperar__marca">
           <div className="recuperar__logo" aria-hidden="true">
