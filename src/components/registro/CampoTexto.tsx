@@ -2,6 +2,7 @@ import type { ChangeEvent, HTMLInputTypeAttribute } from "react";
 
 import MensajeCampo from "./MensajeCampo";
 
+// Propiedades del campo de texto.
 interface CampoTextoProps {
   id: string;
   nombre: string;
@@ -15,6 +16,7 @@ interface CampoTextoProps {
   onChange: (evento: ChangeEvent<HTMLInputElement>) => void;
 }
 
+// Componente para mostrar un campo de texto.
 function CampoTexto({
   id,
   nombre,
@@ -27,6 +29,7 @@ function CampoTexto({
   autoComplete,
   onChange,
 }: CampoTextoProps) {
+  // Clase del campo según su estado.
   const claseControl = error
     ? "registro__control registro__control--error"
     : "registro__control";
@@ -38,6 +41,7 @@ function CampoTexto({
         <span>*</span>
       </label>
 
+      {/* Campo para introducir el dato. */}
       <input
         id={id}
         name={nombre}
@@ -50,6 +54,7 @@ function CampoTexto({
         onChange={onChange}
       />
 
+      {/* Mensaje de error o ayuda. */}
       <MensajeCampo error={error} ayuda={ayuda} />
     </div>
   );

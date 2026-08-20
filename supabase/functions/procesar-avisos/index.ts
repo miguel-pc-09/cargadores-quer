@@ -1,16 +1,20 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
+// Variables de entorno de Supabase.
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 
 const SUPABASE_SERVICE_ROLE_KEY =
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
+// Variables para el envío de correos.
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
 
 const EMAIL_FROM = Deno.env.get("EMAIL_FROM") ?? "";
 
+// Secreto usado por el cron.
 const CRON_SECRET = Deno.env.get("CRON_SECRET") ?? "";
 
+// Cabeceras CORS de la función.
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
 
@@ -18,6 +22,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-cron-secret",
 };
 
+// Cliente de Supabase con permisos de servicio.
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: {
     persistSession: false,
@@ -26,6 +31,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   },
 });
 
+// Datos de un usuario aprobado.
 interface UsuarioAprobado {
   usuario_id: string;
   nombre: string;
@@ -33,6 +39,7 @@ interface UsuarioAprobado {
   email: string;
 }
 
+// Datos del aviso de reserva.
 interface ReservaAviso {
   reserva_id: string;
   usuario_id: string;
@@ -44,6 +51,7 @@ interface ReservaAviso {
   hora_inicio: string;
 }
 
+// Datos del aviso de fin de carga.
 interface CargaAviso {
   carga_id: string;
   usuario_id: string;
@@ -54,6 +62,7 @@ interface CargaAviso {
   fecha_hora_fin_prevista: string;
 }
 
+// Protege valores insertados en HTML.
 function escaparHtml(valor: string) {
   return valor
     .replaceAll("&", "&amp;")
@@ -63,6 +72,7 @@ function escaparHtml(valor: string) {
     .replaceAll("'", "&#039;");
 }
 
+// Plantilla general de los correos.
 function plantillaCorreo(titulo: string, contenido: string) {
   return `
     <!doctype html>
@@ -158,6 +168,7 @@ function plantillaCorreo(titulo: string, contenido: string) {
   `;
 }
 
+// Formatea una fecha para Madrid.
 function formatearFecha(fecha: string) {
   const [anio, mes, dia] = fecha.split("-").map(Number);
 
@@ -178,6 +189,7 @@ function formatearFecha(fecha: string) {
   }).format(new Date(Date.UTC(anio, mes - 1, dia, 12, 0, 0)));
 }
 
+// Formatea una hora para Madrid.
 function formatearHoraMadrid(fechaIso: string) {
   const fecha = new Date(fechaIso);
 
@@ -194,6 +206,7 @@ function formatearHoraMadrid(fechaIso: string) {
   }).format(fecha);
 }
 
+// Comprueba si la llamada viene de un administrador.
 async function llamadaDeAdministradorAutenticado(request: Request) {
   const autorizacion = request.headers.get("authorization");
 
@@ -230,6 +243,7 @@ async function llamadaDeAdministradorAutenticado(request: Request) {
   return perfil.rol === "administrador";
 }
 
+// Comprueba si un aviso ya fue enviado.
 async function avisoYaEnviado(
   tipo: string,
   referenciaId: string,
@@ -251,6 +265,7 @@ async function avisoYaEnviado(
   return Boolean(data);
 }
 
+// Envía un correo mediante Resend.
 async function enviarCorreo(
   destinatario: string,
   asunto: string,
@@ -283,6 +298,7 @@ async function enviarCorreo(
   }
 }
 
+// Guarda el resultado del envío.
 async function guardarResultado(
   tipo: string,
   referenciaId: string,
@@ -314,6 +330,7 @@ async function guardarResultado(
   }
 }
 
+// Procesa un correo evitando duplicados.
 async function procesarCorreo(
   tipo: string,
   referenciaId: string,
@@ -342,6 +359,7 @@ async function procesarCorreo(
   }
 }
 
+// Ejecuta una función RPC.
 async function obtenerRpc<T>(nombre: string): Promise<T[]> {
   const { data, error } = await supabase.rpc(nombre);
 
@@ -352,13 +370,16 @@ async function obtenerRpc<T>(nombre: string): Promise<T[]> {
   return (data ?? []) as T[];
 }
 
+// Función principal de la Edge Function.
 Deno.serve(async (request) => {
+  // Responde a la petición CORS.
   if (request.method === "OPTIONS") {
     return new Response("ok", {
       headers: corsHeaders,
     });
   }
 
+  // Solo permite peticiones POST.
   if (request.method !== "POST") {
     return new Response("Método no permitido", {
       status: 405,
@@ -367,6 +388,7 @@ Deno.serve(async (request) => {
     });
   }
 
+  // Comprueba las variables obligatorias.
   if (
     !SUPABASE_URL ||
     !SUPABASE_SERVICE_ROLE_KEY ||
@@ -385,10 +407,12 @@ Deno.serve(async (request) => {
     );
   }
 
+  // Comprueba si la llamada viene del cron.
   const llamadaCron =
     Boolean(CRON_SECRET) &&
     request.headers.get("x-cron-secret") === CRON_SECRET;
 
+  // Comprueba si la llamada viene de administración.
   const llamadaAdministrador = llamadaCron
     ? false
     : await llamadaDeAdministradorAutenticado(request);
@@ -401,6 +425,7 @@ Deno.serve(async (request) => {
     });
   }
 
+  // Guarda el resultado del procesamiento.
   const resultado = {
     reservasCaducadas: 0,
 
@@ -414,10 +439,12 @@ Deno.serve(async (request) => {
   };
 
   try {
+    // Obtiene los accesos aprobados pendientes de aviso.
     const aprobados = await obtenerRpc<UsuarioAprobado>(
       "cargaquer_usuarios_aprobados_aviso",
     );
 
+    // Envía los avisos de acceso aprobado.
     for (const usuario of aprobados) {
       const enviado = await procesarCorreo(
         "acceso_aprobado",
@@ -454,6 +481,7 @@ Deno.serve(async (request) => {
     }
 
     if (llamadaCron) {
+      // Caduca reservas no iniciadas.
       const { data: totalCaducadas, error: errorCaducidad } =
         await supabase.rpc("cargaquer_caducar_reservas_no_iniciadas");
 
@@ -463,10 +491,12 @@ Deno.serve(async (request) => {
 
       resultado.reservasCaducadas = Number(totalCaducadas) || 0;
 
+      // Obtiene reservas próximas a comenzar.
       const reservas = await obtenerRpc<ReservaAviso>(
         "cargaquer_reservas_aviso_inicio",
       );
 
+      // Envía los avisos previos de reserva.
       for (const reserva of reservas) {
         const enviado = await procesarCorreo(
           "reserva_15_min",
@@ -518,8 +548,10 @@ Deno.serve(async (request) => {
         }
       }
 
+      // Obtiene cargas próximas a finalizar.
       const cargas = await obtenerRpc<CargaAviso>("cargaquer_cargas_aviso_fin");
 
+      // Envía los avisos de fin de carga.
       for (const carga of cargas) {
         const enviado = await procesarCorreo(
           "carga_fin_15_min",
@@ -564,6 +596,7 @@ Deno.serve(async (request) => {
       }
     }
 
+    // Devuelve el resultado correcto.
     return Response.json(
       {
         ok: resultado.errores === 0,
@@ -577,6 +610,7 @@ Deno.serve(async (request) => {
   } catch (error) {
     console.error("Error general procesando avisos:", error);
 
+    // Devuelve el error del procesamiento.
     return Response.json(
       {
         ok: false,

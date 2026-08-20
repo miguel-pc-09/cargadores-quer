@@ -4,10 +4,12 @@ import type { Cargador } from "../../types/charger";
 
 import EstadoToma from "./EstadoToma";
 
+// Propiedades de la tarjeta del cargador.
 interface TarjetaCargadorProps {
   cargador: Cargador;
 }
 
+// Componente para mostrar un cargador y sus tomas.
 function TarjetaCargador({ cargador }: TarjetaCargadorProps) {
   return (
     <article className="tarjeta-cargador">
@@ -24,6 +26,7 @@ function TarjetaCargador({ cargador }: TarjetaCargadorProps) {
           </div>
         </div>
 
+        {/* Estado de conexión del cargador. */}
         <span
           className={`tarjeta-cargador__conexion tarjeta-cargador__conexion--${cargador.estado}`}
         >
@@ -37,6 +40,7 @@ function TarjetaCargador({ cargador }: TarjetaCargadorProps) {
         </span>
       </header>
 
+      {/* Listado de tomas del cargador. */}
       <div className="tarjeta-cargador__tomas">
         {cargador.tomas.length === 0 ? (
           <div className="tarjeta-cargador__toma">
@@ -71,6 +75,7 @@ function TarjetaCargador({ cargador }: TarjetaCargadorProps) {
         )}
       </div>
 
+      {/* Acceso al detalle del cargador. */}
       <footer className="tarjeta-cargador__pie">
         <div>{cargador.permiteReserva && <span>Admite reserva</span>}</div>
 

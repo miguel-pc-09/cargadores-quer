@@ -1,11 +1,13 @@
 import type { EstadoCargador } from "../../types/charger";
 
+// Propiedades del estado del cargador.
 interface EstadoConexionCargadorProps {
   estado: EstadoCargador;
   fabricante?: string;
   gestor?: string;
 }
 
+// Contenido de cada estado.
 const contenidoEstado = {
   conectado: {
     titulo: "Cargador conectado",
@@ -26,6 +28,7 @@ const contenidoEstado = {
   },
 };
 
+// Componente para mostrar el estado del cargador.
 function EstadoConexionCargador({
   estado,
   fabricante,
@@ -33,6 +36,7 @@ function EstadoConexionCargador({
 }: EstadoConexionCargadorProps) {
   const contenido = contenidoEstado[estado];
 
+  // Comprueba si hay datos adicionales.
   const mostrarDatos = Boolean(fabricante?.trim()) || Boolean(gestor?.trim());
 
   return (
@@ -52,6 +56,7 @@ function EstadoConexionCargador({
         </div>
       </div>
 
+      {/* Fabricante y gestor del cargador. */}
       {mostrarDatos && (
         <div className="estado-conexion__datos">
           {fabricante && <span>{fabricante}</span>}

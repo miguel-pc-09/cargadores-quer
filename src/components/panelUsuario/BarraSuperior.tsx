@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+// Propiedades de la barra superior.
 interface BarraSuperiorProps {
   nombreUsuario: string;
   menuAbierto: boolean;
@@ -7,30 +8,38 @@ interface BarraSuperiorProps {
   salir: () => void;
 }
 
+// Tipos de tema disponibles.
 type Tema = "oscuro" | "claro";
 
+// Clave para guardar el tema.
 const TEMA_GUARDADO = "cargaquer-tema";
 
+// Obtiene el tema actual.
 function obtenerTemaActual(): Tema {
   return document.documentElement.dataset.tema === "claro" ? "claro" : "oscuro";
 }
 
+// Aplica y guarda el tema.
 function aplicarTema(tema: Tema) {
   document.documentElement.dataset.tema = tema;
 
   localStorage.setItem(TEMA_GUARDADO, tema);
 }
 
+// Componente de la barra superior.
 function BarraSuperior({
   nombreUsuario,
   menuAbierto,
   alternarMenu,
   salir,
 }: BarraSuperiorProps) {
+  // Estado para guardar el tema.
   const [tema, setTema] = useState<Tema>(() => obtenerTemaActual());
 
+  // Inicial para el avatar.
   const inicialUsuario = nombreUsuario.charAt(0).toUpperCase();
 
+  // Función para cambiar el tema.
   const alternarTema = () => {
     const nuevoTema: Tema = tema === "oscuro" ? "claro" : "oscuro";
 
@@ -43,6 +52,7 @@ function BarraSuperior({
     <header className="barra-superior">
       <div className="barra-superior__contenido">
         <div className="barra-superior__zona-izquierda">
+          {/* Botón del menú móvil. */}
           <button
             type="button"
             className="barra-superior__menu"
@@ -53,6 +63,7 @@ function BarraSuperior({
             {menuAbierto ? "×" : "☰"}
           </button>
 
+          {/* Logo y nombre de la aplicación. */}
           <div className="barra-superior__marca">
             <span className="barra-superior__logo" aria-hidden="true">
               ⚡
@@ -66,6 +77,7 @@ function BarraSuperior({
           </div>
         </div>
 
+        {/* Entidad que presta el servicio. */}
         <div className="barra-superior__cliente">
           <span>Servicio:</span>
 
@@ -73,6 +85,7 @@ function BarraSuperior({
         </div>
 
         <div className="barra-superior__usuario">
+          {/* Botón para cambiar el tema. */}
           <button
             type="button"
             className="barra-superior__tema"
@@ -87,12 +100,14 @@ function BarraSuperior({
             <span aria-hidden="true">{tema === "oscuro" ? "☀" : "☾"}</span>
           </button>
 
+          {/* Datos del usuario. */}
           <div className="barra-superior__avatar" aria-hidden="true">
             {inicialUsuario}
           </div>
 
           <span className="barra-superior__nombre">{nombreUsuario}</span>
 
+          {/* Botón para cerrar sesión. */}
           <button
             type="button"
             className="barra-superior__salir"
@@ -105,6 +120,7 @@ function BarraSuperior({
         </div>
       </div>
 
+      {/* Entidad mostrada en móvil. */}
       <div className="barra-superior__cliente-movil">
         <span>Cliente:</span>
 

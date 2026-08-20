@@ -1,5 +1,6 @@
 import { formatearDuracion } from "./ControlDuracionReserva";
 
+// Propiedades del resumen de la reserva.
 interface ResumenReservaProps {
   nombreCargador: string;
   direccion: string;
@@ -11,6 +12,7 @@ interface ResumenReservaProps {
   duracionMinutos: number;
 }
 
+// Componente para mostrar el resumen de la reserva.
 function ResumenReserva({
   nombreCargador,
   direccion,
@@ -26,10 +28,12 @@ function ResumenReserva({
       className="reserva-toma__resumen"
       aria-labelledby="titulo-resumen-reserva"
     >
+      {/* Título del resumen. */}
       <span className="reserva-toma__etiqueta">Resumen</span>
 
       <h2 id="titulo-resumen-reserva">Tu reserva</h2>
 
+      {/* Ubicación del cargador. */}
       <div className="reserva-toma__resumen-ubicacion">
         <span aria-hidden="true">⌁</span>
 
@@ -39,6 +43,7 @@ function ResumenReserva({
         </div>
       </div>
 
+      {/* Datos de la reserva. */}
       <dl className="reserva-toma__resumen-datos">
         <div>
           <dt>Toma</dt>
@@ -68,6 +73,7 @@ function ResumenReserva({
         </div>
       </dl>
 
+      {/* Aviso para iniciar la carga. */}
       <p className="reserva-toma__aviso">
         Podrás iniciar la carga desde la aplicación cuando llegue la hora
         reservada.

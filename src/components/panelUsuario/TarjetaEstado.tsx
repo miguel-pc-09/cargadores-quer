@@ -1,10 +1,12 @@
 import type { EstadoUsuario } from "../../types/panelUsuario";
 
+// Propiedades de la tarjeta de estado.
 interface TarjetaEstadoProps {
   estado: EstadoUsuario;
   numeroPenalizaciones: number;
 }
 
+// Contenido para cada estado.
 const contenidoEstado = {
   correcto: {
     icono: "✓",
@@ -23,9 +25,12 @@ const contenidoEstado = {
   },
 };
 
+// Componente para mostrar el estado de la cuenta.
 function TarjetaEstado({ estado, numeroPenalizaciones }: TarjetaEstadoProps) {
+  // Obtiene los datos del estado actual.
   const contenido = contenidoEstado[estado];
 
+  // Calcula el texto de las penalizaciones.
   const detalle =
     estado === "penalizado"
       ? numeroPenalizaciones === 1

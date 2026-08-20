@@ -1,16 +1,20 @@
+// Estados posibles de una franja horaria.
 export type EstadoHora = "disponible" | "pasada" | "reservada";
 
+// Datos de cada franja horaria.
 export interface FranjaHoraria {
   hora: string;
   estado: EstadoHora;
 }
 
+// Propiedades del selector de hora.
 interface SelectorHoraReservaProps {
   horas: FranjaHoraria[];
   horaSeleccionada: string;
   onSeleccionar: (hora: string) => void;
 }
 
+// Función para mostrar el estado de una hora.
 function obtenerTextoEstado(estado: EstadoHora) {
   if (estado === "pasada") {
     return "Hora pasada";
@@ -23,6 +27,7 @@ function obtenerTextoEstado(estado: EstadoHora) {
   return "Hora disponible";
 }
 
+// Componente para seleccionar la hora.
 function SelectorHoraReserva({
   horas,
   horaSeleccionada,
@@ -30,16 +35,21 @@ function SelectorHoraReserva({
 }: SelectorHoraReservaProps) {
   return (
     <div>
+      {/* Listado de franjas horarias. */}
       <div
         className="reserva-toma__horas"
         role="radiogroup"
         aria-label="Hora de inicio"
       >
         {horas.map((franja) => {
+          // Comprueba si la hora está disponible.
           const estaDisponible = franja.estado === "disponible";
+
+          // Comprueba si la hora está seleccionada.
           const estaSeleccionada =
             estaDisponible && franja.hora === horaSeleccionada;
 
+          // Clases según el estado de la hora.
           const clases = [
             "reserva-toma__hora",
             estaSeleccionada ? "reserva-toma__hora--activa" : "",
@@ -76,6 +86,7 @@ function SelectorHoraReserva({
         })}
       </div>
 
+      {/* Leyenda de disponibilidad. */}
       <div
         className="reserva-toma__leyenda-horas"
         aria-label="Leyenda de disponibilidad"

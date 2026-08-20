@@ -1,10 +1,8 @@
--- ============================================================
--- CargaQuer
--- Solicitudes de registro pendientes de aprobación municipal
--- ============================================================
+-- Solicitudes de registro de CargaQuer.
 
 create extension if not exists pgcrypto;
 
+-- Tabla de solicitudes pendientes.
 create table if not exists public.solicitudes_registro (
   id uuid primary key default gen_random_uuid(),
 
@@ -19,9 +17,7 @@ create table if not exists public.solicitudes_registro (
 
   telefono text,
 
-  -- El DNI nunca se guarda en claro.
-  -- Esta columna conserva el nombre existente, pero almacena
-  -- únicamente un SHA-256 hexadecimal de 64 caracteres.
+  -- DNI guardado como SHA-256.
   dni text,
 
   email text not null,
@@ -58,10 +54,7 @@ alter table public.solicitudes_registro
   enable row level security;
 
 
--- ============================================================
--- PROTEGER DNI YA EXISTENTES
--- ============================================================
-
+-- Protege los DNI existentes.
 update public.solicitudes_registro
 set dni = encode(
   digest(
@@ -82,6 +75,7 @@ where dni is not null
   and dni !~ '^[0-9a-fA-F]{64}$';
 
 
+-- Protege los DNI de perfiles existentes.
 update public.perfiles
 set dni = encode(
   digest(
@@ -102,19 +96,14 @@ where dni is not null
   and dni !~ '^[0-9a-fA-F]{64}$';
 
 
--- ============================================================
--- LIMPIAR DATOS CREADOS POR EL FLUJO ANTIGUO
---
--- Una solicitud pendiente NO debe existir aún ni en perfiles
--- ni en vehiculos.
--- ============================================================
-
+-- Elimina vehículos creados por el flujo antiguo.
 delete from public.vehiculos v
 using public.solicitudes_registro s
 where v.usuario_id = s.usuario_id
   and s.estado = 'pendiente';
 
 
+-- Elimina perfiles creados por el flujo antiguo.
 delete from public.perfiles p
 using public.solicitudes_registro s
 where p.id = s.usuario_id
@@ -122,17 +111,12 @@ where p.id = s.usuario_id
   and s.estado = 'pendiente';
 
 
--- ============================================================
--- ELIMINAR TRIGGERS ANTIGUOS
---
--- Se elimina cualquier trigger personalizado de auth.users
--- cuya función cree perfiles o vehículos.
--- ============================================================
-
+-- Elimina el trigger antiguo.
 drop trigger if exists cargaquer_nuevo_usuario
 on auth.users;
 
 
+-- Elimina triggers antiguos de perfiles o vehículos.
 do $$
 declare
   trigger_actual record;
@@ -173,15 +157,13 @@ end;
 $$;
 
 
--- ============================================================
--- POLÍTICAS solicitudes_registro
--- ============================================================
-
+-- Elimina la política de lectura anterior.
 drop policy if exists
   "solicitud propia lectura"
 on public.solicitudes_registro;
 
 
+-- Permite leer la solicitud propia.
 create policy
   "solicitud propia lectura"
 on public.solicitudes_registro
@@ -192,11 +174,13 @@ using (
 );
 
 
+-- Elimina la política anterior de administradores.
 drop policy if exists
   "administradores leen solicitudes"
 on public.solicitudes_registro;
 
 
+-- Permite al administrador leer solicitudes.
 create policy
   "administradores leen solicitudes"
 on public.solicitudes_registro
@@ -214,20 +198,7 @@ using (
 );
 
 
--- ============================================================
--- REGISTRO
---
--- Al registrarse:
---
--- SÍ:
---   auth.users
---   solicitudes_registro
---
--- NO:
---   perfiles
---   vehiculos
--- ============================================================
-
+-- Función para crear una solicitud de registro.
 create or replace function
 public.cargaquer_crear_solicitud_registro()
 returns trigger
@@ -246,6 +217,7 @@ declare
   v_matricula text;
 begin
 
+  -- Obtiene el nombre.
   v_nombre :=
     trim(
       coalesce(
@@ -255,6 +227,7 @@ begin
     );
 
 
+  -- Obtiene los apellidos.
   v_apellidos :=
     trim(
       coalesce(
@@ -264,6 +237,7 @@ begin
     );
 
 
+  -- Obtiene el teléfono.
   v_telefono :=
     nullif(
       trim(
@@ -276,6 +250,7 @@ begin
     );
 
 
+  -- Obtiene el DNI.
   v_dni :=
     nullif(
       lower(
@@ -290,10 +265,7 @@ begin
     );
 
 
-  -- Compatibilidad por seguridad:
-  -- si algún cliente antiguo envía el DNI en claro,
-  -- se convierte a SHA-256 antes de guardarlo.
-
+  -- Protege DNI antiguos enviados en claro.
   if v_dni is not null
      and v_dni !~ '^[0-9a-f]{64}$'
   then
@@ -317,6 +289,7 @@ begin
   end if;
 
 
+  -- Obtiene el cliente.
   v_cliente :=
     trim(
       coalesce(
@@ -326,6 +299,7 @@ begin
     );
 
 
+  -- Obtiene el tipo de usuario.
   v_tipo_usuario :=
     nullif(
       trim(
@@ -338,6 +312,7 @@ begin
     );
 
 
+  -- Obtiene la filiación.
   v_filiacion :=
     nullif(
       trim(
@@ -350,6 +325,7 @@ begin
     );
 
 
+  -- Obtiene y normaliza la matrícula.
   v_matricula :=
     upper(
       regexp_replace(
@@ -366,6 +342,7 @@ begin
     );
 
 
+  -- Comprueba los datos obligatorios.
   if
     v_nombre = ''
     or v_apellidos = ''
@@ -379,6 +356,7 @@ begin
   end if;
 
 
+  -- Guarda la solicitud pendiente.
   insert into public.solicitudes_registro (
     usuario_id,
     nombre,
@@ -413,6 +391,7 @@ end;
 $$;
 
 
+-- Ejecuta la solicitud al crear un usuario.
 create trigger cargaquer_nuevo_usuario
 after insert
 on auth.users
@@ -421,12 +400,7 @@ execute function
 public.cargaquer_crear_solicitud_registro();
 
 
--- ============================================================
--- APROBAR SOLICITUD
---
--- Solo aquí nacen perfil y vehículo.
--- ============================================================
-
+-- Función para aprobar una solicitud.
 create or replace function
 public.cargaquer_aprobar_solicitud(
   p_solicitud_id uuid
@@ -440,6 +414,7 @@ declare
   v_solicitud public.solicitudes_registro%rowtype;
 begin
 
+  -- Comprueba permisos de administrador.
   if not exists (
 
     select 1
@@ -458,6 +433,7 @@ begin
   end if;
 
 
+  -- Obtiene la solicitud.
   select *
   into v_solicitud
 
@@ -468,6 +444,7 @@ begin
   for update;
 
 
+  -- Comprueba que exista.
   if not found then
 
     raise exception
@@ -476,6 +453,7 @@ begin
   end if;
 
 
+  -- Comprueba que siga pendiente.
   if v_solicitud.estado <> 'pendiente' then
 
     raise exception
@@ -484,6 +462,7 @@ begin
   end if;
 
 
+  -- Crea el perfil del usuario.
   insert into public.perfiles (
     id,
     nombre,
@@ -512,6 +491,7 @@ begin
   );
 
 
+  -- Crea el vehículo validado.
   insert into public.vehiculos (
     usuario_id,
     matricula,
@@ -526,6 +506,7 @@ begin
   );
 
 
+  -- Marca la solicitud como aprobada.
   update public.solicitudes_registro
 
   set
@@ -539,10 +520,7 @@ end;
 $$;
 
 
--- ============================================================
--- RECHAZAR SOLICITUD
--- ============================================================
-
+-- Función para rechazar una solicitud.
 create or replace function
 public.cargaquer_rechazar_solicitud(
   p_solicitud_id uuid
@@ -554,6 +532,7 @@ set search_path = public
 as $$
 begin
 
+  -- Comprueba permisos de administrador.
   if not exists (
 
     select 1
@@ -572,6 +551,7 @@ begin
   end if;
 
 
+  -- Marca la solicitud como rechazada.
   update public.solicitudes_registro
 
   set
@@ -586,6 +566,7 @@ begin
     and estado = 'pendiente';
 
 
+  -- Comprueba que se haya actualizado.
   if not found then
 
     raise exception
@@ -597,33 +578,31 @@ end;
 $$;
 
 
--- ============================================================
--- PERMISOS
---
--- Las políticas RLS continúan controlando qué filas puede usar
--- cada usuario.
--- ============================================================
-
+-- Permisos del esquema.
 grant usage
 on schema public
 to authenticated, service_role;
 
 
+-- Permisos de cargadores y tomas.
 grant select
 on public.cargadores, public.tomas
 to authenticated;
 
 
+-- Permisos de reservas y cargas.
 grant select, insert, update
 on public.reservas, public.cargas
 to authenticated;
 
 
+-- Permisos de perfiles y vehículos.
 grant select, update
 on public.perfiles, public.vehiculos
 to authenticated;
 
 
+-- Permisos de solicitudes.
 grant select
 on public.solicitudes_registro
 to authenticated;
@@ -634,33 +613,34 @@ on public.solicitudes_registro
 to service_role;
 
 
+-- Permisos de avisos.
 grant select, insert, update
 on public.avisos_email
 to service_role;
 
 
--- ============================================================
--- PERMISOS FUNCIONES
--- ============================================================
-
+-- Retira acceso público a aprobar solicitudes.
 revoke all
 on function
 public.cargaquer_aprobar_solicitud(uuid)
 from public, anon;
 
 
+-- Retira acceso público a rechazar solicitudes.
 revoke all
 on function
 public.cargaquer_rechazar_solicitud(uuid)
 from public, anon;
 
 
+-- Permite aprobar a usuarios autenticados.
 grant execute
 on function
 public.cargaquer_aprobar_solicitud(uuid)
 to authenticated;
 
 
+-- Permite rechazar a usuarios autenticados.
 grant execute
 on function
 public.cargaquer_rechazar_solicitud(uuid)

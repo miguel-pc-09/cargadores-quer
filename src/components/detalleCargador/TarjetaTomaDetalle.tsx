@@ -4,11 +4,13 @@ import type { TomaCargador } from "../../types/charger";
 
 import EstadoToma from "../cargadores/EstadoToma";
 
+// Propiedades de la tarjeta de toma.
 interface TarjetaTomaDetalleProps {
   cargadorId: string;
   toma: TomaCargador;
 }
 
+// Obtiene el texto del botón según el estado.
 function obtenerTextoBoton(toma: TomaCargador) {
   switch (toma.estado) {
     case "libre":
@@ -29,9 +31,11 @@ function obtenerTextoBoton(toma: TomaCargador) {
   }
 }
 
+// Componente para mostrar una toma.
 function TarjetaTomaDetalle({ cargadorId, toma }: TarjetaTomaDetalleProps) {
   const textoBoton = obtenerTextoBoton(toma);
 
+  // Ruta según el estado de la toma.
   const ruta =
     toma.estado === "mi-carga"
       ? `/panel/cargadores/${cargadorId}/tomas/${toma.id}`
@@ -49,6 +53,7 @@ function TarjetaTomaDetalle({ cargadorId, toma }: TarjetaTomaDetalleProps) {
         <EstadoToma estado={toma.estado} />
       </header>
 
+      {/* Datos principales de la toma. */}
       <div className="toma-detalle__informacion">
         <div>
           <span>Potencia máxima</span>
@@ -65,6 +70,7 @@ function TarjetaTomaDetalle({ cargadorId, toma }: TarjetaTomaDetalleProps) {
         </div>
       </div>
 
+      {/* Hora aproximada de disponibilidad. */}
       {toma.disponibleDesde && (
         <div className="toma-detalle__disponibilidad">
           <span aria-hidden="true">◷</span>
@@ -76,6 +82,7 @@ function TarjetaTomaDetalle({ cargadorId, toma }: TarjetaTomaDetalleProps) {
         </div>
       )}
 
+      {/* Datos simulados de la carga activa. */}
       {toma.estado === "mi-carga" && (
         <div className="toma-detalle__carga-activa">
           <div>
@@ -95,12 +102,14 @@ function TarjetaTomaDetalle({ cargadorId, toma }: TarjetaTomaDetalleProps) {
         </div>
       )}
 
+      {/* Aviso para tomas fuera de servicio. */}
       {toma.estado === "fuera-servicio" && (
         <p className="toma-detalle__fuera-servicio">
           Esta toma no está disponible temporalmente.
         </p>
       )}
 
+      {/* Botón de acceso según el estado. */}
       {textoBoton && (
         <Link
           to={ruta}

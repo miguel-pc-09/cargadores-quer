@@ -1,18 +1,22 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
+// Variables de entorno de Supabase.
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 
 const SUPABASE_SERVICE_ROLE_KEY =
   Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
+// Variables para el envío de correos.
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
 
 const ADMIN_EMAIL = Deno.env.get("ADMIN_EMAIL") ?? "";
 
 const EMAIL_FROM = Deno.env.get("EMAIL_FROM") ?? "";
 
+// Secreto usado por el cron.
 const CRON_SECRET = Deno.env.get("CRON_SECRET") ?? "";
 
+// Cabeceras CORS de la función.
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
 
@@ -20,6 +24,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-cron-secret",
 };
 
+// Cliente de Supabase con permisos de servicio.
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   auth: {
     persistSession: false,
@@ -28,6 +33,7 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
   },
 });
 
+// Datos de una solicitud pendiente.
 interface SolicitudPendiente {
   id: string;
   usuario_id: string;
@@ -37,6 +43,7 @@ interface SolicitudPendiente {
   matricula: string;
 }
 
+// Protege valores insertados en HTML.
 function escaparHtml(valor: string) {
   return valor
     .replaceAll("&", "&amp;")
@@ -46,6 +53,7 @@ function escaparHtml(valor: string) {
     .replaceAll("'", "&#039;");
 }
 
+// Plantilla general de los correos.
 function plantillaCorreo(titulo: string, contenido: string) {
   return `
     <!doctype html>
@@ -141,6 +149,7 @@ function plantillaCorreo(titulo: string, contenido: string) {
   `;
 }
 
+// Obtiene el usuario que realiza la llamada.
 async function obtenerUsuarioSolicitante(request: Request) {
   const autorizacion = request.headers.get("authorization");
 
@@ -167,6 +176,7 @@ async function obtenerUsuarioSolicitante(request: Request) {
   return user;
 }
 
+// Comprueba si un aviso ya fue enviado.
 async function avisoYaEnviado(
   tipo: string,
   referenciaId: string,
@@ -188,6 +198,7 @@ async function avisoYaEnviado(
   return Boolean(data);
 }
 
+// Guarda el resultado del envío.
 async function guardarResultado(
   tipo: string,
   referenciaId: string,
@@ -219,6 +230,7 @@ async function guardarResultado(
   }
 }
 
+// Envía un correo mediante Resend.
 async function enviarCorreo(
   destinatario: string,
   asunto: string,
@@ -251,6 +263,7 @@ async function enviarCorreo(
   }
 }
 
+// Procesa un correo evitando duplicados.
 async function procesarCorreo(
   tipo: string,
   referenciaId: string,
@@ -288,13 +301,16 @@ async function procesarCorreo(
   }
 }
 
+// Función principal de la Edge Function.
 Deno.serve(async (request) => {
+  // Responde a la petición CORS.
   if (request.method === "OPTIONS") {
     return new Response("ok", {
       headers: corsHeaders,
     });
   }
 
+  // Solo permite peticiones POST.
   if (request.method !== "POST") {
     return new Response("Método no permitido", {
       status: 405,
@@ -303,6 +319,7 @@ Deno.serve(async (request) => {
     });
   }
 
+  // Comprueba las variables obligatorias.
   if (
     !SUPABASE_URL ||
     !SUPABASE_SERVICE_ROLE_KEY ||
@@ -322,10 +339,12 @@ Deno.serve(async (request) => {
     );
   }
 
+  // Comprueba si la llamada viene del cron.
   const llamadaCron =
     Boolean(CRON_SECRET) &&
     request.headers.get("x-cron-secret") === CRON_SECRET;
 
+  // Obtiene el usuario que realiza la llamada.
   const usuarioSolicitante = llamadaCron
     ? null
     : await obtenerUsuarioSolicitante(request);
@@ -338,6 +357,7 @@ Deno.serve(async (request) => {
     });
   }
 
+  // Busca las solicitudes pendientes.
   let consulta = supabase
     .from("solicitudes_registro")
     .select("id,usuario_id,nombre,apellidos,email,matricula")
@@ -346,6 +366,7 @@ Deno.serve(async (request) => {
       ascending: true,
     });
 
+  // Limita la consulta al usuario actual.
   if (usuarioSolicitante) {
     consulta = consulta.eq("usuario_id", usuarioSolicitante.id);
   }
@@ -375,6 +396,7 @@ Deno.serve(async (request) => {
 
   let errores = 0;
 
+  // Procesa cada solicitud pendiente.
   for (const solicitud of solicitudes) {
     const nombreCompleto = escaparHtml(
       `${solicitud.nombre} ${solicitud.apellidos}`.trim(),
@@ -382,6 +404,7 @@ Deno.serve(async (request) => {
 
     const matricula = escaparHtml(solicitud.matricula);
 
+    // Envía el aviso al usuario.
     const usuarioEnviado = await procesarCorreo(
       "solicitud_recibida",
 
@@ -434,6 +457,7 @@ Deno.serve(async (request) => {
       errores++;
     }
 
+    // Envía el aviso al administrador.
     const administradorEnviado = await procesarCorreo(
       "nuevo_usuario_admin",
 
@@ -490,6 +514,7 @@ Deno.serve(async (request) => {
     }
   }
 
+  // Devuelve el resultado del procesamiento.
   return Response.json(
     {
       ok: errores === 0,

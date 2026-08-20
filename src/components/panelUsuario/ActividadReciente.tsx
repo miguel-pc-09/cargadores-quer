@@ -5,10 +5,12 @@ import type {
   TipoActividadUsuario,
 } from "../../types/panelUsuario";
 
+// Propiedades de la actividad reciente.
 interface ActividadRecienteProps {
   actividades: ActividadUsuario[];
 }
 
+// Iconos para cada tipo de actividad.
 const iconosActividad: Record<TipoActividadUsuario, string> = {
   "carga-iniciada": "⚡",
   "carga-finalizada": "✓",
@@ -16,13 +18,17 @@ const iconosActividad: Record<TipoActividadUsuario, string> = {
   "reserva-cancelada": "×",
 };
 
+// Componente para mostrar la actividad reciente.
 function ActividadReciente({ actividades }: ActividadRecienteProps) {
+  // Estado para mostrar más actividades.
   const [mostrarTodas, setMostrarTodas] = useState(false);
 
+  // Limita las actividades visibles.
   const actividadesVisibles = mostrarTodas
     ? actividades.slice(0, 10)
     : actividades.slice(0, 5);
 
+  // Muestra el estado sin actividad.
   if (actividades.length === 0) {
     return (
       <section className="actividad-reciente">
@@ -67,6 +73,7 @@ function ActividadReciente({ actividades }: ActividadRecienteProps) {
         </span>
       </div>
 
+      {/* Lista de actividades. */}
       <div className="actividad-reciente__lista">
         {actividadesVisibles.map((actividad) => (
           <article
@@ -96,6 +103,7 @@ function ActividadReciente({ actividades }: ActividadRecienteProps) {
         ))}
       </div>
 
+      {/* Botón para ampliar la actividad. */}
       {actividades.length > 5 && (
         <button
           type="button"

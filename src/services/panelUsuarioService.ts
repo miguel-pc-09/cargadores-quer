@@ -12,10 +12,12 @@ import type {
 import type { Reserva } from "../types/reservation";
 import type { Cargador } from "../types/charger";
 
+// Crea una fecha con su hora.
 function crearFechaHora(fecha: string, hora: string) {
   return new Date(`${fecha}T${hora}:00`);
 }
 
+// Formatea una fecha para mostrarla.
 function formatearFecha(fecha: Date) {
   if (Number.isNaN(fecha.getTime())) {
     return "Fecha no disponible";
@@ -28,6 +30,7 @@ function formatearFecha(fecha: Date) {
   }).format(fecha);
 }
 
+// Formatea una hora para mostrarla.
 function formatearHora(fecha: Date) {
   if (Number.isNaN(fecha.getTime())) {
     return "--:--";
@@ -39,6 +42,7 @@ function formatearHora(fecha: Date) {
   }).format(fecha);
 }
 
+// Convierte minutos en horas y minutos.
 function formatearDuracion(minutosTotales: number) {
   const minutosSeguros = Math.max(0, Math.round(minutosTotales));
 
@@ -57,6 +61,7 @@ function formatearDuracion(minutosTotales: number) {
   return `${horas} h ${minutos} min`;
 }
 
+// Obtiene el nombre de un cargador.
 function obtenerNombreCargador(cargadores: Cargador[], cargadorId: string) {
   return (
     cargadores.find((cargador) => cargador.id === cargadorId)?.nombre ??
@@ -64,6 +69,7 @@ function obtenerNombreCargador(cargadores: Cargador[], cargadorId: string) {
   );
 }
 
+// Obtiene el nombre de una toma.
 function obtenerNombreToma(
   cargadores: Cargador[],
   cargadorId: string,
@@ -76,6 +82,7 @@ function obtenerNombreToma(
   return cargador?.tomas.find((toma) => toma.id === tomaId)?.nombre ?? "Toma";
 }
 
+// Calcula la duración de una carga.
 function calcularDuracionCarga(carga: Carga) {
   const inicio = new Date(carga.fechaHoraInicio).getTime();
 
@@ -90,6 +97,7 @@ function calcularDuracionCarga(carga: Carga) {
   return Math.max(0, Math.round((fin - inicio) / 60_000));
 }
 
+// Crea las actividades de las reservas.
 function crearActividadReservas(
   reservas: Reserva[],
   cargadores: Cargador[],
@@ -111,19 +119,12 @@ function crearActividadReservas(
     if (reserva.estado === "cancelada") {
       return {
         id: `reserva-cancelada-${reserva.id}`,
-
         tipo: "reserva-cancelada",
-
         titulo: "Reserva cancelada",
-
         ubicacion: nombreCargador,
-
         toma: nombreToma,
-
         fecha: formatearFecha(fechaCreacion),
-
         hora: formatearHora(fechaCreacion),
-
         detalle: `Reserva prevista para ${formatearFecha(
           crearFechaHora(reserva.fecha, reserva.horaInicio),
         )} a las ${reserva.horaInicio}`,
@@ -132,19 +133,12 @@ function crearActividadReservas(
 
     return {
       id: `reserva-creada-${reserva.id}`,
-
       tipo: "reserva-creada",
-
       titulo: "Reserva creada",
-
       ubicacion: nombreCargador,
-
       toma: nombreToma,
-
       fecha: formatearFecha(fechaCreacion),
-
       hora: formatearHora(fechaCreacion),
-
       detalle: `Reserva para ${formatearFecha(
         crearFechaHora(reserva.fecha, reserva.horaInicio),
       )} de ${reserva.horaInicio} a ${reserva.horaFin}`,
@@ -152,6 +146,7 @@ function crearActividadReservas(
   });
 }
 
+// Crea las actividades de las cargas.
 function crearActividadCargas(
   cargas: Carga[],
   cargadores: Cargador[],
@@ -171,19 +166,12 @@ function crearActividadCargas(
 
     actividades.push({
       id: `carga-iniciada-${carga.id}`,
-
       tipo: "carga-iniciada",
-
       titulo: carga.estado === "activa" ? "Carga iniciada" : "Sesión de carga",
-
       ubicacion: nombreCargador,
-
       toma: nombreToma,
-
       fecha: formatearFecha(inicio),
-
       hora: formatearHora(inicio),
-
       detalle: `Potencia actual: ${carga.potenciaActualKw.toLocaleString(
         "es-ES",
         {
@@ -198,20 +186,13 @@ function crearActividadCargas(
 
       actividades.push({
         id: `carga-finalizada-${carga.id}`,
-
         tipo: "carga-finalizada",
-
         titulo:
           carga.estado === "cancelada" ? "Carga detenida" : "Carga finalizada",
-
         ubicacion: nombreCargador,
-
         toma: nombreToma,
-
         fecha: formatearFecha(fin),
-
         hora: formatearHora(fin),
-
         detalle: `Duración: ${formatearDuracion(
           calcularDuracionCarga(carga),
         )} · ${carga.energiaConsumidaKwh.toLocaleString("es-ES", {
@@ -225,6 +206,7 @@ function crearActividadCargas(
   return actividades;
 }
 
+// Obtiene la fecha de una actividad.
 function obtenerFechaActividad(actividad: ActividadUsuario) {
   const fechaTexto = actividad.fecha.trim();
 
@@ -272,6 +254,7 @@ function obtenerFechaActividad(actividad: ActividadUsuario) {
   return Number.isNaN(fecha.getTime()) ? 0 : fecha.getTime();
 }
 
+// Busca la próxima reserva.
 function obtenerProximaReserva(reservas: Reserva[]) {
   const ahora = Date.now();
 
@@ -321,6 +304,7 @@ function obtenerProximaReserva(reservas: Reserva[]) {
   return `${formatearFecha(fechaReserva)} a las ${proxima.reserva.horaInicio}`;
 }
 
+// Obtiene el estado general del usuario.
 function obtenerEstadoUsuario(
   vehiculoEstado: string | undefined,
 ): ResumenUsuario["estado"] {
@@ -336,6 +320,7 @@ function obtenerEstadoUsuario(
   }
 }
 
+// Obtiene toda la información del panel.
 export async function obtenerPanelUsuario(usuarioId: string): Promise<{
   resumen: ResumenUsuario;
   alertas: AlertaUsuario[];
@@ -343,19 +328,18 @@ export async function obtenerPanelUsuario(usuarioId: string): Promise<{
 }> {
   const [reservas, cargas, vehiculo, cargadores] = await Promise.all([
     obtenerReservasUsuario(usuarioId),
-
     obtenerCargasUsuario(usuarioId),
-
     obtenerVehiculoUsuario(usuarioId),
-
     obtenerCargadores(),
   ]);
 
+  // Calcula el número total de tomas.
   const numeroTomas = cargadores.reduce(
     (total, cargador) => total + cargador.tomas.length,
     0,
   );
 
+  // Calcula la energía acumulada.
   const energiaAcumulada = Number(
     cargas
       .filter(
@@ -365,42 +349,36 @@ export async function obtenerPanelUsuario(usuarioId: string): Promise<{
       .toFixed(2),
   );
 
+  // Obtiene las reservas actuales.
   const reservasActivas = reservas.filter(
     (reserva) => reserva.estado === "confirmada" || reserva.estado === "activa",
   );
 
   const estadoVehiculo = vehiculo?.estadoValidacion;
 
+  // Prepara el resumen del panel.
   const resumen: ResumenUsuario = {
     numeroCargadores: cargadores.length,
-
     numeroTomas,
-
     numeroCargas: cargas.filter(
       (carga) => carga.estado === "finalizada" || carga.estado === "activa",
     ).length,
 
     energiaAcumulada,
-
     reservasActivas: reservasActivas.length,
-
     proximaReserva: obtenerProximaReserva(reservas),
-
     estado: obtenerEstadoUsuario(estadoVehiculo),
-
     numeroPenalizaciones: estadoVehiculo === "rechazado" ? 1 : 0,
   };
 
+  // Guarda los avisos del usuario.
   const alertas: AlertaUsuario[] = [];
 
   if (!vehiculo) {
     alertas.push({
       id: "vehiculo-no-encontrado",
-
       tipo: "aviso",
-
       titulo: "Vehículo no registrado",
-
       mensaje:
         "No hay ningún vehículo asociado a tu cuenta. Ponte en contacto con el Ayuntamiento.",
     });
@@ -409,11 +387,8 @@ export async function obtenerPanelUsuario(usuarioId: string): Promise<{
   if (vehiculo?.estadoValidacion === "pendiente") {
     alertas.push({
       id: "vehiculo-pendiente",
-
       tipo: "aviso",
-
       titulo: "Vehículo pendiente de validación",
-
       mensaje:
         "El Ayuntamiento debe validar la matrícula antes de permitir nuevas reservas o cargas.",
     });
@@ -422,19 +397,16 @@ export async function obtenerPanelUsuario(usuarioId: string): Promise<{
   if (vehiculo?.estadoValidacion === "rechazado") {
     alertas.push({
       id: "vehiculo-rechazado",
-
       tipo: "error",
-
       titulo: "Vehículo no validado",
-
       mensaje:
         "La validación del vehículo ha sido rechazada. Revisa la matrícula desde tu perfil.",
     });
   }
 
+  // Ordena las últimas actividades.
   const actividad = [
     ...crearActividadReservas(reservas, cargadores),
-
     ...crearActividadCargas(cargas, cargadores),
   ]
     .sort(
@@ -445,9 +417,7 @@ export async function obtenerPanelUsuario(usuarioId: string): Promise<{
 
   return {
     resumen,
-
     alertas,
-
     actividad,
   };
 }

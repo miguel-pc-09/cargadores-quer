@@ -2,48 +2,50 @@ import type { ChangeEvent } from "react";
 
 import MensajeCampo from "./MensajeCampo";
 
+// Estructura de cada opción.
 interface OpcionSelect {
   valor: string;
   texto: string;
 }
 
+// Propiedades del campo select.
 interface CampoSelectProps {
   id: string;
   nombre: string;
   etiqueta: string;
   valor: string;
   opciones: OpcionSelect[];
-  error?: string;
   textoInicial?: string;
+  error?: string;
   onChange: (evento: ChangeEvent<HTMLSelectElement>) => void;
 }
 
+// Componente para mostrar un campo select.
 function CampoSelect({
   id,
   nombre,
   etiqueta,
   valor,
   opciones,
+  textoInicial = "— Selecciona una opción —",
   error,
-  textoInicial = "— Selecciona —",
   onChange,
 }: CampoSelectProps) {
-  const claseControl = error
-    ? "registro__control registro__control--error"
-    : "registro__control";
-
   return (
     <div className="registro__campo">
       <label htmlFor={id}>
         {etiqueta}
-        <span>*</span>
+        <span aria-hidden="true">*</span>
       </label>
 
+      {/* Selector de opciones. */}
       <select
         id={id}
         name={nombre}
         value={valor}
-        className={claseControl}
+        className={`registro__control ${
+          error ? "registro__control--error" : ""
+        }`}
         aria-invalid={Boolean(error)}
         onChange={onChange}
       >
@@ -56,6 +58,7 @@ function CampoSelect({
         ))}
       </select>
 
+      {/* Mensaje de validación. */}
       <MensajeCampo error={error} />
     </div>
   );

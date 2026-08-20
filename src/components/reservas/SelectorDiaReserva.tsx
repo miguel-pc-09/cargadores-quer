@@ -1,3 +1,4 @@
+// Datos disponibles para cada día.
 interface DiaDisponible {
   valor: string;
   nombreDia: string;
@@ -5,12 +6,14 @@ interface DiaDisponible {
   etiqueta: string;
 }
 
+// Propiedades del selector de día.
 interface SelectorDiaReservaProps {
   dias: DiaDisponible[];
   diaSeleccionado: string;
   onSeleccionar: (dia: string) => void;
 }
 
+// Componente para seleccionar el día.
 function SelectorDiaReserva({
   dias,
   diaSeleccionado,
@@ -22,7 +25,9 @@ function SelectorDiaReserva({
       role="radiogroup"
       aria-label="Día de la reserva"
     >
+      {/* Listado de días disponibles. */}
       {dias.map((dia) => {
+        // Comprueba si el día está seleccionado.
         const seleccionado = dia.valor === diaSeleccionado;
 
         return (

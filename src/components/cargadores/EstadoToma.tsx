@@ -1,9 +1,11 @@
 import type { EstadoToma as EstadoTomaTipo } from "../../types/charger";
 
+// Propiedades del estado de la toma.
 interface EstadoTomaProps {
   estado: EstadoTomaTipo;
 }
 
+// Texto e icono de cada estado.
 const contenidoEstado: Record<
   EstadoTomaTipo,
   {
@@ -33,6 +35,7 @@ const contenidoEstado: Record<
   },
 };
 
+// Componente para mostrar el estado de una toma.
 function EstadoToma({ estado }: EstadoTomaProps) {
   const contenido = contenidoEstado[estado];
 

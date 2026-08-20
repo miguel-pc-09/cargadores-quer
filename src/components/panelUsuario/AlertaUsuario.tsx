@@ -1,9 +1,11 @@
 import type { AlertaUsuario as AlertaUsuarioTipo } from "../../types/panelUsuario";
 
+// Propiedades de la alerta.
 interface AlertaUsuarioProps {
   alerta: AlertaUsuarioTipo;
 }
 
+// Iconos para cada tipo de alerta.
 const iconosAlerta = {
   informacion: "i",
   correcto: "✓",
@@ -11,6 +13,7 @@ const iconosAlerta = {
   error: "×",
 };
 
+// Componente para mostrar una alerta.
 function AlertaUsuario({ alerta }: AlertaUsuarioProps) {
   return (
     <article
@@ -23,6 +26,7 @@ function AlertaUsuario({ alerta }: AlertaUsuarioProps) {
 
       <div className="alerta-usuario__contenido">
         <strong>{alerta.titulo}</strong>
+
         <p>{alerta.mensaje}</p>
       </div>
     </article>

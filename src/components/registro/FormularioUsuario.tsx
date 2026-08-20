@@ -8,6 +8,7 @@ import type {
 import CampoSelect from "./CampoSelect";
 import CampoTexto from "./CampoTexto";
 
+// Propiedades del formulario de usuario.
 interface FormularioUsuarioProps {
   prefijo: "principal" | "segundo";
   claveErrores: "usuarioPrincipal" | "segundoConductor";
@@ -16,6 +17,7 @@ interface FormularioUsuarioProps {
   onChange: (evento: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
 }
 
+// Componente para los datos de un usuario.
 function FormularioUsuario({
   prefijo,
   claveErrores,
@@ -25,6 +27,7 @@ function FormularioUsuario({
 }: FormularioUsuarioProps) {
   return (
     <div className="registro__grid">
+      {/* Nombre y apellidos. */}
       <CampoTexto
         id={`${prefijo}-nombre`}
         nombre="nombre"
@@ -45,6 +48,7 @@ function FormularioUsuario({
         onChange={onChange}
       />
 
+      {/* Correo electrónico. */}
       <div className="registro__completo">
         <CampoTexto
           id={`${prefijo}-email`}
@@ -60,6 +64,7 @@ function FormularioUsuario({
         />
       </div>
 
+      {/* Contraseña y confirmación. */}
       <CampoTexto
         id={`${prefijo}-contrasena`}
         nombre="contrasena"
@@ -83,6 +88,7 @@ function FormularioUsuario({
         onChange={onChange}
       />
 
+      {/* Documento y teléfono. */}
       <CampoTexto
         id={`${prefijo}-dni`}
         nombre="dni"
@@ -105,6 +111,7 @@ function FormularioUsuario({
         onChange={onChange}
       />
 
+      {/* Filiación con el Ayuntamiento. */}
       <div className="registro__completo">
         <CampoSelect
           id={`${prefijo}-filiacion`}

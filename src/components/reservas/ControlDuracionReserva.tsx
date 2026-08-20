@@ -1,3 +1,4 @@
+// Propiedades del control de duración.
 interface ControlDuracionReservaProps {
   duracionMinutos: number;
   minimoMinutos: number;
@@ -6,6 +7,7 @@ interface ControlDuracionReservaProps {
   onCambiar: (duracion: number) => void;
 }
 
+// Función para formatear la duración.
 function formatearDuracion(minutos: number) {
   const horas = Math.floor(minutos / 60);
   const minutosRestantes = minutos % 60;
@@ -21,6 +23,7 @@ function formatearDuracion(minutos: number) {
   return `${horas} h ${minutosRestantes} min`;
 }
 
+// Componente para controlar la duración.
 function ControlDuracionReserva({
   duracionMinutos,
   minimoMinutos,
@@ -28,9 +31,13 @@ function ControlDuracionReserva({
   incrementoMinutos,
   onCambiar,
 }: ControlDuracionReservaProps) {
+  // Comprueba si se puede reducir.
   const puedeReducir = duracionMinutos > minimoMinutos;
+
+  // Comprueba si se puede aumentar.
   const puedeAumentar = duracionMinutos < maximoMinutos;
 
+  // Función para reducir la duración.
   const reducirDuracion = () => {
     if (!puedeReducir) {
       return;
@@ -39,6 +46,7 @@ function ControlDuracionReserva({
     onCambiar(duracionMinutos - incrementoMinutos);
   };
 
+  // Función para aumentar la duración.
   const aumentarDuracion = () => {
     if (!puedeAumentar) {
       return;
@@ -49,6 +57,7 @@ function ControlDuracionReserva({
 
   return (
     <div className="reserva-toma__duracion-control">
+      {/* Botón para reducir la duración. */}
       <button
         type="button"
         aria-label={`Reducir duración en ${incrementoMinutos} minutos`}
@@ -58,11 +67,13 @@ function ControlDuracionReserva({
         −
       </button>
 
+      {/* Duración seleccionada. */}
       <div aria-live="polite">
         <strong>{formatearDuracion(duracionMinutos)}</strong>
         <span>Bloques de {incrementoMinutos} minutos</span>
       </div>
 
+      {/* Botón para aumentar la duración. */}
       <button
         type="button"
         aria-label={`Aumentar duración en ${incrementoMinutos} minutos`}

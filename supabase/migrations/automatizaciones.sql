@@ -1,17 +1,8 @@
--- ============================================================
--- CargaQuer
--- Automatizaciones de avisos por correo y caducidad de reservas
--- ============================================================
+-- Automatizaciones de CargaQuer.
 
 create extension if not exists pgcrypto;
 
--- ============================================================
--- TABLA: avisos_email
---
--- Guarda los avisos que ya se han enviado para evitar
--- que el mismo correo se mande varias veces.
--- ============================================================
-
+-- Tabla para registrar avisos enviados.
 create table if not exists public.avisos_email (
   id uuid primary key default gen_random_uuid(),
 
@@ -36,13 +27,7 @@ alter table public.avisos_email
 enable row level security;
 
 
--- ============================================================
--- MARCAR USUARIOS QUE YA ESTÁN APROBADOS
---
--- Evita que al activar por primera vez la automatización
--- reciban un correo de aprobación todos los usuarios antiguos.
--- ============================================================
-
+-- Marca como avisados los usuarios ya aprobados.
 insert into public.avisos_email (
   tipo,
   referencia_id,
@@ -70,17 +55,7 @@ on conflict (
 do nothing;
 
 
--- ============================================================
--- FUNCIÓN:
--- CADUCAR RESERVAS QUE NO SE HAN INICIADO
---
--- Una reserva confirmada dispone de 15 minutos para comenzar.
---
--- Si la reserva se realizó después de comenzar el bloque,
--- los 15 minutos empiezan a contar desde el momento en el que
--- se creó la reserva.
--- ============================================================
-
+-- Caduca reservas no iniciadas.
 create or replace function
 public.cargaquer_caducar_reservas_no_iniciadas()
 returns integer
@@ -129,14 +104,7 @@ end;
 $$;
 
 
--- ============================================================
--- FUNCIÓN:
--- NUEVOS USUARIOS PENDIENTES
---
--- Devuelve usuarios pendientes cuyo aviso todavía
--- no se ha enviado al administrador.
--- ============================================================
-
+-- Obtiene usuarios pendientes sin aviso.
 create or replace function
 public.cargaquer_usuarios_pendientes_aviso()
 returns table (
@@ -184,14 +152,7 @@ as $$
 $$;
 
 
--- ============================================================
--- FUNCIÓN:
--- USUARIOS APROBADOS
---
--- Busca usuarios aprobados que todavía no hayan recibido
--- el correo confirmando su acceso a CargaQuer.
--- ============================================================
-
+-- Obtiene usuarios aprobados sin aviso.
 create or replace function
 public.cargaquer_usuarios_aprobados_aviso()
 returns table (
@@ -236,11 +197,7 @@ as $$
 $$;
 
 
--- ============================================================
--- FUNCIÓN:
--- AVISO 15 MINUTOS ANTES DE UNA RESERVA
--- ============================================================
-
+-- Obtiene reservas que empiezan en 15 minutos.
 create or replace function
 public.cargaquer_reservas_aviso_inicio()
 returns table (
@@ -324,11 +281,7 @@ as $$
 $$;
 
 
--- ============================================================
--- FUNCIÓN:
--- AVISO 15 MINUTOS ANTES DEL FINAL DE UNA CARGA
--- ============================================================
-
+-- Obtiene cargas que terminan en 15 minutos.
 create or replace function
 public.cargaquer_cargas_aviso_fin()
 returns table (
@@ -396,13 +349,7 @@ as $$
 $$;
 
 
--- ============================================================
--- SEGURIDAD
---
--- Estas funciones solamente deben ejecutarse desde
--- el backend utilizando service_role.
--- ============================================================
-
+-- Restringe las funciones al backend.
 revoke all
 on function
 public.cargaquer_caducar_reservas_no_iniciadas()

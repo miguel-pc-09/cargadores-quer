@@ -5,6 +5,7 @@ import {
   type ResumenAdministracion,
 } from "./adminService";
 
+// Datos de una solicitud pendiente.
 export interface ValidacionPendiente {
   solicitudId: string;
   usuarioId: string;
@@ -15,6 +16,7 @@ export interface ValidacionPendiente {
   matricula: string;
 }
 
+// Solicitud de registro en la base de datos.
 interface SolicitudRegistroBD {
   id: string;
   usuario_id: string;
@@ -25,8 +27,10 @@ interface SolicitudRegistroBD {
   matricula: string;
 }
 
+// Prefijo para solicitudes de demostración.
 const DEMO = "demo-solicitud-";
 
+// Solicitudes pendientes de demostración.
 const DEMO_VALIDACIONES: ValidacionPendiente[] = [
   {
     solicitudId: `${DEMO}1`,
@@ -61,10 +65,12 @@ const DEMO_VALIDACIONES: ValidacionPendiente[] = [
   },
 ];
 
+// Comprueba si la solicitud es de demostración.
 function esDemo(solicitudId: string) {
   return solicitudId.startsWith(DEMO);
 }
 
+// Formatea el documento protegido.
 function formatearDocumentoProtegido(valor: string | null) {
   const hash = valor?.trim() ?? "";
 
@@ -79,6 +85,7 @@ function formatearDocumentoProtegido(valor: string | null) {
   return `${hash.slice(0, 8)}…${hash.slice(-8)}`;
 }
 
+// Obtiene las solicitudes pendientes.
 export async function obtenerValidacionesPendientes(): Promise<
   ValidacionPendiente[]
 > {
@@ -96,6 +103,7 @@ export async function obtenerValidacionesPendientes(): Promise<
     );
   }
 
+  // Prepara los datos de cada solicitud.
   const resultado = ((data ?? []) as SolicitudRegistroBD[]).map(
     (solicitud) => ({
       solicitudId: solicitud.id,
@@ -117,6 +125,7 @@ export async function obtenerValidacionesPendientes(): Promise<
   return resultado.length ? resultado : [...DEMO_VALIDACIONES];
 }
 
+// Aprueba una solicitud pendiente.
 export async function aceptarValidacion(
   validacion: ValidacionPendiente,
 ): Promise<void> {
@@ -132,6 +141,7 @@ export async function aceptarValidacion(
     throw new Error(`No se ha podido aprobar la solicitud: ${error.message}`);
   }
 
+  // Procesa el aviso de aprobación.
   const { error: errorAviso } = await supabase.functions.invoke(
     "procesar-avisos",
     {
@@ -149,6 +159,7 @@ export async function aceptarValidacion(
   }
 }
 
+// Rechaza una solicitud pendiente.
 export async function rechazarValidacion(
   validacion: ValidacionPendiente,
 ): Promise<void> {
@@ -165,6 +176,7 @@ export async function rechazarValidacion(
   }
 }
 
+// Obtiene el resumen con solicitudes pendientes.
 export async function obtenerResumenAdministracionConSolicitudes(): Promise<ResumenAdministracion> {
   const [resumen, validaciones] = await Promise.all([
     obtenerResumenAdministracion(),

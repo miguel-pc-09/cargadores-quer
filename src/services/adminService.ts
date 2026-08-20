@@ -1,5 +1,6 @@
 import { supabase } from "./supabaseClient";
 
+// Datos de una validación pendiente.
 export interface ValidacionPendiente {
   vehiculoId: string;
   usuarioId: string;
@@ -10,6 +11,7 @@ export interface ValidacionPendiente {
   matricula: string;
 }
 
+// Datos de un usuario en administración.
 export interface UsuarioAdministracion {
   id: string;
   nombre: string;
@@ -22,6 +24,7 @@ export interface UsuarioAdministracion {
   estadoCuenta: "verificada" | "bloqueada";
 }
 
+// Datos de una toma en administración.
 export interface TomaAdministracion {
   id: string;
   cargadorId: string;
@@ -37,6 +40,7 @@ export interface TomaAdministracion {
   energiaSuministradaKwh: number;
 }
 
+// Datos de una incidencia en administración.
 export interface IncidenciaAdministracion {
   id: string;
   cargadorId: string;
@@ -51,6 +55,7 @@ export interface IncidenciaAdministracion {
   telefonoInstaladora: string;
 }
 
+// Datos de un movimiento reciente.
 export interface MovimientoAdministracion {
   id: string;
   fecha: string;
@@ -60,6 +65,7 @@ export interface MovimientoAdministracion {
   estado: "correcto" | "pendiente" | "incidencia";
 }
 
+// Datos del resumen de administración.
 export interface ResumenAdministracion {
   usuariosRegistrados: number;
   usuariosActivos: number;
@@ -72,6 +78,7 @@ export interface ResumenAdministracion {
   movimientos: MovimientoAdministracion[];
 }
 
+// Perfil usado en validaciones.
 interface PerfilValidacionBD {
   id: string;
   nombre: string | null;
@@ -81,6 +88,7 @@ interface PerfilValidacionBD {
   estado_cuenta: string;
 }
 
+// Vehículo usado en validaciones.
 interface VehiculoValidacionBD {
   id: string;
   usuario_id: string;
@@ -88,6 +96,7 @@ interface VehiculoValidacionBD {
   perfiles: PerfilValidacionBD | PerfilValidacionBD[] | null;
 }
 
+// Perfil de usuario en la base de datos.
 interface PerfilUsuarioBD {
   id: string;
   nombre: string | null;
@@ -97,22 +106,26 @@ interface PerfilUsuarioBD {
   estado_cuenta: string;
 }
 
+// Vehículo de usuario en la base de datos.
 interface VehiculoUsuarioBD {
   usuario_id: string;
   matricula: string | null;
 }
 
+// Carga de usuario en la base de datos.
 interface CargaUsuarioBD {
   usuario_id: string;
   energia_consumida_kwh: number | string | null;
 }
 
+// Cargador en la base de datos.
 interface CargadorBD {
   id: string;
   nombre: string;
   activo: boolean;
 }
 
+// Toma en la base de datos.
 interface TomaBD {
   id: string;
   cargador_id: string;
@@ -121,6 +134,7 @@ interface TomaBD {
   estado: string | null;
 }
 
+// Carga usada para estadísticas.
 interface CargaBD {
   cargador_id: string;
   toma_id: string;
@@ -128,6 +142,7 @@ interface CargaBD {
   energia_consumida_kwh: number | string | null;
 }
 
+// Incidencia en la base de datos.
 interface IncidenciaBD {
   id: string;
   cargador_id: string;
@@ -137,6 +152,7 @@ interface IncidenciaBD {
   estado: string | null;
 }
 
+// Datos del cargador para incidencias.
 interface CargadorIncidenciaBD {
   id: string;
   nombre: string;
@@ -146,13 +162,16 @@ interface CargadorIncidenciaBD {
   telefono_instaladora: string | null;
 }
 
+// Datos de la toma para incidencias.
 interface TomaIncidenciaBD {
   id: string;
   nombre: string;
 }
 
+// Prefijo para los datos de demostración.
 const DEMO = "demo-admin-";
 
+// Validaciones de demostración.
 const DEMO_VALIDACIONES: ValidacionPendiente[] = [
   {
     vehiculoId: DEMO + "vehiculo-1",
@@ -174,6 +193,7 @@ const DEMO_VALIDACIONES: ValidacionPendiente[] = [
   },
 ];
 
+// Usuarios de demostración.
 const DEMO_USUARIOS: UsuarioAdministracion[] = [
   [
     "1",
@@ -287,6 +307,7 @@ const DEMO_USUARIOS: UsuarioAdministracion[] = [
   }),
 );
 
+// Tomas de demostración.
 const DEMO_TOMAS: TomaAdministracion[] = [
   ["1", "Enebros", "Toma 1", "libre", 22, 0, false, 18, 76, 384, 842.35],
   ["2", "Enebros", "Toma 2", "ocupada", 22, 1, true, 22, 91, 421, 931.72],
@@ -369,6 +390,7 @@ const DEMO_TOMAS: TomaAdministracion[] = [
   }),
 );
 
+// Incidencias de demostración.
 const DEMO_INCIDENCIAS: IncidenciaAdministracion[] = [
   {
     id: DEMO + "incidencia-1",
@@ -414,6 +436,7 @@ const DEMO_INCIDENCIAS: IncidenciaAdministracion[] = [
   },
 ];
 
+// Movimientos de demostración.
 const DEMO_MOVIMIENTOS: MovimientoAdministracion[] = [
   [
     "1",
@@ -464,21 +487,26 @@ const DEMO_MOVIMIENTOS: MovimientoAdministracion[] = [
   estado: estado as "correcto" | "pendiente" | "incidencia",
 }));
 
+// Comprueba si un dato es de demostración.
 const esDemo = (id: string) => id.startsWith(DEMO);
 
+// Obtiene el perfil asociado al vehículo.
 const obtenerPerfil = (
   perfiles: VehiculoValidacionBD["perfiles"],
 ): PerfilValidacionBD | null =>
   Array.isArray(perfiles) ? (perfiles[0] ?? null) : perfiles;
 
+// Convierte un texto en fecha.
 const obtenerFecha = (texto: string | null) => (texto ? new Date(texto) : null);
 
+// Comprueba si una incidencia sigue abierta.
 const incidenciaAbierta = (estado: string | null) => {
   const normalizado = estado?.trim().toLowerCase() ?? "";
 
   return normalizado !== "resuelta" && normalizado !== "cerrada";
 };
 
+// Calcula el inicio de la semana.
 const obtenerInicioSemana = (fecha: Date) => {
   const inicio = new Date(fecha);
 
@@ -491,6 +519,7 @@ const obtenerInicioSemana = (fecha: Date) => {
   return inicio;
 };
 
+// Obtiene las validaciones pendientes.
 export async function obtenerValidacionesPendientes(): Promise<
   ValidacionPendiente[]
 > {
@@ -520,6 +549,7 @@ export async function obtenerValidacionesPendientes(): Promise<
     );
   }
 
+  // Prepara los datos de cada validación.
   const resultado = ((data ?? []) as VehiculoValidacionBD[])
     .map((vehiculo) => {
       const perfil = obtenerPerfil(vehiculo.perfiles);
@@ -545,6 +575,7 @@ export async function obtenerValidacionesPendientes(): Promise<
   return resultado.length ? resultado : [...DEMO_VALIDACIONES];
 }
 
+// Acepta una validación pendiente.
 export async function aceptarValidacion(
   validacion: ValidacionPendiente,
 ): Promise<void> {
@@ -554,6 +585,7 @@ export async function aceptarValidacion(
 
   const ahora = new Date().toISOString();
 
+  // Valida el vehículo.
   const { error: errorVehiculo } = await supabase
     .from("vehiculos")
     .update({
@@ -570,6 +602,7 @@ export async function aceptarValidacion(
     );
   }
 
+  // Activa la cuenta del usuario.
   const { error: errorPerfil } = await supabase
     .from("perfiles")
     .update({
@@ -585,6 +618,7 @@ export async function aceptarValidacion(
   }
 }
 
+// Rechaza una validación pendiente.
 export async function rechazarValidacion(
   validacion: ValidacionPendiente,
 ): Promise<void> {
@@ -594,6 +628,7 @@ export async function rechazarValidacion(
 
   const ahora = new Date().toISOString();
 
+  // Rechaza el vehículo.
   const { error: errorVehiculo } = await supabase
     .from("vehiculos")
     .update({
@@ -610,6 +645,7 @@ export async function rechazarValidacion(
     );
   }
 
+  // Bloquea la cuenta del usuario.
   const { error: errorPerfil } = await supabase
     .from("perfiles")
     .update({
@@ -625,6 +661,7 @@ export async function rechazarValidacion(
   }
 }
 
+// Obtiene los usuarios de administración.
 export async function obtenerUsuariosAdministracion(): Promise<
   UsuarioAdministracion[]
 > {
@@ -666,6 +703,7 @@ export async function obtenerUsuariosAdministracion(): Promise<
 
   const cargas = (resultadoCargas.data ?? []) as CargaUsuarioBD[];
 
+  // Prepara los datos de cada usuario.
   const resultado: UsuarioAdministracion[] = perfiles.map((perfil) => {
     const vehiculo = vehiculos.find(
       (actual) => actual.usuario_id === perfil.id,
@@ -698,6 +736,7 @@ export async function obtenerUsuariosAdministracion(): Promise<
   return resultado.length ? resultado : [...DEMO_USUARIOS];
 }
 
+// Bloquea un usuario.
 export async function bloquearUsuario(usuarioId: string): Promise<void> {
   if (esDemo(usuarioId)) {
     return;
@@ -717,6 +756,7 @@ export async function bloquearUsuario(usuarioId: string): Promise<void> {
   }
 }
 
+// Desbloquea un usuario.
 export async function desbloquearUsuario(usuarioId: string): Promise<void> {
   if (esDemo(usuarioId)) {
     return;
@@ -736,6 +776,7 @@ export async function desbloquearUsuario(usuarioId: string): Promise<void> {
   }
 }
 
+// Obtiene los cargadores de administración.
 export async function obtenerCargadoresAdministracion(): Promise<
   TomaAdministracion[]
 > {
@@ -806,6 +847,7 @@ export async function obtenerCargadoresAdministracion(): Promise<
 
   const anio = new Date(ahora.getFullYear(), 0, 1);
 
+  // Prepara los datos de cada toma.
   return tomas
     .map((toma) => {
       const cargador = cargadores.find(
@@ -825,6 +867,7 @@ export async function obtenerCargadoresAdministracion(): Promise<
             incidencia.cargador_id === toma.cargador_id),
       );
 
+      // Cuenta las cargas desde una fecha.
       const contar = (inicio: Date) =>
         cargasToma.filter((carga) => {
           const fecha = obtenerFecha(carga.fecha_hora_inicio);
@@ -837,6 +880,7 @@ export async function obtenerCargadoresAdministracion(): Promise<
           );
         }).length;
 
+      // Calcula la energía suministrada.
       const energia = cargasToma.reduce((total, carga) => {
         const valor = Number(carga.energia_consumida_kwh);
 
@@ -865,6 +909,7 @@ export async function obtenerCargadoresAdministracion(): Promise<
     .filter((toma): toma is TomaAdministracion => toma !== null);
 }
 
+// Obtiene las incidencias de administración.
 export async function obtenerIncidenciasAdministracion(): Promise<
   IncidenciaAdministracion[]
 > {
@@ -911,6 +956,7 @@ export async function obtenerIncidenciasAdministracion(): Promise<
 
   const tomas = (resultadoTomas.data ?? []) as TomaIncidenciaBD[];
 
+  // Prepara las incidencias abiertas.
   return incidencias
     .filter((incidencia) => incidenciaAbierta(incidencia.estado))
     .map((incidencia) => {
@@ -939,6 +985,7 @@ export async function obtenerIncidenciasAdministracion(): Promise<
     });
 }
 
+// Obtiene el resumen de administración.
 export async function obtenerResumenAdministracion(): Promise<ResumenAdministracion> {
   const [usuarios, validaciones, tomas, incidencias] = await Promise.all([
     obtenerUsuariosAdministracion(),
@@ -947,20 +994,24 @@ export async function obtenerResumenAdministracion(): Promise<ResumenAdministrac
     obtenerIncidenciasAdministracion(),
   ]);
 
+  // Calcula la energía total.
   const energia = usuarios.reduce(
     (total, usuario) => total + usuario.energiaConsumidaKwh,
     0,
   );
 
+  // Calcula el número de cargas.
   const cargas = usuarios.reduce(
     (total, usuario) => total + usuario.numeroCargas,
     0,
   );
 
+  // Calcula los usuarios activos.
   const activos = usuarios.filter(
     (usuario) => usuario.estadoCuenta === "verificada",
   ).length;
 
+  // Calcula el número de cargadores.
   const cargadores = new Set(tomas.map((toma) => toma.cargadorId)).size;
 
   return {
