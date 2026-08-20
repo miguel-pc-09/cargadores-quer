@@ -113,6 +113,10 @@
   line-height: 1.45;
 }
 
+/* =========================================================
+   DÍAS
+   ========================================================= */
+
 .reserva-toma__dias {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -182,6 +186,10 @@
   color: var(--color-principal);
 }
 
+/* =========================================================
+   HORAS
+   ========================================================= */
+
 .reserva-toma__horas {
   max-height: 216px;
   padding-right: 4px;
@@ -213,6 +221,10 @@
   color: #ffca76;
   background: rgba(255, 184, 77, 0.08);
 }
+
+/* =========================================================
+   DURACIÓN
+   ========================================================= */
 
 .reserva-toma__duracion-control {
   min-height: 94px;
@@ -269,6 +281,10 @@
   color: var(--color-texto-suave);
   font-size: 11px;
 }
+
+/* =========================================================
+   LATERAL / RESUMEN
+   ========================================================= */
 
 .reserva-toma__lateral {
   position: sticky;
@@ -343,6 +359,10 @@
   line-height: 1.55;
 }
 
+/* =========================================================
+   CONFIRMAR
+   ========================================================= */
+
 .reserva-toma__confirmar {
   width: 100%;
   min-height: 48px;
@@ -415,6 +435,10 @@
   background: rgba(255, 123, 123, 0.08);
 }
 
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
 @media (max-width: 980px) {
   .reserva-toma__contenido {
     grid-template-columns: 1fr;
@@ -486,7 +510,10 @@
     font-size: 18px;
   }
 }
-/* Estados de las franjas horarias */
+
+/* =========================================================
+   ESTADOS DE LAS FRANJAS HORARIAS
+   ========================================================= */
 
 .reserva-toma__hora:disabled {
   cursor: not-allowed;
@@ -516,6 +543,10 @@
   color: rgba(255, 202, 118, 0.38);
   background: rgba(255, 184, 77, 0.035);
 }
+
+/* =========================================================
+   LEYENDA
+   ========================================================= */
 
 .reserva-toma__leyenda-horas {
   margin-top: 14px;
@@ -555,4 +586,229 @@
 .reserva-toma__leyenda-indicador--bloqueada {
   border: 1px solid rgba(148, 163, 184, 0.2);
   background: rgba(148, 163, 184, 0.25);
+}
+
+/* =========================================================
+   MODO CLARO
+   ========================================================= */
+
+html[data-tema="claro"] .reserva-toma__cabecera h1,
+html[data-tema="claro"] .reserva-toma__bloque h2,
+html[data-tema="claro"] .reserva-toma__resumen h2,
+html[data-tema="claro"] .reserva-toma__duracion-control strong,
+html[data-tema="claro"] .reserva-toma__dia strong,
+html[data-tema="claro"] .reserva-toma__resumen-ubicacion strong,
+html[data-tema="claro"] .reserva-toma__resumen-datos dd {
+  color: #172238;
+}
+
+html[data-tema="claro"] .reserva-toma__volver,
+html[data-tema="claro"] .reserva-toma__cabecera p,
+html[data-tema="claro"] .reserva-toma__bloque-cabecera p,
+html[data-tema="claro"] .reserva-toma__duracion-control span,
+html[data-tema="claro"] .reserva-toma__resumen-ubicacion p,
+html[data-tema="claro"] .reserva-toma__resumen-datos dt,
+html[data-tema="claro"] .reserva-toma__aviso,
+html[data-tema="claro"] .reserva-toma__condiciones,
+html[data-tema="claro"] .reserva-toma__leyenda-horas span {
+  color: #64748b;
+}
+
+html[data-tema="claro"] .reserva-toma__etiqueta {
+  color: #079576;
+}
+
+/* Tarjetas principales */
+
+html[data-tema="claro"] .reserva-toma__bloque,
+html[data-tema="claro"] .reserva-toma__resumen {
+  border-color: #dbe4e8;
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(15, 35, 45, 0.04),
+    0 8px 24px rgba(42, 68, 78, 0.08);
+}
+
+/* Números de los pasos */
+
+html[data-tema="claro"] .reserva-toma__paso {
+  border-color: #b9ddd3;
+  color: #06765f;
+  background: #eaf8f3;
+}
+
+/* Días */
+
+html[data-tema="claro"] .reserva-toma__dia {
+  border-color: #dbe4e8;
+  color: #475569;
+  background: #ffffff;
+}
+
+html[data-tema="claro"] .reserva-toma__dia span,
+html[data-tema="claro"] .reserva-toma__dia small {
+  color: #64748b;
+}
+
+html[data-tema="claro"] .reserva-toma__dia:hover {
+  border-color: #b9ddd3;
+  background: #f4fbf8;
+}
+
+html[data-tema="claro"] .reserva-toma__dia--activo {
+  border-color: #079576;
+  background: #eaf8f3;
+  box-shadow: inset 0 0 0 1px rgba(7, 149, 118, 0.08);
+}
+
+html[data-tema="claro"] .reserva-toma__dia--activo span,
+html[data-tema="claro"] .reserva-toma__dia--activo strong,
+html[data-tema="claro"] .reserva-toma__dia--activo small {
+  color: #06765f;
+}
+
+/* Horas disponibles */
+
+html[data-tema="claro"] .reserva-toma__hora {
+  border-color: #dbe4e8;
+  color: #334155;
+  background: #ffffff;
+}
+
+html[data-tema="claro"] .reserva-toma__hora:hover:not(:disabled) {
+  border-color: #b9ddd3;
+  color: #06765f;
+  background: #f4fbf8;
+}
+
+/* Hora seleccionada */
+
+html[data-tema="claro"] .reserva-toma__hora--activa,
+html[data-tema="claro"] .reserva-toma__hora--activa:hover:not(:disabled) {
+  border-color: #079576;
+  color: #ffffff;
+  background: #079576;
+  box-shadow: none;
+}
+
+/* Hora pasada / bloqueada */
+
+html[data-tema="claro"] .reserva-toma__hora--no-disponible,
+html[data-tema="claro"] .reserva-toma__hora--pasada {
+  border-color: #e2e8ec;
+  color: #a7b1bc;
+  background: #f1f4f6;
+}
+
+html[data-tema="claro"] .reserva-toma__hora--no-disponible:hover {
+  border-color: #e2e8ec;
+  color: #a7b1bc;
+  background: #f1f4f6;
+  transform: none;
+}
+
+/* Hora reservada por otra persona */
+
+html[data-tema="claro"] .reserva-toma__hora--reservada {
+  border-color: #efd79f;
+  color: #a66c12;
+  background: #fff6e4;
+}
+
+/* Duración */
+
+html[data-tema="claro"] .reserva-toma__duracion-control {
+  border-color: #dbe4e8;
+  background: #f8fafb;
+}
+
+html[data-tema="claro"] .reserva-toma__duracion-control button {
+  border-color: #b9ddd3;
+  color: #06765f;
+  background: #eaf8f3;
+}
+
+html[data-tema="claro"]
+  .reserva-toma__duracion-control
+  button:hover:not(:disabled) {
+  border-color: #079576;
+  color: #ffffff;
+  background: #079576;
+}
+
+/* Resumen de ubicación */
+
+html[data-tema="claro"] .reserva-toma__resumen-ubicacion {
+  border-color: #bfe8da;
+  background: #f1faf6;
+}
+
+html[data-tema="claro"] .reserva-toma__resumen-ubicacion > span {
+  color: #079576;
+}
+
+html[data-tema="claro"] .reserva-toma__resumen-datos > div {
+  border-bottom-color: #e8eef1;
+}
+
+/* Sin horarios */
+
+html[data-tema="claro"] .reserva-toma__sin-horarios {
+  border-color: #efd79f;
+  color: #a66c12;
+  background: #fff8e9;
+}
+
+/* Confirmar */
+
+html[data-tema="claro"] .reserva-toma__confirmar {
+  border-color: #079576;
+  color: #ffffff;
+  background: #079576;
+}
+
+html[data-tema="claro"] .reserva-toma__confirmar:hover:not(:disabled) {
+  border-color: #06765f;
+  background: #06765f;
+}
+
+/* Confirmación correcta */
+
+html[data-tema="claro"] .reserva-toma__confirmacion {
+  border-color: #bfe8da;
+  color: #06765f;
+  background: #effaf6;
+}
+
+html[data-tema="claro"] .reserva-toma__confirmacion > span {
+  background: #dff4ec;
+}
+
+html[data-tema="claro"] .reserva-toma__confirmacion p {
+  color: #475569;
+}
+
+/* Error */
+
+html[data-tema="claro"] .reserva-toma__error {
+  border-color: #efc2c5;
+  color: #c8444b;
+  background: #fff4f4;
+}
+
+/* Leyenda */
+
+html[data-tema="claro"] .reserva-toma__leyenda-indicador--disponible {
+  border-color: #cad5db;
+  background: #ffffff;
+}
+
+html[data-tema="claro"] .reserva-toma__leyenda-indicador--seleccionada {
+  border-color: #079576;
+  background: #079576;
+}
+
+html[data-tema="claro"] .reserva-toma__leyenda-indicador--bloqueada {
+  border-color: #d6dee3;
+  background: #e5eaed;
 }

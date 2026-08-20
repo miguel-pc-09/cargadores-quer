@@ -369,3 +369,102 @@
     height: 40px;
   }
 }
+
+/* =========================================================
+   MODO CLARO
+   ========================================================= */
+
+html[data-tema="claro"] .ayuda__cabecera h1 {
+  color: #172238;
+}
+
+html[data-tema="claro"] .ayuda__cabecera p {
+  color: #64748b;
+}
+
+html[data-tema="claro"] .ayuda__seccion {
+  border-color: #dbe4e8;
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(15, 35, 45, 0.04),
+    0 8px 24px rgba(42, 68, 78, 0.08);
+}
+
+html[data-tema="claro"] .ayuda__seccion-icono {
+  border-color: #bfe4d9;
+  color: #079576;
+  background: #eef9f5;
+}
+
+html[data-tema="claro"] .ayuda__etiqueta {
+  color: #079576;
+}
+
+html[data-tema="claro"] .ayuda__seccion-cabecera h2 {
+  color: #172238;
+}
+
+/* Preguntas blancas, no grises oscuras */
+
+html[data-tema="claro"] .ayuda__pregunta {
+  border-color: #dbe4e8;
+  background: #ffffff;
+}
+
+html[data-tema="claro"] .ayuda__pregunta[open] {
+  border-color: #b9ddd3;
+  background: #f1faf6;
+}
+
+html[data-tema="claro"] .ayuda__pregunta summary {
+  color: #172238;
+}
+
+html[data-tema="claro"] .ayuda__pregunta summary:hover {
+  background: #f6faf9;
+}
+
+html[data-tema="claro"] .ayuda__flecha {
+  border-color: #b9ddd3;
+  color: #079576;
+  background: #eef9f5;
+}
+
+html[data-tema="claro"] .ayuda__pregunta[open] .ayuda__flecha {
+  background: #dff4ec;
+}
+
+html[data-tema="claro"] .ayuda__respuesta {
+  border-top-color: #e8eef1;
+}
+
+html[data-tema="claro"] .ayuda__respuesta p {
+  color: #64748b;
+}
+
+html[data-tema="claro"] .ayuda__respuesta strong {
+  color: #172238;
+}
+
+/* Contacto */
+
+html[data-tema="claro"] .ayuda__contacto {
+  border-color: #bfe8da;
+  background: linear-gradient(135deg, #eaf8f3, #ffffff);
+  box-shadow:
+    0 1px 2px rgba(15, 35, 45, 0.04),
+    0 8px 24px rgba(42, 68, 78, 0.08);
+}
+
+html[data-tema="claro"] .ayuda__contacto-icono {
+  color: #ffffff;
+  background: #079576;
+}
+
+html[data-tema="claro"] .ayuda__contacto h2 {
+  color: #172238;
+}
+
+html[data-tema="claro"] .ayuda__contacto p {
+  color: #64748b;
+}

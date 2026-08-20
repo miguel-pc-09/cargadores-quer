@@ -1,4 +1,5 @@
 .login {
+  position: relative;
   min-height: 100vh;
   padding: 32px 20px;
   display: grid;
@@ -19,6 +20,36 @@
       var(--color-fondo) 0%,
       var(--color-fondo-secundario) 100%
     );
+}
+
+.login__tema {
+  position: fixed;
+  top: 22px;
+  right: 22px;
+  z-index: 10;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--color-borde);
+  border-radius: 11px;
+  color: var(--color-blanco);
+  background: rgba(17, 37, 68, 0.8);
+  box-shadow: var(--sombra-tarjeta);
+  cursor: pointer;
+  font-size: 19px;
+  line-height: 1;
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.login__tema:hover {
+  border-color: rgba(30, 167, 255, 0.5);
+  background: rgba(30, 167, 255, 0.12);
+  transform: translateY(-1px);
 }
 
 .login__contenido {
@@ -64,6 +95,7 @@
 }
 
 .login__nombre {
+  color: var(--color-blanco);
   font-size: 1.65rem;
 }
 
@@ -82,6 +114,15 @@
   box-shadow: var(--sombra-tarjeta);
 }
 
+.login__tarjeta--cargando {
+  color: var(--color-texto);
+  text-align: center;
+}
+
+.login__tarjeta--cargando p {
+  margin: 0;
+}
+
 .login__titulo {
   margin-bottom: 28px;
 }
@@ -98,6 +139,7 @@
 
 .login__titulo h1 {
   margin: 0 0 10px;
+  color: var(--color-blanco);
   font-size: 1.8rem;
 }
 
@@ -169,6 +211,7 @@
   border: none;
   color: var(--color-verde);
   background: transparent;
+  cursor: pointer;
   font-size: 0.78rem;
   font-weight: 700;
   transform: translateY(-50%);
@@ -218,9 +261,10 @@
   min-height: 52px;
   border: none;
   border-radius: var(--radio-pequeno);
-  color: var(--color-blanco);
+  color: #03101e;
   background: var(--color-principal);
   box-shadow: 0 10px 24px rgba(30, 167, 255, 0.2);
+  cursor: pointer;
   font-weight: 800;
   transition:
     background 0.2s ease,
@@ -237,7 +281,9 @@
   cursor: wait;
 }
 
-/* Avisos del formulario */
+/* =========================================================
+   AVISOS DEL FORMULARIO
+   ========================================================= */
 
 .login__aviso {
   padding: 15px;
@@ -320,10 +366,138 @@
   margin-right: 7px;
 }
 
+/* =========================================================
+   MODO CLARO
+   ========================================================= */
+
+html[data-tema="claro"] .login {
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(7, 149, 118, 0.08),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(7, 61, 55, 0.05),
+      transparent 30%
+    ),
+    linear-gradient(
+      180deg,
+      var(--color-fondo) 0%,
+      var(--color-fondo-secundario) 100%
+    );
+}
+
+html[data-tema="claro"] .login__tema {
+  border-color: #b9ddd3;
+  color: #ffffff;
+  background: #073d37;
+  box-shadow:
+    0 1px 2px rgba(15, 35, 45, 0.04),
+    0 8px 22px rgba(42, 68, 78, 0.1);
+}
+
+html[data-tema="claro"] .login__tema:hover {
+  border-color: #079576;
+  background: #07534a;
+}
+
+html[data-tema="claro"] .login__icono {
+  border-color: #b9ddd3;
+  background: #073d37;
+}
+
+html[data-tema="claro"] .login__nombre,
+html[data-tema="claro"] .login__titulo h1 {
+  color: #172238;
+}
+
+html[data-tema="claro"] .login__descripcion,
+html[data-tema="claro"] .login__titulo p,
+html[data-tema="claro"] .login__recordarme,
+html[data-tema="claro"] .login__registro,
+html[data-tema="claro"] .login__pie {
+  color: #64748b;
+}
+
+html[data-tema="claro"] .login__tarjeta {
+  border-color: var(--color-borde);
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(15, 35, 45, 0.04),
+    0 12px 34px rgba(42, 68, 78, 0.1);
+}
+
+html[data-tema="claro"] .login__campo label {
+  color: #334155;
+}
+
+html[data-tema="claro"] .login__campo input {
+  border-color: #dbe4e8;
+  color: #172238;
+  background: #f8fafb;
+}
+
+html[data-tema="claro"] .login__campo input::placeholder {
+  color: #94a3b8;
+}
+
+html[data-tema="claro"] .login__campo input:focus {
+  border-color: #079576;
+  background: #ffffff;
+  box-shadow: 0 0 0 4px rgba(7, 149, 118, 0.1);
+}
+
+html[data-tema="claro"] .login__mostrar,
+html[data-tema="claro"] .login__enlace,
+html[data-tema="claro"] .login__registro-enlace,
+html[data-tema="claro"] .login__titulo > span,
+html[data-tema="claro"] .login__ayuntamiento {
+  color: #079576;
+}
+
+html[data-tema="claro"] .login__boton {
+  color: #ffffff;
+  background: #079576;
+  box-shadow: 0 10px 24px rgba(7, 149, 118, 0.18);
+}
+
+html[data-tema="claro"] .login__boton:hover:not(:disabled) {
+  background: #06765f;
+}
+
+html[data-tema="claro"] .login__registro {
+  border-color: var(--color-borde);
+}
+
+html[data-tema="claro"] .login__aviso--error {
+  border-color: #efc2c5;
+  color: #b63e45;
+  background: #fff4f4;
+}
+
+html[data-tema="claro"] .login__aviso--usuario-no-existe {
+  border-color: #bfe8da;
+  color: #334155;
+  background: #f1faf6;
+}
+
+/* =========================================================
+   MÓVIL
+   ========================================================= */
+
 @media (max-width: 520px) {
   .login {
-    padding: 24px 14px;
+    padding: 76px 14px 24px;
     place-items: start center;
+  }
+
+  .login__tema {
+    top: 16px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
   }
 
   .login__contenido {

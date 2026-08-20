@@ -468,3 +468,160 @@
     font-size: 7px;
   }
 }
+
+/* =========================================================
+   MODO CLARO
+   ========================================================= */
+
+html[data-tema="claro"] .mis-reservas__cabecera h1 {
+  color: #172238;
+}
+
+html[data-tema="claro"] .mis-reservas__pestanas {
+  border-color: #dbe4e8;
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(15, 35, 45, 0.04),
+    0 8px 24px rgba(42, 68, 78, 0.08);
+}
+
+html[data-tema="claro"] .mis-reservas__pestana {
+  color: #64748b;
+}
+
+html[data-tema="claro"] .mis-reservas__pestana--activa {
+  border-color: #b9ddd3;
+  color: #075f4e;
+  background: #eaf8f3;
+}
+
+html[data-tema="claro"] .mis-reservas__pestana span {
+  color: inherit;
+  background: #edf3f2;
+}
+
+html[data-tema="claro"] .mis-reservas__pestana--activa span {
+  background: #d8f0e8;
+}
+
+html[data-tema="claro"] .mis-reservas__mensaje-exito {
+  border: 1px solid #bfe8da;
+  color: #06765f;
+  background: #f1faf6;
+}
+
+html[data-tema="claro"] .mis-reservas__mensaje-error {
+  border: 1px solid #efc2c5;
+  color: #c8444b;
+  background: #fff4f4;
+}
+
+html[data-tema="claro"] .mis-reservas__historial,
+html[data-tema="claro"] .mis-reservas__cargando,
+html[data-tema="claro"] .mis-reservas__vacio {
+  border-color: #dbe4e8;
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(15, 35, 45, 0.04),
+    0 8px 24px rgba(42, 68, 78, 0.08);
+}
+
+html[data-tema="claro"] .mis-reservas__tabla th {
+  color: #64748b;
+  background: #f3f6f8;
+}
+
+html[data-tema="claro"] .mis-reservas__tabla td {
+  color: #172238;
+}
+
+html[data-tema="claro"] .mis-reservas__tabla tbody tr + tr {
+  border-top-color: #e8eef1;
+}
+
+html[data-tema="claro"]
+  .mis-reservas__tabla
+  tbody
+  tr:not(.mis-reservas__fila-confirmacion):hover {
+  background: #f8fbfa;
+}
+
+html[data-tema="claro"] .mis-reservas__enlace-cargador,
+html[data-tema="claro"] .mis-reservas__duracion,
+html[data-tema="claro"] .mis-reservas__confirmacion strong,
+html[data-tema="claro"] .mis-reservas__vacio h2 {
+  color: #172238 !important;
+}
+
+html[data-tema="claro"] .mis-reservas__enlace-cargador:hover {
+  color: #079576;
+}
+
+html[data-tema="claro"] .mis-reservas__estado--confirmada,
+html[data-tema="claro"] .mis-reservas__estado--finalizada {
+  border-color: #b9dff3;
+  color: #167eb5;
+  background: #eaf6fc;
+}
+
+html[data-tema="claro"] .mis-reservas__estado--activa {
+  border-color: #bfe8da;
+  color: #06765f;
+  background: #e8f8f2;
+}
+
+html[data-tema="claro"] .mis-reservas__estado--cancelada {
+  color: #64748b;
+  background: #eef2f5;
+}
+
+html[data-tema="claro"] .mis-reservas__estado--caducada {
+  border-color: #efc2c5;
+  color: #c8444b;
+  background: #fff0f1;
+}
+
+html[data-tema="claro"] .mis-reservas__cancelar {
+  border-color: #efc2c5;
+  color: #c8444b;
+  background: #fff4f4;
+}
+
+html[data-tema="claro"] .mis-reservas__confirmacion {
+  background: #fff5f5;
+}
+
+html[data-tema="claro"] .mis-reservas__confirmacion p {
+  color: #64748b;
+}
+
+html[data-tema="claro"] .mis-reservas__confirmacion-acciones button:first-child {
+  border-color: #dbe4e8;
+  color: #475569;
+  background: #f8fafb;
+}
+
+html[data-tema="claro"] .mis-reservas__confirmacion-acciones button:last-child {
+  border-color: #df777c;
+  color: #ffffff;
+  background: #d94f55;
+}
+
+html[data-tema="claro"] .mis-reservas__spinner {
+  border-color: #dbe4e8;
+  border-top-color: #079576;
+}
+
+html[data-tema="claro"] .mis-reservas__vacio-icono {
+  color: #079576;
+}
+
+html[data-tema="claro"] .mis-reservas__vacio p,
+html[data-tema="claro"] .mis-reservas__cargando p {
+  color: #64748b;
+}
+
+html[data-tema="claro"] .mis-reservas__buscar {
+  color: #ffffff;
+  background: #079576;
+}

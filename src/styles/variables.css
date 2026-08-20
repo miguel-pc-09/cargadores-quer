@@ -1,23 +1,88 @@
 :root {
+  /* =======================================================
+     TEMA OSCURO - TEMA PRINCIPAL DE CARGAQUER
+     ======================================================= */
+
   --color-fondo: #071427;
   --color-fondo-secundario: #0a1a30;
+
   --color-superficie: #112544;
+  --color-superficie-secundaria: #0d203a;
+  --color-superficie-suave: rgba(17, 37, 68, 0.72);
 
   --color-principal: #1ea7ff;
   --color-principal-hover: #43b6ff;
 
   --color-verde: #6ee7b7;
+  --color-verde-fuerte: #22c997;
+
   --color-blanco: #ffffff;
 
   --color-texto: rgba(255, 255, 255, 0.86);
   --color-texto-suave: rgba(255, 255, 255, 0.62);
 
   --color-borde: rgba(255, 255, 255, 0.1);
+  --color-borde-suave: rgba(255, 255, 255, 0.07);
+
   --color-error: #ff7b7b;
+  --color-aviso: #ffc857;
+
+  --color-barra: rgba(5, 27, 34, 0.96);
+  --color-barra-texto: #ffffff;
+  --color-barra-texto-suave: rgba(255, 255, 255, 0.66);
+
+  --color-lateral: rgba(17, 37, 68, 0.76);
+
+  --color-control: rgba(255, 255, 255, 0.05);
+  --color-control-hover: rgba(255, 255, 255, 0.08);
 
   --sombra-tarjeta: 0 20px 50px rgba(0, 0, 0, 0.3);
 
   --radio-pequeno: 10px;
   --radio-medio: 16px;
   --radio-grande: 24px;
+}
+
+/* =========================================================
+   TEMA CLARO
+   ========================================================= */
+
+html[data-tema="claro"] {
+  --color-fondo: #f1f5f8;
+  --color-fondo-secundario: #edf2f6;
+
+  --color-superficie: #ffffff;
+  --color-superficie-secundaria: #f8fafb;
+  --color-superficie-suave: #f4f7f9;
+
+  --color-principal: #0a9b78;
+  --color-principal-hover: #087c63;
+
+  --color-verde: #0a9b78;
+  --color-verde-fuerte: #078b6c;
+
+  --color-blanco: #172238;
+
+  --color-texto: #172238;
+  --color-texto-suave: #68778b;
+
+  --color-borde: #dce4e9;
+  --color-borde-suave: #e8edf0;
+
+  --color-error: #d84f55;
+  --color-aviso: #d99a23;
+
+  --color-barra: #073b36;
+
+  --color-barra-texto: #ffffff;
+  --color-barra-texto-suave: rgba(255, 255, 255, 0.7);
+
+  --color-lateral: #ffffff;
+
+  --color-control: rgba(255, 255, 255, 0.08);
+  --color-control-hover: rgba(255, 255, 255, 0.14);
+
+  --sombra-tarjeta:
+    0 1px 2px rgba(15, 35, 45, 0.04),
+    0 8px 24px rgba(42, 68, 78, 0.08);
 }

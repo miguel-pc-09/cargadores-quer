@@ -301,11 +301,25 @@ function CargasPage() {
                       </td>
 
                       <td className="mis-cargas__cargador">
-                        <strong>{informacionCargador.cargador}</strong>
+                        <Link
+                          to={
+                            carga.estado === "activa"
+                              ? `/panel/cargas/${carga.id}`
+                              : `/panel/cargadores/${carga.cargadorId}`
+                          }
+                          className="mis-cargas__cargador"
+                          title={
+                            carga.estado === "activa"
+                              ? "Ver carga en curso"
+                              : "Ver cargador"
+                          }
+                        >
+                          <strong>{informacionCargador.cargador}</strong>
 
-                        {informacionCargador.toma && (
-                          <span>{informacionCargador.toma}</span>
-                        )}
+                          {informacionCargador.toma && (
+                            <span>{informacionCargador.toma}</span>
+                          )}
+                        </Link>
                       </td>
 
                       <td className="mis-cargas__duracion">

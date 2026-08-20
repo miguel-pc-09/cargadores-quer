@@ -1,8 +1,24 @@
+import { useState } from "react";
+
 interface BarraSuperiorProps {
   nombreUsuario: string;
   menuAbierto: boolean;
   alternarMenu: () => void;
   salir: () => void;
+}
+
+type Tema = "oscuro" | "claro";
+
+const TEMA_GUARDADO = "cargaquer-tema";
+
+function obtenerTemaActual(): Tema {
+  return document.documentElement.dataset.tema === "claro" ? "claro" : "oscuro";
+}
+
+function aplicarTema(tema: Tema) {
+  document.documentElement.dataset.tema = tema;
+
+  localStorage.setItem(TEMA_GUARDADO, tema);
 }
 
 function BarraSuperior({
@@ -11,7 +27,17 @@ function BarraSuperior({
   alternarMenu,
   salir,
 }: BarraSuperiorProps) {
+  const [tema, setTema] = useState<Tema>(() => obtenerTemaActual());
+
   const inicialUsuario = nombreUsuario.charAt(0).toUpperCase();
+
+  const alternarTema = () => {
+    const nuevoTema: Tema = tema === "oscuro" ? "claro" : "oscuro";
+
+    aplicarTema(nuevoTema);
+
+    setTema(nuevoTema);
+  };
 
   return (
     <header className="barra-superior">
@@ -47,6 +73,20 @@ function BarraSuperior({
         </div>
 
         <div className="barra-superior__usuario">
+          <button
+            type="button"
+            className="barra-superior__tema"
+            onClick={alternarTema}
+            aria-label={
+              tema === "oscuro" ? "Activar modo claro" : "Activar modo oscuro"
+            }
+            title={
+              tema === "oscuro" ? "Activar modo claro" : "Activar modo oscuro"
+            }
+          >
+            <span aria-hidden="true">{tema === "oscuro" ? "☀" : "☾"}</span>
+          </button>
+
           <div className="barra-superior__avatar" aria-hidden="true">
             {inicialUsuario}
           </div>

@@ -465,6 +465,120 @@ function AyudaPage() {
           </div>
         </section>
 
+        {/* ACCESO DESDE EL MÓVIL */}
+
+        <section className="ayuda__seccion">
+          <header className="ayuda__seccion-cabecera">
+            <span className="ayuda__seccion-icono" aria-hidden="true">
+              ◉
+            </span>
+
+            <div>
+              <span className="ayuda__etiqueta">Acceso rápido</span>
+
+              <h2>Añadir CargaQuer al móvil</h2>
+            </div>
+          </header>
+
+          <div className="ayuda__preguntas">
+            <details className="ayuda__pregunta">
+              <summary>
+                <span>
+                  ¿Cómo puedo añadir CargaQuer a la pantalla de inicio en
+                  Android?
+                </span>
+
+                <span className="ayuda__flecha" aria-hidden="true">
+                  +
+                </span>
+              </summary>
+
+              <div className="ayuda__respuesta">
+                <p>
+                  Abre CargaQuer desde <strong>Google Chrome</strong> en tu
+                  teléfono Android.
+                </p>
+
+                <p>
+                  Pulsa el menú de los <strong>tres puntos</strong> situado en
+                  la parte superior derecha del navegador.
+                </p>
+
+                <p>
+                  Selecciona <strong>Añadir a pantalla de inicio</strong> o
+                  <strong> Instalar aplicación</strong>, dependiendo de la
+                  versión de Chrome que tengas instalada.
+                </p>
+
+                <p>
+                  Confirma la operación y aparecerá un icono de CargaQuer en la
+                  pantalla de inicio de tu teléfono. A partir de ese momento
+                  podrás abrir el servicio directamente desde ese icono.
+                </p>
+              </div>
+            </details>
+
+            <details className="ayuda__pregunta">
+              <summary>
+                <span>
+                  ¿Cómo puedo añadir CargaQuer a la pantalla de inicio en
+                  iPhone?
+                </span>
+
+                <span className="ayuda__flecha" aria-hidden="true">
+                  +
+                </span>
+              </summary>
+
+              <div className="ayuda__respuesta">
+                <p>
+                  Abre CargaQuer desde <strong>Safari</strong> en tu iPhone.
+                </p>
+
+                <p>
+                  Pulsa el botón <strong>Compartir</strong> del navegador.
+                </p>
+
+                <p>
+                  Busca la opción <strong>Añadir a pantalla de inicio</strong> y
+                  selecciónala.
+                </p>
+
+                <p>
+                  Confirma el nombre y pulsa <strong>Añadir</strong>. Se creará
+                  un icono de CargaQuer en la pantalla de inicio y podrás entrar
+                  al servicio directamente desde él.
+                </p>
+              </div>
+            </details>
+
+            <details className="ayuda__pregunta">
+              <summary>
+                <span>
+                  ¿Es una aplicación instalada desde App Store o Google Play?
+                </span>
+
+                <span className="ayuda__flecha" aria-hidden="true">
+                  +
+                </span>
+              </summary>
+
+              <div className="ayuda__respuesta">
+                <p>
+                  No. CargaQuer es una <strong>aplicación web</strong> que se
+                  utiliza desde el navegador.
+                </p>
+
+                <p>
+                  Al añadirla a la pantalla de inicio se crea un acceso directo
+                  que permite abrirla desde un icono de forma similar a una
+                  aplicación instalada.
+                </p>
+              </div>
+            </details>
+          </div>
+        </section>
+
         {/* CONTACTO */}
 
         <section className="ayuda__contacto">

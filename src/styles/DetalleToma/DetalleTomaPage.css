@@ -329,3 +329,113 @@
     font-size: 13px;
   }
 }
+
+/* =========================================================
+   MODO CLARO
+   ========================================================= */
+
+html[data-tema="claro"] .detalle-toma-page__cabecera h1,
+html[data-tema="claro"] .detalle-toma-page__panel-cabecera h2,
+html[data-tema="claro"] .detalle-toma-page__datos strong {
+  color: #172238;
+}
+
+html[data-tema="claro"] .detalle-toma-page__volver,
+html[data-tema="claro"] .detalle-toma-page__cabecera p,
+html[data-tema="claro"] .detalle-toma-page__datos span,
+html[data-tema="claro"] .detalle-toma-page__cargando p {
+  color: #64748b;
+}
+
+html[data-tema="claro"] .detalle-toma-page__etiqueta {
+  color: #079576;
+}
+
+/* Panel principal */
+
+html[data-tema="claro"] .detalle-toma-page__panel,
+html[data-tema="claro"] .detalle-toma-page__cargando {
+  border-color: #dbe4e8;
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(15, 35, 45, 0.04),
+    0 8px 24px rgba(42, 68, 78, 0.08);
+}
+
+/* Datos interiores */
+
+html[data-tema="claro"] .detalle-toma-page__datos {
+  border-color: #dbe4e8;
+  background: #f8fafb;
+}
+
+html[data-tema="claro"] .detalle-toma-page__datos > div {
+  border-color: #e8eef1;
+}
+
+/* Disponibilidad */
+
+html[data-tema="claro"] .detalle-toma-page__disponibilidad {
+  border-color: #f0d7a5;
+  color: #a9680c;
+  background: #fff8e9;
+}
+
+html[data-tema="claro"] .detalle-toma-page__disponibilidad p {
+  color: #8c661d;
+}
+
+/* Mi carga */
+
+html[data-tema="claro"] .detalle-toma-page__mi-carga {
+  border-color: #bfe8da;
+  background: #f1faf6;
+}
+
+html[data-tema="claro"] .detalle-toma-page__mi-carga-icono {
+  color: #ffffff;
+  background: #079576;
+}
+
+html[data-tema="claro"] .detalle-toma-page__mi-carga strong {
+  color: #06765f;
+}
+
+html[data-tema="claro"] .detalle-toma-page__mi-carga p {
+  color: #64748b;
+}
+
+/* Botón principal */
+
+html[data-tema="claro"] .detalle-toma-page__boton {
+  border-color: #079576;
+  color: #ffffff;
+  background: #079576;
+}
+
+html[data-tema="claro"] .detalle-toma-page__boton:hover {
+  border-color: #06765f;
+  background: #06765f;
+}
+
+html[data-tema="claro"] .detalle-toma-page__boton--activa {
+  border-color: #06765f;
+  color: #ffffff;
+  background: #06765f;
+}
+
+/* Fuera de servicio / errores */
+
+html[data-tema="claro"] .detalle-toma-page__fuera-servicio,
+html[data-tema="claro"] .detalle-toma-page__error {
+  border-color: #efc2c5;
+  color: #c8444b;
+  background: #fff4f4;
+}
+
+/* Cargando */
+
+html[data-tema="claro"] .detalle-toma-page__spinner {
+  border-color: #dbe4e8;
+  border-top-color: #079576;
+}

@@ -13,7 +13,10 @@ import TarjetaTomaDetalle from "../../components/detalleCargador/TarjetaTomaDeta
 
 import useAuth from "../../hooks/useAuth";
 
-import { iniciarCarga } from "../../services/cargasService";
+import {
+  iniciarCarga,
+  obtenerCargaActivaPorReserva,
+} from "../../services/cargasService";
 
 import { obtenerCargadorPorId } from "../../services/chargersService";
 
@@ -119,6 +122,10 @@ function DetalleCargadorPage() {
   const [cargandoReserva, setCargandoReserva] = useState(true);
 
   const [iniciandoCarga, setIniciandoCarga] = useState(false);
+
+  const [cargaActivaId, setCargaActivaId] = useState<string | null>(null);
+
+  const [buscandoCargaActiva, setBuscandoCargaActiva] = useState(false);
 
   const [mensajeError, setMensajeError] = useState("");
 
@@ -305,6 +312,54 @@ function DetalleCargadorPage() {
       activo = false;
     };
   }, [cargadorId, reservaId, usuarioId]);
+
+  useEffect(() => {
+    let activo = true;
+
+    async function cargarCargaActiva() {
+      if (!reservaUsuario || reservaUsuario.estado !== "activa") {
+        if (activo) {
+          setCargaActivaId(null);
+          setBuscandoCargaActiva(false);
+        }
+
+        return;
+      }
+
+      try {
+        setBuscandoCargaActiva(true);
+
+        const cargaActiva = await obtenerCargaActivaPorReserva(
+          reservaUsuario.id,
+        );
+
+        if (!activo) {
+          return;
+        }
+
+        setCargaActivaId(cargaActiva?.id ?? null);
+      } catch {
+        if (!activo) {
+          return;
+        }
+
+        setCargaActivaId(null);
+        setMensajeError(
+          "No hemos podido localizar la carga activa de esta reserva.",
+        );
+      } finally {
+        if (activo) {
+          setBuscandoCargaActiva(false);
+        }
+      }
+    }
+
+    void cargarCargaActiva();
+
+    return () => {
+      activo = false;
+    };
+  }, [reservaUsuario]);
 
   useEffect(() => {
     const intervalo = window.setInterval(() => {
@@ -587,9 +642,18 @@ function DetalleCargadorPage() {
                 type="button"
                 className="detalle-cargador-page__iniciar-carga"
                 disabled={
-                  !puedeComenzarCarga || reservaActiva || iniciandoCarga
+                  reservaActiva
+                    ? buscandoCargaActiva || !cargaActivaId
+                    : !puedeComenzarCarga || iniciandoCarga
                 }
-                onClick={() => void iniciarCargaUsuario()}
+                onClick={() => {
+                  if (reservaActiva && cargaActivaId) {
+                    navigate(`/panel/cargas/${cargaActivaId}`);
+                    return;
+                  }
+
+                  void iniciarCargaUsuario();
+                }}
               >
                 <span aria-hidden="true">⚡</span>
 
@@ -597,7 +661,11 @@ function DetalleCargadorPage() {
                   {iniciandoCarga
                     ? "Iniciando carga..."
                     : reservaActiva
-                      ? "Carga en curso"
+                      ? buscandoCargaActiva
+                        ? "Buscando carga..."
+                        : cargaActivaId
+                          ? "Ver carga en curso"
+                          : "Carga no disponible"
                       : !vehiculoValidado && puedeComenzarPorHorario
                         ? "Vehículo pendiente de validación"
                         : "Iniciar carga"}
@@ -606,7 +674,9 @@ function DetalleCargadorPage() {
 
               <p className="detalle-cargador-page__reserva-mensaje">
                 {reservaActiva
-                  ? "Ya existe una carga activa para esta reserva."
+                  ? cargaActivaId
+                    ? "La carga está en curso. Puedes volver a consultar su progreso cuando quieras."
+                    : "Ya existe una carga activa para esta reserva."
                   : puedeComenzarPorHorario && !vehiculoValidado
                     ? "Tu reserva sigue siendo válida, pero necesitas que la matrícula sea aprobada antes de iniciar la carga."
                     : puedeComenzarCarga

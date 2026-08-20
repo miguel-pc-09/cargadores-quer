@@ -232,13 +232,6 @@
   background: rgba(255, 255, 255, 0.025);
 }
 
-/*
- * Dejamos que Inicio, Fin y Cargador ocupen el espacio
- * natural que necesiten.
- *
- * Duración y Energía quedan más compactas.
- */
-
 .mis-cargas__tabla th:nth-child(4),
 .mis-cargas__tabla td:nth-child(4) {
   width: 1%;
@@ -386,10 +379,6 @@
     margin-bottom: 20px;
   }
 
-  /*
-   * Las tres estadísticas continúan en horizontal.
-   */
-
   .mis-cargas__estadisticas {
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 7px;
@@ -413,16 +402,9 @@
     font-size: 13px;
   }
 
-  /*
-   * La tabla sigue siendo una tabla real.
-   * Reducimos padding, pero no transformamos
-   * las filas en tarjetas.
-   */
-
   .mis-cargas__tabla th {
     padding: 11px 6px;
     font-size: 8px;
-    letter-spacing: 0.02em;
   }
 
   .mis-cargas__tabla td {
@@ -499,4 +481,138 @@
   .mis-cargas__energia {
     font-size: 10px !important;
   }
+}
+
+/* =========================================================
+   MODO CLARO
+   ========================================================= */
+
+html[data-tema="claro"] .mis-cargas__cabecera h1 {
+  color: #172238;
+}
+
+html[data-tema="claro"] .mis-cargas__resumen-principal {
+  border-color: #bfe8da;
+  background: linear-gradient(135deg, #f1fbf7, #ffffff);
+  box-shadow:
+    0 1px 2px rgba(15, 35, 45, 0.04),
+    0 8px 24px rgba(42, 68, 78, 0.08);
+}
+
+html[data-tema="claro"] .mis-cargas__resumen-principal span,
+html[data-tema="claro"] .mis-cargas__resumen-principal p {
+  color: #64748b;
+}
+
+html[data-tema="claro"] .mis-cargas__resumen-principal strong {
+  color: #079576;
+}
+
+/* Estadísticas */
+
+html[data-tema="claro"] .mis-cargas__estadistica {
+  border-color: #dbe4e8;
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(15, 35, 45, 0.04),
+    0 8px 24px rgba(42, 68, 78, 0.08);
+}
+
+html[data-tema="claro"] .mis-cargas__estadistica > span {
+  color: #64748b;
+}
+
+html[data-tema="claro"] .mis-cargas__estadistica:first-child {
+  border-color: #bfe8da;
+  background: #f3fbf8;
+}
+
+html[data-tema="claro"] .mis-cargas__estadistica:first-child strong {
+  color: #079576;
+}
+
+html[data-tema="claro"] .mis-cargas__estadistica:nth-child(2) strong {
+  color: #172238;
+}
+
+html[data-tema="claro"] .mis-cargas__estadistica--coste {
+  border-color: #f0d7a5;
+  background: #fffaf0;
+}
+
+html[data-tema="claro"] .mis-cargas__estadistica--coste strong {
+  color: #c77d0f;
+}
+
+/* Tabla */
+
+html[data-tema="claro"] .mis-cargas__historial {
+  border-color: #dbe4e8;
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(15, 35, 45, 0.04),
+    0 8px 24px rgba(42, 68, 78, 0.08);
+}
+
+html[data-tema="claro"] .mis-cargas__tabla th {
+  color: #64748b;
+  background: #f3f6f8;
+}
+
+html[data-tema="claro"] .mis-cargas__tabla td {
+  color: #172238;
+}
+
+html[data-tema="claro"] .mis-cargas__tabla tbody tr + tr {
+  border-top-color: #e8eef1;
+}
+
+html[data-tema="claro"] .mis-cargas__tabla tbody tr:hover {
+  background: #f8fbfa;
+}
+
+html[data-tema="claro"] .mis-cargas__cargador,
+html[data-tema="claro"] .mis-cargas__duracion {
+  color: #172238 !important;
+}
+
+html[data-tema="claro"] .mis-cargas__energia {
+  color: #079576 !important;
+}
+
+/* Vacío / cargando */
+
+html[data-tema="claro"] .mis-cargas__cargando,
+html[data-tema="claro"] .mis-cargas__vacio {
+  border-color: #dbe4e8;
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(15, 35, 45, 0.04),
+    0 8px 24px rgba(42, 68, 78, 0.08);
+}
+
+html[data-tema="claro"] .mis-cargas__vacio h2 {
+  color: #172238;
+}
+
+html[data-tema="claro"] .mis-cargas__vacio p,
+html[data-tema="claro"] .mis-cargas__cargando p {
+  color: #64748b;
+}
+
+html[data-tema="claro"] .mis-cargas__vacio-icono {
+  border-color: #bfe8da;
+  color: #079576;
+  background: #eaf8f3;
+}
+
+html[data-tema="claro"] .mis-cargas__spinner {
+  border-color: #dbe4e8;
+  border-top-color: #079576;
+}
+
+html[data-tema="claro"] .mis-cargas__buscar {
+  border-color: #079576;
+  color: #ffffff;
+  background: #079576;
 }

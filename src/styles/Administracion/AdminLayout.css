@@ -29,7 +29,7 @@
   min-height: 74px;
   border-top: 3px solid rgba(110, 231, 183, 0.22);
   border-bottom: 1px solid var(--color-borde);
-  background: rgba(5, 27, 34, 0.96);
+  background: var(--color-barra);
   backdrop-filter: blur(16px);
 }
 
@@ -82,7 +82,7 @@
 }
 
 .admin-layout__marca-texto strong {
-  color: var(--color-blanco);
+  color: var(--color-barra-texto);
   font-size: 17px;
 }
 
@@ -98,12 +98,12 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  color: var(--color-texto-suave);
+  color: var(--color-barra-texto-suave);
   font-size: 13px;
 }
 
 .admin-layout__servicio strong {
-  color: var(--color-blanco);
+  color: var(--color-barra-texto);
 }
 
 .admin-layout__usuario {
@@ -112,6 +112,30 @@
   justify-content: flex-end;
   align-items: center;
   gap: 10px;
+}
+
+.admin-layout__tema {
+  width: 39px;
+  height: 39px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 10px;
+  color: var(--color-barra-texto);
+  background: var(--color-control);
+  font-size: 17px;
+  line-height: 1;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.admin-layout__tema:hover {
+  border-color: rgba(110, 231, 183, 0.42);
+  background: var(--color-control-hover);
+  transform: translateY(-1px);
 }
 
 .admin-layout__avatar {
@@ -139,7 +163,7 @@
   display: block;
   overflow: hidden;
   max-width: 160px;
-  color: var(--color-blanco);
+  color: var(--color-barra-texto);
   font-size: 13px;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -148,7 +172,7 @@
 .admin-layout__usuario-texto span {
   display: block;
   margin-top: 2px;
-  color: var(--color-texto-suave);
+  color: var(--color-barra-texto-suave);
   font-size: 9px;
 }
 
@@ -158,17 +182,17 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  border: 1px solid var(--color-borde);
+  border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 10px;
-  color: var(--color-texto);
-  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-barra-texto);
+  background: var(--color-control);
   cursor: pointer;
   font-weight: 700;
 }
 
 .admin-layout__salir:hover {
   border-color: rgba(255, 123, 123, 0.45);
-  color: var(--color-blanco);
+  color: var(--color-barra-texto);
   background: rgba(255, 123, 123, 0.1);
 }
 
@@ -205,7 +229,7 @@
   padding: 12px;
   border: 1px solid var(--color-borde);
   border-radius: var(--radio-medio);
-  background: rgba(17, 37, 68, 0.76);
+  background: var(--color-lateral);
   box-shadow: var(--sombra-tarjeta);
   backdrop-filter: blur(12px);
 }
@@ -237,7 +261,7 @@
 
 .admin-layout__enlace:hover {
   color: var(--color-blanco);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--color-control);
   transform: translateX(2px);
 }
 
@@ -298,10 +322,10 @@
     display: grid;
     place-items: center;
     flex-shrink: 0;
-    border: 1px solid var(--color-borde);
+    border: 1px solid rgba(255, 255, 255, 0.16);
     border-radius: 10px;
-    color: var(--color-blanco);
-    background: rgba(255, 255, 255, 0.05);
+    color: var(--color-barra-texto);
+    background: var(--color-control);
     cursor: pointer;
     font-size: 21px;
   }
@@ -314,7 +338,6 @@
     width: 46px;
     height: 46px;
     border-radius: 12px;
-    background: var(--color-blanco);
   }
 
   .admin-layout__usuario-texto {
@@ -331,8 +354,10 @@
     font-size: 11px;
   }
 
+  .admin-layout__tema,
   .admin-layout__salir {
     width: 40px;
+    height: 40px;
     min-height: 40px;
     padding: 0;
     justify-content: center;
@@ -349,13 +374,13 @@
     justify-content: center;
     align-items: center;
     gap: 7px;
-    border-top: 1px solid var(--color-borde);
-    color: var(--color-texto-suave);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--color-barra-texto-suave);
     font-size: 12px;
   }
 
   .admin-layout__servicio-movil strong {
-    color: var(--color-blanco);
+    color: var(--color-barra-texto);
   }
 
   .admin-layout__estructura {
@@ -427,8 +452,61 @@
   }
 
   .admin-layout__menu-movil,
+  .admin-layout__tema,
   .admin-layout__salir {
     width: 38px;
+    height: 38px;
     min-height: 38px;
   }
+}
+
+/* =========================================================
+   MODO CLARO
+   ========================================================= */
+
+html[data-tema="claro"] .admin-layout {
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(13, 138, 115, 0.08),
+      transparent 30%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(7, 55, 50, 0.05),
+      transparent 28%
+    ),
+    linear-gradient(
+      180deg,
+      var(--color-fondo),
+      var(--color-fondo-secundario)
+    );
+}
+
+html[data-tema="claro"] .admin-layout__barra {
+  border-top-color: rgba(255, 202, 72, 0.42);
+}
+
+html[data-tema="claro"] .admin-layout__logo {
+  border-color: rgba(255, 255, 255, 0.2);
+  color: #ffca48;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+html[data-tema="claro"] .admin-layout__marca-texto span {
+  color: #72e1c1;
+}
+
+html[data-tema="claro"] .admin-layout__enlace:hover {
+  background: rgba(13, 138, 115, 0.06);
+}
+
+html[data-tema="claro"] .admin-layout__enlace--activo {
+  border-color: rgba(13, 138, 115, 0.28);
+  color: #0b5d50;
+  background: rgba(13, 138, 115, 0.1);
+}
+
+html[data-tema="claro"] .admin-layout__enlace-icono {
+  color: #0d8a73;
 }

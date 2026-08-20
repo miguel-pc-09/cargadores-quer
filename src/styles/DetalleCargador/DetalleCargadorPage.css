@@ -677,3 +677,257 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* =========================================================
+   MODO CLARO
+   ========================================================= */
+
+html[data-tema="claro"] .detalle-cargador-page__cabecera h1,
+html[data-tema="claro"] .estado-conexion__cabecera h2,
+html[data-tema="claro"] .detalle-cargador-page__reserva-cabecera h2,
+html[data-tema="claro"] .detalle-cargador-page__reserva-datos strong,
+html[data-tema="claro"] .detalle-cargador-page__tomas-cabecera h2,
+html[data-tema="claro"] .toma-detalle__cabecera h3,
+html[data-tema="claro"] .toma-detalle__informacion strong,
+html[data-tema="claro"] .toma-detalle__carga-activa strong {
+  color: #172238;
+}
+
+html[data-tema="claro"] .detalle-cargador-page__volver,
+html[data-tema="claro"] .detalle-cargador-page__cabecera p,
+html[data-tema="claro"] .estado-conexion__datos span,
+html[data-tema="claro"] .detalle-cargador-page__reserva--cargando p,
+html[data-tema="claro"] .detalle-cargador-page__reserva-datos span,
+html[data-tema="claro"] .detalle-cargador-page__reserva-mensaje,
+html[data-tema="claro"] .detalle-cargador-page__contador,
+html[data-tema="claro"] .toma-detalle__etiqueta,
+html[data-tema="claro"] .toma-detalle__informacion span,
+html[data-tema="claro"] .toma-detalle__carga-activa span,
+html[data-tema="claro"] .toma-detalle__fuera-servicio {
+  color: #64748b;
+}
+
+html[data-tema="claro"] .detalle-cargador-page__etiqueta {
+  color: #079576;
+}
+
+/* Estado del cargador */
+
+html[data-tema="claro"] .estado-conexion {
+  box-shadow:
+    0 1px 2px rgba(15, 35, 45, 0.04),
+    0 8px 24px rgba(42, 68, 78, 0.07);
+}
+
+html[data-tema="claro"] .estado-conexion--conectado {
+  border-color: #bfe8da;
+  background: #f1faf6;
+}
+
+html[data-tema="claro"] .estado-conexion--conectado .estado-conexion__icono {
+  color: #06765f;
+  background: #dff4ec;
+}
+
+html[data-tema="claro"] .estado-conexion--desconectado {
+  border-color: #efc2c5;
+  background: #fff4f4;
+}
+
+html[data-tema="claro"]
+  .estado-conexion--desconectado
+  .estado-conexion__icono {
+  color: #c8444b;
+  background: #ffe4e5;
+}
+
+html[data-tema="claro"] .estado-conexion--mantenimiento {
+  border-color: #efd79f;
+  background: #fff8e9;
+}
+
+html[data-tema="claro"]
+  .estado-conexion--mantenimiento
+  .estado-conexion__icono {
+  color: #a66c12;
+  background: #fff0cf;
+}
+
+html[data-tema="claro"] .estado-conexion__cabecera p {
+  color: #475569;
+}
+
+html[data-tema="claro"] .estado-conexion__datos {
+  border-top-color: #dbe4e8;
+}
+
+/* Reserva propia */
+
+html[data-tema="claro"] .detalle-cargador-page__reserva {
+  border-color: #b9ddd3;
+  background:
+    linear-gradient(
+      135deg,
+      #f1faf6,
+      #ffffff
+    );
+  box-shadow:
+    0 1px 2px rgba(15, 35, 45, 0.04),
+    0 8px 24px rgba(42, 68, 78, 0.08);
+}
+
+html[data-tema="claro"] .detalle-cargador-page__reserva-estado {
+  border-color: #bdd9ee;
+  color: #1474a8;
+  background: #edf7fd;
+}
+
+html[data-tema="claro"]
+  .detalle-cargador-page__reserva-estado--disponible {
+  border-color: #bfe8da;
+  color: #06765f;
+  background: #e8f8f2;
+}
+
+html[data-tema="claro"] .detalle-cargador-page__reserva-datos {
+  border-top-color: #dbe4e8;
+  border-bottom-color: #dbe4e8;
+}
+
+html[data-tema="claro"] .detalle-cargador-page__reserva-datos > div {
+  border-left-color: #dbe4e8;
+}
+
+html[data-tema="claro"] .detalle-cargador-page__reserva-spinner {
+  border-color: #dbe4e8;
+  border-top-color: #079576;
+}
+
+html[data-tema="claro"] .detalle-cargador-page__iniciar-carga {
+  border-color: #079576;
+  color: #ffffff;
+  background: #079576;
+}
+
+html[data-tema="claro"]
+  .detalle-cargador-page__iniciar-carga:hover:not(:disabled) {
+  background: #06765f;
+}
+
+html[data-tema="claro"] .detalle-cargador-page__iniciar-carga:disabled {
+  border-color: #dbe4e8;
+  color: #94a3b8;
+  background: #eef2f4;
+}
+
+/* Contenedor de tomas */
+
+html[data-tema="claro"] .detalle-cargador-page__tomas {
+  border-color: #dbe4e8;
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(15, 35, 45, 0.04),
+    0 8px 24px rgba(42, 68, 78, 0.08);
+}
+
+/* Cada toma */
+
+html[data-tema="claro"] .toma-detalle {
+  border-color: #dbe4e8;
+  background: #ffffff;
+}
+
+html[data-tema="claro"] .toma-detalle__informacion {
+  border-top-color: #e5ebef;
+  border-bottom-color: #e5ebef;
+}
+
+html[data-tema="claro"] .toma-detalle__informacion > div {
+  border-left-color: #e5ebef;
+}
+
+/* Disponibilidad próxima */
+
+html[data-tema="claro"] .toma-detalle__disponibilidad {
+  border-color: #efd79f;
+  color: #a66c12;
+  background: #fff8e9;
+}
+
+/* Información de carga activa */
+
+html[data-tema="claro"] .toma-detalle__carga-activa {
+  border-color: #bdd9ee;
+  background: #eff8fd;
+}
+
+/* Fuera de servicio */
+
+html[data-tema="claro"] .toma-detalle__fuera-servicio {
+  border-color: #dbe4e8;
+  background: #f3f6f8;
+}
+
+/* Botones de toma */
+
+html[data-tema="claro"] .toma-detalle__boton {
+  border-color: #b9ddd3;
+  color: #06765f;
+  background: #f0faf6;
+}
+
+html[data-tema="claro"] .toma-detalle__boton:hover {
+  border-color: #079576;
+  color: #ffffff;
+  background: #079576;
+}
+
+html[data-tema="claro"] .toma-detalle__boton--mi-carga {
+  border-color: #bfe8da;
+  color: #06765f;
+  background: #e8f8f2;
+}
+
+html[data-tema="claro"] .toma-detalle__boton--mi-carga:hover {
+  border-color: #06765f;
+  color: #ffffff;
+  background: #06765f;
+}
+
+/* Error */
+
+html[data-tema="claro"] .detalle-cargador-page__reserva-error {
+  border-color: #efc2c5;
+  color: #c8444b;
+  background: #fff4f4;
+}
+
+/* Vehículo pendiente */
+
+html[data-tema="claro"] .detalle-cargador-page__vehiculo-bloqueado {
+  border-color: #efd79f;
+  background: #fff8e9;
+}
+
+html[data-tema="claro"]
+  .detalle-cargador-page__vehiculo-bloqueado-icono {
+  color: #a66c12;
+  background: #fff0cf;
+}
+
+html[data-tema="claro"]
+  .detalle-cargador-page__vehiculo-bloqueado-contenido
+  > strong {
+  color: #a66c12;
+}
+
+html[data-tema="claro"]
+  .detalle-cargador-page__vehiculo-bloqueado-contenido
+  p {
+  color: #64748b;
+}
+
+html[data-tema="claro"]
+  .detalle-cargador-page__vehiculo-bloqueado-enlace {
+  color: #06765f;
+}

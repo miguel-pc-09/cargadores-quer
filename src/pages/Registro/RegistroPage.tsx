@@ -1,4 +1,4 @@
-import { useState, type ChangeEvent, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 
 import { Link, useNavigate } from "react-router-dom";
 
@@ -26,6 +26,8 @@ import {
 } from "../../utils/validators";
 
 import "../../styles/Registro/RegistroPage.css";
+
+type Tema = "oscuro" | "claro";
 
 const usuarioVacio: DatosUsuarioRegistro = {
   nombre: "",
@@ -64,6 +66,26 @@ function RegistroPage() {
   const [errorGeneral, setErrorGeneral] = useState("");
 
   const [enviando, setEnviando] = useState(false);
+
+  const [tema, setTema] = useState<Tema>(() => {
+    const temaGuardado = localStorage.getItem("tema-cargaquer");
+
+    return temaGuardado === "claro" ? "claro" : "oscuro";
+  });
+
+  useEffect(() => {
+    if (tema === "claro") {
+      document.documentElement.setAttribute("data-tema", "claro");
+    } else {
+      document.documentElement.removeAttribute("data-tema");
+    }
+
+    localStorage.setItem("tema-cargaquer", tema);
+  }, [tema]);
+
+  function cambiarTema() {
+    setTema((temaActual) => (temaActual === "oscuro" ? "claro" : "oscuro"));
+  }
 
   function actualizarCampoGeneral(
     evento: ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -336,6 +358,18 @@ function RegistroPage() {
 
   return (
     <main className="registro">
+      <button
+        type="button"
+        className="registro__tema"
+        onClick={cambiarTema}
+        aria-label={
+          tema === "oscuro" ? "Activar modo claro" : "Activar modo oscuro"
+        }
+        title={tema === "oscuro" ? "Activar modo claro" : "Activar modo oscuro"}
+      >
+        {tema === "oscuro" ? "☀" : "☾"}
+      </button>
+
       <section className="registro__contenedor">
         <header className="registro__cabecera">
           <Link to="/login" className="registro__volver">
@@ -387,7 +421,6 @@ function RegistroPage() {
                 .filter((cliente) => cliente.activo)
                 .map((cliente) => ({
                   valor: cliente.id,
-
                   texto: cliente.nombre,
                 }))}
               error={errores.clienteId}

@@ -1,10 +1,12 @@
-import { type FormEvent, useState } from "react";
+import { type FormEvent, useEffect, useState } from "react";
 
 import { Link, Navigate, useNavigate } from "react-router-dom";
 
 import useAuth from "../../hooks/useAuth";
 
 import "../../styles/Login/LoginPage.css";
+
+type Tema = "oscuro" | "claro";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -23,6 +25,26 @@ function LoginPage() {
   const [error, setError] = useState("");
 
   const [enviando, setEnviando] = useState(false);
+
+  const [tema, setTema] = useState<Tema>(() => {
+    const temaGuardado = localStorage.getItem("tema-cargaquer");
+
+    return temaGuardado === "claro" ? "claro" : "oscuro";
+  });
+
+  useEffect(() => {
+    if (tema === "claro") {
+      document.documentElement.setAttribute("data-tema", "claro");
+    } else {
+      document.documentElement.removeAttribute("data-tema");
+    }
+
+    localStorage.setItem("tema-cargaquer", tema);
+  }, [tema]);
+
+  const cambiarTema = () => {
+    setTema((temaActual) => (temaActual === "oscuro" ? "claro" : "oscuro"));
+  };
 
   const enviarFormulario = async (evento: FormEvent<HTMLFormElement>) => {
     evento.preventDefault();
@@ -74,8 +96,22 @@ function LoginPage() {
   if (cargandoSesion) {
     return (
       <main className="login">
+        <button
+          type="button"
+          className="login__tema"
+          onClick={cambiarTema}
+          aria-label={
+            tema === "oscuro" ? "Activar modo claro" : "Activar modo oscuro"
+          }
+          title={
+            tema === "oscuro" ? "Activar modo claro" : "Activar modo oscuro"
+          }
+        >
+          {tema === "oscuro" ? "☀" : "☾"}
+        </button>
+
         <section className="login__contenido">
-          <div className="login__tarjeta">
+          <div className="login__tarjeta login__tarjeta--cargando">
             <p>Comprobando sesión...</p>
           </div>
         </section>
@@ -91,6 +127,18 @@ function LoginPage() {
 
   return (
     <main className="login">
+      <button
+        type="button"
+        className="login__tema"
+        onClick={cambiarTema}
+        aria-label={
+          tema === "oscuro" ? "Activar modo claro" : "Activar modo oscuro"
+        }
+        title={tema === "oscuro" ? "Activar modo claro" : "Activar modo oscuro"}
+      >
+        {tema === "oscuro" ? "☀" : "☾"}
+      </button>
+
       <section className="login__contenido">
         <header className="login__cabecera">
           <div className="login__marca">

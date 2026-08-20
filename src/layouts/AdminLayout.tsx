@@ -5,8 +5,24 @@ import useAuth from "../hooks/useAuth";
 
 import "../styles/Administracion/AdminLayout.css";
 
+type Tema = "oscuro" | "claro";
+
+const TEMA_GUARDADO = "cargaquer-tema";
+
+function obtenerTemaActual(): Tema {
+  return document.documentElement.dataset.tema === "claro" ? "claro" : "oscuro";
+}
+
+function aplicarTema(tema: Tema) {
+  document.documentElement.dataset.tema = tema;
+
+  localStorage.setItem(TEMA_GUARDADO, tema);
+}
+
 function AdminLayout() {
   const [menuMovilAbierto, setMenuMovilAbierto] = useState(false);
+
+  const [tema, setTema] = useState<Tema>(() => obtenerTemaActual());
 
   const { usuario, cerrarSesion } = useAuth();
 
@@ -30,6 +46,14 @@ function AdminLayout() {
 
   const cerrarMenu = () => {
     setMenuMovilAbierto(false);
+  };
+
+  const alternarTema = () => {
+    const nuevoTema: Tema = tema === "oscuro" ? "claro" : "oscuro";
+
+    aplicarTema(nuevoTema);
+
+    setTema(nuevoTema);
   };
 
   return (
@@ -69,6 +93,20 @@ function AdminLayout() {
           </div>
 
           <div className="admin-layout__usuario">
+            <button
+              type="button"
+              className="admin-layout__tema"
+              onClick={alternarTema}
+              aria-label={
+                tema === "oscuro" ? "Activar modo claro" : "Activar modo oscuro"
+              }
+              title={
+                tema === "oscuro" ? "Activar modo claro" : "Activar modo oscuro"
+              }
+            >
+              <span aria-hidden="true">{tema === "oscuro" ? "☀" : "☾"}</span>
+            </button>
+
             <div className="admin-layout__avatar" aria-hidden="true">
               A
             </div>

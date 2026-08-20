@@ -2,15 +2,18 @@ import { Fragment, useEffect, useMemo, useState } from "react";
 
 import { Link } from "react-router-dom";
 
-import { cargadoresSimulados } from "../../data/cargadores";
-
 import useAuth from "../../hooks/useAuth";
+
+import { obtenerCargasUsuario } from "../../services/cargasService";
+import { obtenerCargadores } from "../../services/chargersService";
 
 import {
   cancelarReserva,
   obtenerReservasUsuario,
 } from "../../services/reservationsService";
 
+import type { Carga } from "../../types/carga";
+import type { Cargador } from "../../types/charger";
 import type { EstadoReserva, Reserva } from "../../types/reservation";
 
 import "../../styles/Reservas/ReservasPage.css";
@@ -61,13 +64,18 @@ function obtenerTextoEstado(estado: EstadoReserva) {
   return textos[estado];
 }
 
-function obtenerDatosCargador(reserva: Reserva) {
-  const cargador = cargadoresSimulados.find(
+function obtenerDatosCargador(reserva: Reserva, cargadores: Cargador[]) {
+  const cargador = cargadores.find(
     (cargadorActual) => cargadorActual.id === reserva.cargadorId,
+  );
+
+  const toma = cargador?.tomas.find(
+    (tomaActual) => tomaActual.id === reserva.tomaId,
   );
 
   return {
     nombreCargador: cargador?.nombre ?? "Cargador no disponible",
+    nombreToma: toma?.nombre ?? "",
   };
 }
 
@@ -77,6 +85,10 @@ function ReservasPage() {
   const usuarioId = usuario?.id ?? "";
 
   const [reservas, setReservas] = useState<Reserva[]>([]);
+
+  const [cargadores, setCargadores] = useState<Cargador[]>([]);
+
+  const [cargas, setCargas] = useState<Carga[]>([]);
 
   const [pestanaActiva, setPestanaActiva] =
     useState<PestanaReservas>("activas");
@@ -96,6 +108,8 @@ function ReservasPage() {
   const cargarReservas = async () => {
     if (!usuarioId) {
       setReservas([]);
+      setCargadores([]);
+      setCargas([]);
       setCargando(false);
 
       return;
@@ -105,9 +119,16 @@ function ReservasPage() {
     setMensajeError("");
 
     try {
-      const reservasUsuario = await obtenerReservasUsuario(usuarioId);
+      const [reservasUsuario, cargadoresMunicipales, cargasUsuario] =
+        await Promise.all([
+          obtenerReservasUsuario(usuarioId),
+          obtenerCargadores(),
+          obtenerCargasUsuario(usuarioId),
+        ]);
 
       setReservas(reservasUsuario);
+      setCargadores(cargadoresMunicipales);
+      setCargas(cargasUsuario);
     } catch {
       setMensajeError(
         "No hemos podido cargar tus reservas. Inténtalo de nuevo.",
@@ -318,7 +339,16 @@ function ReservasPage() {
 
             <tbody>
               {reservasMostradas.map((reserva) => {
-                const datosCargador = obtenerDatosCargador(reserva);
+                const datosCargador = obtenerDatosCargador(reserva, cargadores);
+
+                const cargaActiva = cargas.find(
+                  (carga) =>
+                    carga.reservaId === reserva.id && carga.estado === "activa",
+                );
+
+                const destinoReserva = cargaActiva
+                  ? `/panel/cargas/${cargaActiva.id}`
+                  : `/panel/cargadores/${reserva.cargadorId}?reservaId=${reserva.id}`;
 
                 const puedeCancelar = reserva.estado === "confirmada";
 
@@ -340,10 +370,18 @@ function ReservasPage() {
 
                       <td>
                         <Link
-                          to={`/panel/cargadores/${reserva.cargadorId}?reservaId=${reserva.id}`}
+                          to={destinoReserva}
                           className="mis-reservas__enlace-cargador"
+                          title={
+                            cargaActiva
+                              ? "Ver carga en curso"
+                              : "Ver reserva en el cargador"
+                          }
                         >
                           {datosCargador.nombreCargador}
+                          {datosCargador.nombreToma && (
+                            <> · {datosCargador.nombreToma}</>
+                          )}
                         </Link>
                       </td>
 

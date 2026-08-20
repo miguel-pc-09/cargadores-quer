@@ -479,3 +479,255 @@
     flex-shrink: 1;
   }
 }
+
+/* =========================================================
+   MODO CLARO
+   ========================================================= */
+
+html[data-tema="claro"] .inicio-panel__cabecera h1 {
+  color: #172238;
+}
+
+html[data-tema="claro"] .inicio-panel__cabecera p {
+  color: #68778b;
+}
+
+html[data-tema="claro"] .inicio-panel__etiqueta,
+html[data-tema="claro"] .actividad-reciente__etiqueta {
+  color: #0a9b78;
+}
+
+/* Alertas modo claro */
+
+html[data-tema="claro"] .alerta-usuario__contenido strong {
+  color: #172238;
+}
+
+html[data-tema="claro"] .alerta-usuario__contenido p {
+  color: #5f7085;
+}
+
+html[data-tema="claro"] .alerta-usuario--informacion {
+  border-color: #b9dff3;
+  background: #eef8fd;
+}
+
+html[data-tema="claro"] .alerta-usuario--informacion .alerta-usuario__icono {
+  color: #2689b9;
+  background: #dff2fb;
+}
+
+html[data-tema="claro"] .alerta-usuario--correcto {
+  border-color: #bcebdc;
+  background: #effbf7;
+}
+
+html[data-tema="claro"] .alerta-usuario--correcto .alerta-usuario__icono {
+  color: #0a9b78;
+  background: #dcf6ed;
+}
+
+html[data-tema="claro"] .alerta-usuario--aviso {
+  border-color: #f1d89b;
+  background: #fff9e9;
+}
+
+html[data-tema="claro"] .alerta-usuario--aviso .alerta-usuario__icono {
+  color: #d99a23;
+  background: #fff1c7;
+}
+
+html[data-tema="claro"] .alerta-usuario--error {
+  border-color: #efc2c5;
+  background: #fff4f4;
+}
+
+html[data-tema="claro"] .alerta-usuario--error .alerta-usuario__icono {
+  color: #d84f55;
+  background: #fde4e5;
+}
+
+/* Tarjetas resumen modo claro */
+
+html[data-tema="claro"] .tarjeta-resumen,
+html[data-tema="claro"] .tarjeta-estado {
+  border-color: #dce4e9;
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(15, 35, 45, 0.04),
+    0 8px 24px rgba(42, 68, 78, 0.08);
+}
+
+html[data-tema="claro"] .tarjeta-resumen:hover {
+  border-color: rgba(10, 155, 120, 0.35);
+  background: #ffffff;
+}
+
+html[data-tema="claro"] .tarjeta-resumen__valor,
+html[data-tema="claro"] .tarjeta-estado__valor {
+  color: #172238;
+}
+
+html[data-tema="claro"] .tarjeta-resumen__titulo,
+html[data-tema="claro"] .tarjeta-estado__titulo {
+  color: #506076;
+}
+
+html[data-tema="claro"] .tarjeta-resumen__detalle,
+html[data-tema="claro"] .tarjeta-estado__detalle {
+  color: #718096;
+}
+
+html[data-tema="claro"] .tarjeta-resumen__flecha {
+  color: #8290a2;
+}
+
+html[data-tema="claro"] .tarjeta-resumen:hover .tarjeta-resumen__flecha {
+  color: #0a9b78;
+}
+
+html[data-tema="claro"] .tarjeta-resumen--principal .tarjeta-resumen__icono {
+  color: #f4a51c;
+  background: #fff6e4;
+}
+
+html[data-tema="claro"] .tarjeta-resumen--verde .tarjeta-resumen__icono {
+  color: #0a9b78;
+  background: #eaf8f3;
+}
+
+html[data-tema="claro"] .tarjeta-resumen--ambar .tarjeta-resumen__icono {
+  color: #d99a23;
+  background: #fff6e4;
+}
+
+/* Estado modo claro */
+
+html[data-tema="claro"] .tarjeta-estado__informativa {
+  color: #718096;
+}
+
+html[data-tema="claro"] .tarjeta-estado--correcto {
+  border-color: #bcebdc;
+  background: #f3fbf8;
+}
+
+html[data-tema="claro"] .tarjeta-estado--correcto .tarjeta-estado__icono,
+html[data-tema="claro"] .tarjeta-estado--correcto .tarjeta-estado__valor {
+  color: #0a9b78;
+}
+
+html[data-tema="claro"] .tarjeta-estado--correcto .tarjeta-estado__icono {
+  background: #dcf6ed;
+}
+
+html[data-tema="claro"] .tarjeta-estado--penalizado {
+  border-color: #efc2c5;
+  background: #fff7f7;
+}
+
+html[data-tema="claro"] .tarjeta-estado--penalizado .tarjeta-estado__icono,
+html[data-tema="claro"] .tarjeta-estado--penalizado .tarjeta-estado__valor {
+  color: #d84f55;
+}
+
+html[data-tema="claro"] .tarjeta-estado--penalizado .tarjeta-estado__icono {
+  background: #fde4e5;
+}
+
+html[data-tema="claro"] .tarjeta-estado--advertencia {
+  border-color: #f1d89b;
+  background: #fffaf0;
+}
+
+html[data-tema="claro"] .tarjeta-estado--advertencia .tarjeta-estado__icono,
+html[data-tema="claro"] .tarjeta-estado--advertencia .tarjeta-estado__valor {
+  color: #d99a23;
+}
+
+html[data-tema="claro"] .tarjeta-estado--advertencia .tarjeta-estado__icono {
+  background: #fff1c7;
+}
+
+/* Actividad reciente modo claro */
+
+html[data-tema="claro"] .actividad-reciente {
+  border-color: #dce4e9;
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(15, 35, 45, 0.04),
+    0 8px 24px rgba(42, 68, 78, 0.08);
+}
+
+html[data-tema="claro"] .actividad-reciente__cabecera h2 {
+  color: #172238;
+}
+
+html[data-tema="claro"] .actividad-reciente__contador {
+  color: #718096;
+}
+
+html[data-tema="claro"] .actividad-item {
+  border-top-color: #e8edf0;
+}
+
+html[data-tema="claro"] .actividad-item__titulo strong {
+  color: #172238;
+}
+
+html[data-tema="claro"] .actividad-item__titulo span {
+  color: #718096;
+}
+
+html[data-tema="claro"] .actividad-item__ubicacion {
+  color: #405065;
+}
+
+html[data-tema="claro"] .actividad-item__detalle {
+  color: #718096;
+}
+
+html[data-tema="claro"] .actividad-item--carga-iniciada .actividad-item__icono {
+  color: #2689b9;
+  background: #eaf6fb;
+}
+
+html[data-tema="claro"] .actividad-item--carga-finalizada .actividad-item__icono {
+  color: #0a9b78;
+  background: #eaf8f3;
+}
+
+html[data-tema="claro"] .actividad-item--reserva-creada .actividad-item__icono {
+  color: #d99a23;
+  background: #fff6e4;
+}
+
+html[data-tema="claro"] .actividad-item--reserva-cancelada .actividad-item__icono {
+  color: #d84f55;
+  background: #fff0f1;
+}
+
+html[data-tema="claro"] .actividad-reciente__boton {
+  border-color: rgba(10, 155, 120, 0.3);
+  color: #087c63;
+  background: #eff9f5;
+}
+
+html[data-tema="claro"] .actividad-reciente__boton:hover {
+  border-color: rgba(10, 155, 120, 0.45);
+  color: #066b56;
+  background: #e5f6ef;
+}
+
+html[data-tema="claro"] .actividad-reciente__vacia {
+  border-color: #dce4e9;
+  background: #f8fafb;
+}
+
+html[data-tema="claro"] .actividad-reciente__vacia strong {
+  color: #172238;
+}
+
+html[data-tema="claro"] .actividad-reciente__vacia p {
+  color: #718096;
+}
