@@ -90,6 +90,10 @@
   font-weight: 900;
 }
 
+/* =========================================================
+   TABLA
+   ========================================================= */
+
 .usuarios-admin__tabla-contenedor {
   width: 100%;
   overflow-x: auto;
@@ -97,32 +101,64 @@
 
 .usuarios-admin__tabla {
   width: 100%;
-  min-width: 1100px;
   border-collapse: collapse;
+  table-layout: auto;
 }
 
 .usuarios-admin__tabla th {
-  padding: 13px 15px;
+  padding: 12px 10px;
   color: var(--color-texto-suave);
   background: rgba(7, 20, 39, 0.4);
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 900;
   text-align: left;
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.05em;
   white-space: nowrap;
 }
 
 .usuarios-admin__tabla td {
-  padding: 15px;
+  padding: 13px 10px;
   color: var(--color-blanco);
-  font-size: 12px;
+  font-size: 11px;
   vertical-align: middle;
-  white-space: nowrap;
 }
 
 .usuarios-admin__tabla td strong {
-  font-size: 13px;
+  font-size: 12px;
+}
+
+/*
+ * Evitamos que nombre, correo o DNI obliguen
+ * a ensanchar toda la tabla.
+ */
+.usuarios-admin__tabla td {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.usuarios-admin__tabla th:first-child,
+.usuarios-admin__tabla td:first-child {
+  padding-left: 14px;
+}
+
+.usuarios-admin__tabla th:last-child,
+.usuarios-admin__tabla td:last-child {
+  padding-right: 14px;
+}
+
+/*
+ * Matrícula, estado y acciones ocupan solamente
+ * el espacio que necesitan.
+ */
+.usuarios-admin__tabla th:nth-last-child(1),
+.usuarios-admin__tabla td:nth-last-child(1),
+.usuarios-admin__tabla th:nth-last-child(2),
+.usuarios-admin__tabla td:nth-last-child(2),
+.usuarios-admin__tabla th:nth-last-child(3),
+.usuarios-admin__tabla td:nth-last-child(3) {
+  width: 1%;
+  white-space: nowrap;
 }
 
 .usuarios-admin__tabla tbody tr + tr {
@@ -133,27 +169,38 @@
   background: rgba(255, 255, 255, 0.025);
 }
 
+/* =========================================================
+   MATRÍCULA
+   ========================================================= */
+
 .usuarios-admin__matricula {
+  min-height: 28px;
+  padding: 0 8px;
   display: inline-flex;
-  min-height: 30px;
-  padding: 0 10px;
   align-items: center;
   border: 1px solid rgba(30, 167, 255, 0.28);
   border-radius: 8px;
   color: var(--color-principal);
   background: rgba(30, 167, 255, 0.08);
+  font-size: 10px;
   font-weight: 900;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
 }
 
+/* =========================================================
+   ESTADO
+   ========================================================= */
+
 .usuarios-admin__estado {
-  min-height: 28px;
-  padding: 0 10px;
+  min-height: 27px;
+  padding: 0 9px;
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  font-size: 9px;
+  font-size: 8px;
   font-weight: 900;
+  white-space: nowrap;
 }
 
 .usuarios-admin__estado--activo {
@@ -168,14 +215,19 @@
   background: rgba(255, 123, 123, 0.08);
 }
 
+/* =========================================================
+   BOTONES
+   ========================================================= */
+
 .usuarios-admin__boton {
-  min-width: 102px;
-  min-height: 36px;
-  padding: 0 13px;
+  min-width: 88px;
+  min-height: 34px;
+  padding: 0 10px;
   border-radius: 9px;
   cursor: pointer;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 900;
+  white-space: nowrap;
 }
 
 .usuarios-admin__boton:disabled {
@@ -204,6 +256,10 @@
   border-color: var(--color-verde);
   background: rgba(110, 231, 183, 0.15);
 }
+
+/* =========================================================
+   CARGANDO / VACÍO
+   ========================================================= */
 
 .usuarios-admin__cargando {
   min-height: 260px;
@@ -245,6 +301,40 @@
   }
 }
 
+/* =========================================================
+   TABLET
+   ========================================================= */
+
+@media (max-width: 1000px) {
+  .usuarios-admin__tabla {
+    min-width: 900px;
+  }
+
+  .usuarios-admin__tabla th {
+    padding: 11px 8px;
+    font-size: 8px;
+  }
+
+  .usuarios-admin__tabla td {
+    padding: 12px 8px;
+    font-size: 10px;
+  }
+
+  .usuarios-admin__tabla td strong {
+    font-size: 11px;
+  }
+
+  .usuarios-admin__boton {
+    min-width: 82px;
+    padding-inline: 8px;
+    font-size: 9px;
+  }
+}
+
+/* =========================================================
+   MÓVIL
+   ========================================================= */
+
 @media (max-width: 720px) {
   .usuarios-admin__cabecera h1 {
     font-size: 32px;
@@ -264,11 +354,137 @@
   }
 
   .usuarios-admin__tabla {
-    min-width: 1050px;
+    min-width: 880px;
   }
 
   .usuarios-admin__tabla th,
   .usuarios-admin__tabla td {
-    padding: 12px;
+    padding: 10px 7px;
   }
+}
+
+/* =========================================================
+   MODO CLARO
+   ========================================================= */
+
+html[data-tema="claro"] .usuarios-admin__cabecera h1,
+html[data-tema="claro"] .usuarios-admin__panel-cabecera h2 {
+  color: #172238;
+}
+
+html[data-tema="claro"] .usuarios-admin__cabecera p {
+  color: #64748b;
+}
+
+html[data-tema="claro"] .usuarios-admin__etiqueta {
+  color: #079576;
+}
+
+/* Error */
+
+html[data-tema="claro"] .usuarios-admin__error {
+  border-color: #efc2c5;
+  color: #c8444b;
+  background: #fff4f4;
+}
+
+/* Panel */
+
+html[data-tema="claro"] .usuarios-admin__panel {
+  border-color: #dbe4e8;
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(15, 35, 45, 0.04),
+    0 8px 24px rgba(42, 68, 78, 0.08);
+}
+
+html[data-tema="claro"] .usuarios-admin__panel-cabecera {
+  border-bottom-color: #e8eef1;
+}
+
+html[data-tema="claro"] .usuarios-admin__contador {
+  border-color: #b9ddd3;
+  color: #06765f;
+  background: #eaf8f3;
+}
+
+/* Tabla */
+
+html[data-tema="claro"] .usuarios-admin__tabla th {
+  color: #64748b;
+  background: #f3f6f8;
+}
+
+html[data-tema="claro"] .usuarios-admin__tabla td {
+  color: #172238;
+}
+
+html[data-tema="claro"] .usuarios-admin__tabla tbody tr + tr {
+  border-top-color: #e8eef1;
+}
+
+html[data-tema="claro"] .usuarios-admin__tabla tbody tr:hover {
+  background: #f8fbfa;
+}
+
+/* Matrícula */
+
+html[data-tema="claro"] .usuarios-admin__matricula {
+  border-color: #b9dff3;
+  color: #167eb5;
+  background: #edf7fc;
+}
+
+/* Estados */
+
+html[data-tema="claro"] .usuarios-admin__estado--activo {
+  border-color: #bfe8da;
+  color: #06765f;
+  background: #e8f8f2;
+}
+
+html[data-tema="claro"] .usuarios-admin__estado--bloqueado {
+  border-color: #efc2c5;
+  color: #c8444b;
+  background: #fff0f1;
+}
+
+/* Botones */
+
+html[data-tema="claro"] .usuarios-admin__boton--bloquear {
+  border-color: #efc2c5;
+  color: #c8444b;
+  background: #fff4f4;
+}
+
+html[data-tema="claro"]
+  .usuarios-admin__boton--bloquear:hover:not(:disabled) {
+  border-color: #d85c63;
+  color: #ffffff;
+  background: #d85c63;
+}
+
+html[data-tema="claro"] .usuarios-admin__boton--desbloquear {
+  border-color: #bfe8da;
+  color: #06765f;
+  background: #eef9f5;
+}
+
+html[data-tema="claro"]
+  .usuarios-admin__boton--desbloquear:hover:not(:disabled) {
+  border-color: #079576;
+  color: #ffffff;
+  background: #079576;
+}
+
+/* Cargando / vacío */
+
+html[data-tema="claro"] .usuarios-admin__cargando,
+html[data-tema="claro"] .usuarios-admin__fila-vacia {
+  color: #64748b !important;
+}
+
+html[data-tema="claro"] .usuarios-admin__spinner {
+  border-color: #dbe4e8;
+  border-top-color: #079576;
 }

@@ -238,3 +238,112 @@
     border-left: 0;
   }
 }
+
+/* =========================================================
+   MODO CLARO
+   ========================================================= */
+
+html[data-tema="claro"] .incidencias-admin__cabecera h1,
+html[data-tema="claro"] .incidencias-admin__tarjeta-cabecera h2,
+html[data-tema="claro"] .incidencias-admin__descripcion strong,
+html[data-tema="claro"] .incidencias-admin__empresa strong,
+html[data-tema="claro"] .incidencias-admin__vacio h2 {
+  color: #172238;
+}
+
+html[data-tema="claro"] .incidencias-admin__cabecera p,
+html[data-tema="claro"] .incidencias-admin__tarjeta-cabecera p,
+html[data-tema="claro"] .incidencias-admin__descripcion p,
+html[data-tema="claro"] .incidencias-admin__empresa span,
+html[data-tema="claro"] .incidencias-admin__cargando,
+html[data-tema="claro"] .incidencias-admin__vacio,
+html[data-tema="claro"] .incidencias-admin__vacio p {
+  color: #64748b;
+}
+
+html[data-tema="claro"] .incidencias-admin__etiqueta {
+  color: #079576;
+}
+
+/* Tarjetas de incidencia */
+
+html[data-tema="claro"] .incidencias-admin__tarjeta {
+  border-color: #dbe4e8;
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(15, 35, 45, 0.04),
+    0 8px 24px rgba(42, 68, 78, 0.08);
+}
+
+html[data-tema="claro"] .incidencias-admin__tarjeta-cabecera {
+  border-bottom-color: #e8eef1;
+}
+
+/* Tipo y estado */
+
+html[data-tema="claro"] .incidencias-admin__tipo {
+  color: #c8444b;
+}
+
+html[data-tema="claro"] .incidencias-admin__estado {
+  border-color: #efc2c5;
+  color: #c8444b;
+  background: #fff0f1;
+}
+
+/* Descripción */
+
+html[data-tema="claro"] .incidencias-admin__descripcion {
+  border-bottom-color: #e8eef1;
+}
+
+/* Empresas */
+
+html[data-tema="claro"] .incidencias-admin__empresa + .incidencias-admin__empresa {
+  border-left-color: #e8eef1;
+}
+
+html[data-tema="claro"] .incidencias-admin__empresa p {
+  color: #167eb5;
+}
+
+/* Vacío / cargando */
+
+html[data-tema="claro"] .incidencias-admin__cargando,
+html[data-tema="claro"] .incidencias-admin__vacio {
+  border-color: #dbe4e8;
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(15, 35, 45, 0.04),
+    0 8px 24px rgba(42, 68, 78, 0.08);
+}
+
+html[data-tema="claro"] .incidencias-admin__vacio > span {
+  border-color: #bfe8da;
+  color: #06765f;
+  background: #e8f8f2;
+}
+
+html[data-tema="claro"] .incidencias-admin__spinner {
+  border-color: #dbe4e8;
+  border-top-color: #079576;
+}
+
+/* Error */
+
+html[data-tema="claro"] .incidencias-admin__error {
+  border-color: #efc2c5;
+  color: #c8444b;
+  background: #fff4f4;
+}
+
+/* Responsive claro */
+
+@media (max-width: 600px) {
+  html[data-tema="claro"]
+    .incidencias-admin__empresa
+    + .incidencias-admin__empresa {
+    border-top-color: #e8eef1;
+    border-left: 0;
+  }
+}

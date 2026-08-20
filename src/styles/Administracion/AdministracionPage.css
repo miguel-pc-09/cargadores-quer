@@ -277,3 +277,122 @@
     font-size: 21px;
   }
 }
+
+/* =========================================================
+   MODO CLARO
+   ========================================================= */
+
+html[data-tema="claro"] .administracion__cabecera h1,
+html[data-tema="claro"] .administracion__panel-cabecera h2 {
+  color: #172238;
+}
+
+html[data-tema="claro"] .administracion__cabecera p {
+  color: #64748b;
+}
+
+html[data-tema="claro"] .administracion__etiqueta {
+  color: #079576;
+}
+
+/* Métricas */
+
+html[data-tema="claro"] .administracion__metrica {
+  border-color: #dbe4e8;
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(15, 35, 45, 0.04),
+    0 8px 24px rgba(42, 68, 78, 0.08);
+}
+
+html[data-tema="claro"] .administracion__metrica > span,
+html[data-tema="claro"] .administracion__metrica small {
+  color: #64748b;
+}
+
+html[data-tema="claro"] .administracion__metrica strong {
+  color: #172238;
+}
+
+html[data-tema="claro"] .administracion__metrica:nth-child(1) strong {
+  color: #079576;
+}
+
+html[data-tema="claro"] .administracion__metrica:nth-child(2) strong {
+  color: #1889c7;
+}
+
+html[data-tema="claro"] .administracion__metrica:nth-child(3) strong {
+  color: #079576;
+}
+
+html[data-tema="claro"] .administracion__metrica--pendiente {
+  border-color: #efd79f;
+  background: #fffaf0;
+}
+
+html[data-tema="claro"] .administracion__metrica--pendiente strong {
+  color: #b8730d;
+}
+
+html[data-tema="claro"] .administracion__metrica--incidencia {
+  border-color: #efc2c5;
+  background: #fff5f5;
+}
+
+html[data-tema="claro"] .administracion__metrica--incidencia strong {
+  color: #c8444b;
+}
+
+/* Panel de movimientos */
+
+html[data-tema="claro"] .administracion__panel {
+  border-color: #dbe4e8;
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(15, 35, 45, 0.04),
+    0 8px 24px rgba(42, 68, 78, 0.08);
+}
+
+html[data-tema="claro"] .administracion__panel-cabecera {
+  border-bottom-color: #e8eef1;
+}
+
+/* Tabla */
+
+html[data-tema="claro"] .administracion__tabla th {
+  color: #64748b;
+  background: #f3f6f8;
+}
+
+html[data-tema="claro"] .administracion__tabla td {
+  color: #172238;
+}
+
+html[data-tema="claro"] .administracion__tabla tbody tr + tr {
+  border-top-color: #e8eef1;
+}
+
+html[data-tema="claro"] .administracion__tabla tbody tr:hover {
+  background: #f8fbfa;
+}
+
+/* Estados */
+
+html[data-tema="claro"] .administracion__estado--correcto {
+  border-color: #bfe8da;
+  color: #06765f;
+  background: #e8f8f2;
+}
+
+html[data-tema="claro"] .administracion__estado--pendiente {
+  border-color: #efd79f;
+  color: #b8730d;
+  background: #fff4dc;
+}
+
+html[data-tema="claro"] .administracion__estado--incidencia {
+  border-color: #efc2c5;
+  color: #c8444b;
+  background: #fff0f1;
+}

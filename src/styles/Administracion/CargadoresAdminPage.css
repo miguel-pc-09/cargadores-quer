@@ -315,3 +315,122 @@
     padding: 17px 16px;
   }
 }
+
+/* =========================================================
+   MODO CLARO
+   ========================================================= */
+
+html[data-tema="claro"] .cargadores-admin__cabecera h1,
+html[data-tema="claro"] .cargadores-admin__panel-cabecera h2,
+html[data-tema="claro"] .cargadores-admin__tabla td strong,
+html[data-tema="claro"] .cargadores-admin__detalle-dato strong {
+  color: #172238;
+}
+
+html[data-tema="claro"] .cargadores-admin__cabecera p,
+html[data-tema="claro"] .cargadores-admin__detalle-dato span,
+html[data-tema="claro"] .cargadores-admin__fila-vacia,
+html[data-tema="claro"] .cargadores-admin__cargando {
+  color: #64748b !important;
+}
+
+html[data-tema="claro"] .cargadores-admin__etiqueta {
+  color: #079576;
+}
+
+/* Panel */
+
+html[data-tema="claro"] .cargadores-admin__panel {
+  border-color: #dbe4e8;
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(15, 35, 45, 0.04),
+    0 8px 24px rgba(42, 68, 78, 0.08);
+}
+
+html[data-tema="claro"] .cargadores-admin__panel-cabecera {
+  border-bottom-color: #e8eef1;
+}
+
+html[data-tema="claro"] .cargadores-admin__contador {
+  border-color: #b9dff3;
+  color: #167eb5;
+  background: #edf7fc;
+}
+
+/* Tabla */
+
+html[data-tema="claro"] .cargadores-admin__tabla th {
+  color: #64748b;
+  background: #f3f6f8;
+}
+
+html[data-tema="claro"] .cargadores-admin__tabla td {
+  border-top-color: #e8eef1;
+  color: #334155;
+}
+
+html[data-tema="claro"] .cargadores-admin__fila--abierta td {
+  background: #f3faf7;
+}
+
+/* Estados */
+
+html[data-tema="claro"] .cargadores-admin__estado--disponible,
+html[data-tema="claro"] .cargadores-admin__incidencia--correcto {
+  border-color: #bfe8da;
+  color: #06765f;
+  background: #e8f8f2;
+}
+
+html[data-tema="claro"] .cargadores-admin__estado--ocupado {
+  border-color: #efd79f;
+  color: #b8730d;
+  background: #fff4dc;
+}
+
+html[data-tema="claro"] .cargadores-admin__estado--inactivo,
+html[data-tema="claro"] .cargadores-admin__incidencia--abierta {
+  border-color: #efc2c5;
+  color: #c8444b;
+  background: #fff0f1;
+}
+
+/* Botón desplegar */
+
+html[data-tema="claro"] .cargadores-admin__boton-desplegar {
+  border-color: #b9ddd3;
+  color: #06765f;
+  background: #f0faf6;
+}
+
+html[data-tema="claro"] .cargadores-admin__boton-desplegar:hover {
+  border-color: #079576;
+  color: #ffffff;
+  background: #079576;
+}
+
+/* Fila de detalle */
+
+html[data-tema="claro"] .cargadores-admin__fila-detalle td {
+  background: #f8fafb;
+}
+
+html[data-tema="claro"] .cargadores-admin__detalle-dato {
+  border-right-color: #e8eef1;
+}
+
+/* Cargando */
+
+html[data-tema="claro"] .cargadores-admin__spinner {
+  border-color: #dbe4e8;
+  border-top-color: #079576;
+}
+
+/* Error */
+
+html[data-tema="claro"] .cargadores-admin__mensaje-error {
+  border-color: #efc2c5;
+  color: #c8444b;
+  background: #fff4f4;
+}

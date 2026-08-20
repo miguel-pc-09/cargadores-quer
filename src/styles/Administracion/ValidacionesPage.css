@@ -259,6 +259,10 @@
   display: none;
 }
 
+/* =========================================================
+   MÓVIL
+   ========================================================= */
+
 @media (max-width: 720px) {
   .validaciones-admin__cabecera h1 {
     font-size: 32px;
@@ -376,4 +380,157 @@
   .validaciones-admin__datos {
     grid-template-columns: 1fr;
   }
+}
+
+/* =========================================================
+   MODO CLARO
+   ========================================================= */
+
+html[data-tema="claro"] .validaciones-admin__cabecera h1,
+html[data-tema="claro"] .validaciones-admin__panel-cabecera h2,
+html[data-tema="claro"] .validaciones-admin__estado-vacio h3,
+html[data-tema="claro"] .validaciones-admin__tarjeta-cabecera strong,
+html[data-tema="claro"] .validaciones-admin__datos dd {
+  color: #172238;
+}
+
+html[data-tema="claro"] .validaciones-admin__cabecera p,
+html[data-tema="claro"] .validaciones-admin__estado-vacio p,
+html[data-tema="claro"]
+  .validaciones-admin__tarjeta-cabecera
+  > div
+  > span,
+html[data-tema="claro"] .validaciones-admin__datos dt {
+  color: #64748b;
+}
+
+html[data-tema="claro"] .validaciones-admin__etiqueta {
+  color: #079576;
+}
+
+/* Mensajes */
+
+html[data-tema="claro"] .validaciones-admin__mensaje--correcto {
+  border-color: #bfe8da;
+  color: #06765f;
+  background: #f1faf6;
+}
+
+html[data-tema="claro"] .validaciones-admin__mensaje--correcto span {
+  background: #dff4ec;
+}
+
+html[data-tema="claro"] .validaciones-admin__mensaje--error {
+  border-color: #efc2c5;
+  color: #c8444b;
+  background: #fff4f4;
+}
+
+html[data-tema="claro"] .validaciones-admin__mensaje--error span {
+  background: #ffe5e7;
+}
+
+/* Panel */
+
+html[data-tema="claro"] .validaciones-admin__panel {
+  border-color: #dbe4e8;
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(15, 35, 45, 0.04),
+    0 8px 24px rgba(42, 68, 78, 0.08);
+}
+
+html[data-tema="claro"] .validaciones-admin__panel-cabecera {
+  border-bottom-color: #e8eef1;
+}
+
+html[data-tema="claro"] .validaciones-admin__contador {
+  border-color: #efd79f;
+  color: #b8730d;
+  background: #fff4dc;
+}
+
+/* Tabla escritorio */
+
+html[data-tema="claro"] .validaciones-admin__tabla th {
+  color: #64748b;
+  background: #f3f6f8;
+}
+
+html[data-tema="claro"] .validaciones-admin__tabla td {
+  color: #172238;
+}
+
+html[data-tema="claro"] .validaciones-admin__tabla tbody tr + tr {
+  border-top-color: #e8eef1;
+}
+
+html[data-tema="claro"] .validaciones-admin__tabla tbody tr:hover {
+  background: #f8fbfa;
+}
+
+/* Matrícula */
+
+html[data-tema="claro"] .validaciones-admin__matricula {
+  border-color: #b9dff3;
+  color: #167eb5;
+  background: #edf7fc;
+}
+
+/* Botones */
+
+html[data-tema="claro"] .validaciones-admin__boton--aceptar {
+  border-color: #bfe8da;
+  color: #06765f;
+  background: #eef9f5;
+}
+
+html[data-tema="claro"]
+  .validaciones-admin__boton--aceptar:hover:not(:disabled) {
+  border-color: #079576;
+  color: #ffffff;
+  background: #079576;
+}
+
+html[data-tema="claro"] .validaciones-admin__boton--rechazar {
+  border-color: #efc2c5;
+  color: #c8444b;
+  background: #fff4f4;
+}
+
+html[data-tema="claro"]
+  .validaciones-admin__boton--rechazar:hover:not(:disabled) {
+  border-color: #d85c63;
+  color: #ffffff;
+  background: #d85c63;
+}
+
+/* Vacío / cargando */
+
+html[data-tema="claro"] .validaciones-admin__vacio-icono {
+  border-color: #bfe8da;
+  color: #06765f;
+  background: #e8f8f2;
+}
+
+html[data-tema="claro"] .validaciones-admin__spinner {
+  border-color: #dbe4e8;
+  border-top-color: #079576;
+}
+
+/* Tarjetas de móvil */
+
+html[data-tema="claro"] .validaciones-admin__tarjeta + .validaciones-admin__tarjeta {
+  border-top-color: #e8eef1;
+}
+
+html[data-tema="claro"] .validaciones-admin__estado {
+  border-color: #efd79f;
+  color: #b8730d;
+  background: #fff4dc;
+}
+
+html[data-tema="claro"] .validaciones-admin__datos div {
+  border-color: #dbe4e8;
+  background: #f8fafb;
 }
