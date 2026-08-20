@@ -2,6 +2,7 @@ import { supabase } from "./supabaseClient";
 
 import type { Carga, DatosNuevaCarga, EstadoCarga } from "../types/carga";
 
+// Estructura de una carga en la base de datos.
 interface CargaBaseDatos {
   id: string;
   usuario_id: string;
@@ -18,6 +19,7 @@ interface CargaBaseDatos {
   creada_en: string;
 }
 
+// Convierte el estado de una carga.
 function convertirEstadoCarga(estado: string): EstadoCarga {
   switch (estado.trim().toLowerCase()) {
     case "activa":
@@ -34,6 +36,7 @@ function convertirEstadoCarga(estado: string): EstadoCarga {
   }
 }
 
+// Convierte una carga de Supabase.
 function convertirCarga(carga: CargaBaseDatos): Carga {
   const fechaHoraFinPrevista =
     carga.fecha_hora_fin_prevista ??
@@ -69,6 +72,7 @@ function convertirCarga(carga: CargaBaseDatos): Carga {
   };
 }
 
+// Calcula la energía consumida.
 function calcularEnergiaConsumida(carga: Carga) {
   const inicio = new Date(carga.fechaHoraInicio).getTime();
 
@@ -85,6 +89,7 @@ function calcularEnergiaConsumida(carga: Carga) {
   return Number((horasTranscurridas * carga.potenciaActualKw).toFixed(2));
 }
 
+// Actualiza la energía de una carga activa.
 function actualizarEnergiaCargaActiva(carga: Carga): Carga {
   if (carga.estado !== "activa") {
     return carga;
@@ -97,6 +102,7 @@ function actualizarEnergiaCargaActiva(carga: Carga): Carga {
   };
 }
 
+// Obtiene todas las cargas.
 export async function obtenerCargas(): Promise<Carga[]> {
   const { data, error } = await supabase
     .from("cargas")
@@ -130,6 +136,7 @@ export async function obtenerCargas(): Promise<Carga[]> {
     .map(actualizarEnergiaCargaActiva);
 }
 
+// Obtiene las cargas de un usuario.
 export async function obtenerCargasUsuario(
   usuarioId: string,
 ): Promise<Carga[]> {
@@ -166,6 +173,7 @@ export async function obtenerCargasUsuario(
     .map(actualizarEnergiaCargaActiva);
 }
 
+// Obtiene una carga por su ID.
 export async function obtenerCargaPorId(
   cargaId: string,
 ): Promise<Carga | null> {
@@ -202,6 +210,7 @@ export async function obtenerCargaPorId(
   return actualizarEnergiaCargaActiva(convertirCarga(data as CargaBaseDatos));
 }
 
+// Obtiene una carga activa del usuario.
 export async function obtenerCargaActiva(
   usuarioId: string,
   cargaId: string,
@@ -247,6 +256,7 @@ export async function obtenerCargaActiva(
   return actualizarEnergiaCargaActiva(convertirCarga(data as CargaBaseDatos));
 }
 
+// Busca una carga activa por reserva.
 export async function obtenerCargaActivaPorReserva(
   reservaId: string,
 ): Promise<Carga | null> {
@@ -290,6 +300,7 @@ export async function obtenerCargaActivaPorReserva(
   return actualizarEnergiaCargaActiva(convertirCarga(data as CargaBaseDatos));
 }
 
+// Busca una carga activa en una toma.
 export async function obtenerCargaActivaUsuarioEnToma(
   usuarioId: string,
   cargadorId: string,
@@ -333,6 +344,7 @@ export async function obtenerCargaActivaUsuarioEnToma(
   return actualizarEnergiaCargaActiva(convertirCarga(data as CargaBaseDatos));
 }
 
+// Inicia una nueva carga.
 export async function iniciarCarga(
   datosCarga: DatosNuevaCarga,
 ): Promise<Carga> {
@@ -346,6 +358,7 @@ export async function iniciarCarga(
     }
   }
 
+  // Simula la potencia actual de carga.
   const potenciaActualKw = Number(
     (datosCarga.potenciaMaximaKw * (0.82 + Math.random() * 0.15)).toFixed(1),
   );
@@ -401,6 +414,7 @@ export async function iniciarCarga(
   return convertirCarga(data as CargaBaseDatos);
 }
 
+// Finaliza una carga activa.
 export async function finalizarCarga(
   cargaId: string,
   usuarioId: string,
@@ -453,6 +467,7 @@ export async function finalizarCarga(
 
   const cargaFinalizada = convertirCarga(data as CargaBaseDatos);
 
+  // Finaliza también la reserva asociada.
   if (cargaFinalizada.reservaId) {
     const { error: errorReserva } = await supabase
       .from("reservas")
@@ -475,6 +490,7 @@ export async function finalizarCarga(
   return cargaFinalizada;
 }
 
+// Cancela una carga activa.
 export async function cancelarCarga(cargaId: string): Promise<Carga> {
   const cargaEncontrada = await obtenerCargaPorId(cargaId);
 
@@ -530,6 +546,7 @@ export async function cancelarCarga(cargaId: string): Promise<Carga> {
   return convertirCarga(data as CargaBaseDatos);
 }
 
+// Calcula la energía total de las cargas.
 export function calcularEnergiaTotal(cargas: Carga[]) {
   return Number(
     cargas

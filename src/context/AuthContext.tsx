@@ -18,6 +18,7 @@ import { supabase } from "../services/supabaseClient";
 
 import type { CredencialesLogin, UsuarioAutenticado } from "../types/auth";
 
+// Datos disponibles desde el contexto de autenticación.
 interface AuthContextValue {
   usuario: UsuarioAutenticado | null;
   cargandoSesion: boolean;
@@ -31,20 +32,27 @@ interface AuthContextValue {
   cerrarSesion: () => Promise<void>;
 }
 
+// Contexto general de autenticación.
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
+// Propiedades del proveedor de autenticación.
 interface AuthProviderProps {
   children: ReactNode;
 }
 
+// Proveedor encargado de mantener la sesión.
 function AuthProvider({ children }: AuthProviderProps) {
+  // Usuario que tiene la sesión iniciada.
   const [usuario, setUsuario] = useState<UsuarioAutenticado | null>(null);
 
+  // Estado de comprobación de la sesión.
   const [cargandoSesion, setCargandoSesion] = useState(true);
 
+  // Carga inicial y cambios de sesión.
   useEffect(() => {
     let activo = true;
 
+    // Función para recuperar la sesión inicial.
     const cargarSesionInicial = async () => {
       try {
         const sesion = await obtenerSesionActual();
@@ -67,6 +75,7 @@ function AuthProvider({ children }: AuthProviderProps) {
 
     void cargarSesionInicial();
 
+    // Escucha los cambios de sesión de Supabase.
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_evento, sesion) => {
@@ -74,6 +83,7 @@ function AuthProvider({ children }: AuthProviderProps) {
         return;
       }
 
+      // Limpia el usuario cuando se cierra la sesión.
       if (!sesion?.user) {
         setUsuario(null);
 
@@ -82,6 +92,7 @@ function AuthProvider({ children }: AuthProviderProps) {
         return;
       }
 
+      // Recupera los datos del usuario de la sesión.
       window.setTimeout(() => {
         void (async () => {
           try {
@@ -92,14 +103,9 @@ function AuthProvider({ children }: AuthProviderProps) {
             }
           } catch {
             /*
-             * Durante signUp Supabase crea una sesión temporal.
-             * Si la solicitud aún no está aprobada, no se convierte
-             * nunca en usuario autenticado de la aplicación.
-             *
-             * registroService cerrará esa sesión después de enviar
-             * el correo de solicitud.
+             Durante el registro puede existir una sesión temporal.
+             Si el usuario aún no está aprobado, no se inicia sesión.
              */
-
             if (activo) {
               setUsuario(null);
             }
@@ -112,6 +118,7 @@ function AuthProvider({ children }: AuthProviderProps) {
       }, 0);
     });
 
+    // Cancela la escucha al desmontar el proveedor.
     return () => {
       activo = false;
 
@@ -119,6 +126,7 @@ function AuthProvider({ children }: AuthProviderProps) {
     };
   }, []);
 
+  // Función para iniciar sesión.
   const iniciarSesion = useCallback(async (credenciales: CredencialesLogin) => {
     const resultado = await iniciarSesionServicio(credenciales);
 
@@ -127,12 +135,14 @@ function AuthProvider({ children }: AuthProviderProps) {
     return resultado.usuario;
   }, []);
 
+  // Función para cerrar sesión.
   const cerrarSesion = useCallback(async () => {
     await cerrarSesionServicio();
 
     setUsuario(null);
   }, []);
 
+  // Valores disponibles para el resto de la aplicación.
   const value = useMemo<AuthContextValue>(
     () => ({
       usuario,

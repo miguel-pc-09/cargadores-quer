@@ -1,17 +1,15 @@
 import { createClient } from "@supabase/supabase-js";
 
+// Variables de conexión definidas en el archivo de entorno.
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-const supabasePublishableKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
-
-if (!supabaseUrl) {
-  throw new Error("Falta la variable de entorno VITE_SUPABASE_URL.");
-}
-
-if (!supabasePublishableKey) {
+// Comprueba que estén configuradas las variables necesarias.
+if (!supabaseUrl || !supabaseAnonKey) {
   throw new Error(
-    "Falta la variable de entorno VITE_SUPABASE_PUBLISHABLE_KEY.",
+    "Faltan las variables VITE_SUPABASE_URL o VITE_SUPABASE_ANON_KEY.",
   );
 }
 
-export const supabase = createClient(supabaseUrl, supabasePublishableKey);
+// Cliente de Supabase utilizado en toda la aplicación.
+export const supabase = createClient(supabaseUrl, supabaseAnonKey);

@@ -9,6 +9,7 @@ import type {
   TomaCargador,
 } from "../types/charger";
 
+// Datos del cargador en Supabase.
 interface CargadorBaseDatos {
   id: string;
   nombre: string;
@@ -16,6 +17,7 @@ interface CargadorBaseDatos {
   activo: boolean;
 }
 
+// Datos de la toma en Supabase.
 interface TomaBaseDatos {
   id: string;
   cargador_id: string;
@@ -25,10 +27,12 @@ interface TomaBaseDatos {
   permite_reserva: boolean;
 }
 
+// Convierte el estado del cargador.
 function convertirEstadoCargador(activo: boolean): EstadoCargador {
   return activo ? "conectado" : "desconectado";
 }
 
+// Convierte el estado de una toma.
 function convertirEstadoToma(estado: string | null): EstadoToma {
   const estadoNormalizado =
     estado?.trim().toLowerCase().replaceAll("_", "-").replaceAll(" ", "-") ??
@@ -65,6 +69,7 @@ function convertirEstadoToma(estado: string | null): EstadoToma {
   }
 }
 
+// Convierte una toma de Supabase.
 function convertirToma(toma: TomaBaseDatos): TomaCargador {
   return {
     id: toma.id,
@@ -79,6 +84,7 @@ function convertirToma(toma: TomaBaseDatos): TomaCargador {
   };
 }
 
+// Normaliza textos para compararlos.
 function normalizarTexto(texto: string) {
   return texto
     .trim()
@@ -87,6 +93,7 @@ function normalizarTexto(texto: string) {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
+// Busca el cargador de demostración.
 function buscarCargadorSimulado(nombre: string) {
   const nombreNormalizado = normalizarTexto(nombre);
 
@@ -95,6 +102,7 @@ function buscarCargadorSimulado(nombre: string) {
   );
 }
 
+// Añade los estados de demostración.
 function aplicarDemostracion(
   cargadorReal: Cargador,
   cargadorSimulado: Cargador | undefined,
@@ -114,12 +122,7 @@ function aplicarDemostracion(
       return tomaReal;
     }
 
-    /*
-     * La demostración modifica únicamente el estado visual.
-     *
-     * El ID continúa siendo el ID real de Supabase para que las
-     * páginas de detalle y reserva sigan funcionando correctamente.
-     */
+    // Mantiene el ID real y aplica el estado simulado.
     return {
       ...tomaReal,
 
@@ -144,6 +147,7 @@ function aplicarDemostracion(
   };
 }
 
+// Crea una copia de los datos simulados.
 function crearCargadoresDesdeDatosSimulados(): Cargador[] {
   return cargadoresSimulados.map((cargador) => ({
     ...cargador,
@@ -154,6 +158,7 @@ function crearCargadoresDesdeDatosSimulados(): Cargador[] {
   }));
 }
 
+// Obtiene todos los cargadores.
 export async function obtenerCargadores(): Promise<Cargador[]> {
   const [resultadoCargadores, resultadoTomas] = await Promise.all([
     supabase
@@ -187,11 +192,7 @@ export async function obtenerCargadores(): Promise<Cargador[]> {
       }),
   ]);
 
-  /*
-   * Si no hay cargadores configurados en Supabase, utilizamos los
-   * datos de demostración para que la aplicación nunca aparezca
-   * completamente vacía durante una presentación.
-   */
+  // Usa la demostración si falla la carga de cargadores.
   if (resultadoCargadores.error) {
     if (cargadoresSimulados.length > 0) {
       return crearCargadoresDesdeDatosSimulados();
@@ -202,6 +203,7 @@ export async function obtenerCargadores(): Promise<Cargador[]> {
     );
   }
 
+  // Usa la demostración si falla la carga de tomas.
   if (resultadoTomas.error) {
     if (cargadoresSimulados.length > 0) {
       return crearCargadoresDesdeDatosSimulados();
@@ -216,14 +218,12 @@ export async function obtenerCargadores(): Promise<Cargador[]> {
 
   const tomas = (resultadoTomas.data ?? []) as TomaBaseDatos[];
 
-  /*
-   * Si Supabase está correctamente conectado pero todavía no tiene
-   * cargadores, mostramos los datos de demostración.
-   */
+  // Usa la demostración si no existen cargadores.
   if (cargadores.length === 0) {
     return crearCargadoresDesdeDatosSimulados();
   }
 
+  // Convierte los cargadores recibidos de Supabase.
   const cargadoresReales = cargadores.map((cargador): Cargador => {
     const tomasCargador = tomas
       .filter((toma) => toma.cargador_id === cargador.id)
@@ -244,11 +244,13 @@ export async function obtenerCargadores(): Promise<Cargador[]> {
     };
   });
 
+  // Combina los datos reales con la demostración.
   return cargadoresReales.map((cargador) =>
     aplicarDemostracion(cargador, buscarCargadorSimulado(cargador.nombre)),
   );
 }
 
+// Obtiene un cargador por su ID.
 export async function obtenerCargadorPorId(
   cargadorId: string,
 ): Promise<Cargador | null> {
@@ -257,6 +259,7 @@ export async function obtenerCargadorPorId(
   return cargadores.find((cargador) => cargador.id === cargadorId) ?? null;
 }
 
+// Obtiene una toma por su ID.
 export async function obtenerTomaPorId(
   cargadorId: string,
   tomaId: string,

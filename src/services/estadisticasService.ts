@@ -1,5 +1,6 @@
 import type { Carga } from "../types/carga";
 
+// Estadísticas disponibles de las cargas.
 export interface EstadisticasCargas {
   energiaTotalKwh: number;
   energiaMesActualKwh: number;
@@ -18,23 +19,17 @@ export interface EstadisticasCargas {
   tarifaReferenciaEuroKwh: number | null;
 }
 
-/*
- * De momento no existe una tarifa municipal confirmada.
- *
- * Cuando el Ayuntamiento defina un precio, bastará con
- * sustituir null por el importe correspondiente.
- *
- * Ejemplo:
- * const TARIFA_REFERENCIA_EURO_KWH = 0.25;
- */
+// Tarifa de referencia para calcular el coste.
 const TARIFA_REFERENCIA_EURO_KWH: number | null = null;
 
+// Redondea un número a los decimales indicados.
 function redondear(valor: number, decimales = 2) {
   const factor = 10 ** decimales;
 
   return Math.round((valor + Number.EPSILON) * factor) / factor;
 }
 
+// Obtiene la fecha final de una carga.
 function obtenerFechaFinCarga(carga: Carga) {
   if (carga.fechaHoraFinReal) {
     return new Date(carga.fechaHoraFinReal);
@@ -43,6 +38,7 @@ function obtenerFechaFinCarga(carga: Carga) {
   return new Date(carga.fechaHoraFinPrevista);
 }
 
+// Calcula la duración de una carga en minutos.
 function calcularDuracionCargaMinutos(carga: Carga) {
   const fechaInicio = new Date(carga.fechaHoraInicio);
   const fechaFin = obtenerFechaFinCarga(carga);
@@ -60,6 +56,7 @@ function calcularDuracionCargaMinutos(carga: Carga) {
   return Math.round(diferenciaMs / 60_000);
 }
 
+// Comprueba si una carga pertenece al mes actual.
 function perteneceAlMesActual(carga: Carga, fechaActual: Date) {
   const fechaCarga = new Date(carga.fechaHoraInicio);
 
@@ -69,18 +66,21 @@ function perteneceAlMesActual(carga: Carga, fechaActual: Date) {
   );
 }
 
+// Comprueba si una carga pertenece al año actual.
 function perteneceAlAnioActual(carga: Carga, fechaActual: Date) {
   const fechaCarga = new Date(carga.fechaHoraInicio);
 
   return fechaCarga.getFullYear() === fechaActual.getFullYear();
 }
 
+// Filtra las cargas que cuentan para estadísticas.
 function obtenerCargasContabilizables(cargas: Carga[]) {
   return cargas.filter(
     (carga) => carga.estado === "finalizada" || carga.estado === "activa",
   );
 }
 
+// Calcula todas las estadísticas de carga.
 export function calcularEstadisticasCargas(
   cargas: Carga[],
   fechaActual = new Date(),
@@ -163,6 +163,7 @@ export function calcularEstadisticasCargas(
   };
 }
 
+// Formatea un tiempo total.
 export function formatearTiempoTotal(minutosTotales: number) {
   const minutosSeguros = Math.max(0, Math.round(minutosTotales));
 
@@ -183,6 +184,7 @@ export function formatearTiempoTotal(minutosTotales: number) {
   return `${minutos} min`;
 }
 
+// Formatea la energía en kWh.
 export function formatearEnergia(energiaKwh: number) {
   return energiaKwh.toLocaleString("es-ES", {
     minimumFractionDigits: 2,
@@ -190,6 +192,7 @@ export function formatearEnergia(energiaKwh: number) {
   });
 }
 
+// Formatea el coste en euros.
 export function formatearCoste(costeEuros: number) {
   return costeEuros.toLocaleString("es-ES", {
     style: "currency",

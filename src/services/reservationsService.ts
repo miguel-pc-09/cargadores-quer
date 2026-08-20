@@ -13,6 +13,7 @@ import type {
   ReservaConFechas,
 } from "../types/reservation";
 
+// Estructura de una reserva en la base de datos.
 interface ReservaBaseDatos {
   id: string;
   usuario_id: string;
@@ -26,12 +27,14 @@ interface ReservaBaseDatos {
   actualizada_en: string | null;
 }
 
+// Crea una fecha completa con día y hora.
 function crearFechaHora(fecha: string, hora: string) {
   const horaNormalizada = normalizarHora(hora);
 
   return new Date(`${fecha}T${horaNormalizada}:00`);
 }
 
+// Convierte una fecha al formato YYYY-MM-DD.
 function convertirFechaAValor(fecha: Date) {
   const anio = fecha.getFullYear();
 
@@ -42,6 +45,7 @@ function convertirFechaAValor(fecha: Date) {
   return `${anio}-${mes}-${dia}`;
 }
 
+// Convierte una fecha al formato HH:MM.
 function convertirFechaAHora(fecha: Date) {
   const horas = String(fecha.getHours()).padStart(2, "0");
 
@@ -50,10 +54,12 @@ function convertirFechaAHora(fecha: Date) {
   return `${horas}:${minutos}`;
 }
 
+// Normaliza una hora.
 function normalizarHora(hora: string) {
   return hora.slice(0, 5);
 }
 
+// Calcula el final de una reserva.
 function calcularFechaHoraFin(
   fecha: string,
   horaInicio: string,
@@ -72,6 +78,7 @@ function calcularFechaHoraFin(
   };
 }
 
+// Calcula la fecha final desde la base de datos.
 function calcularFechaFinDesdeBaseDatos(
   fecha: string,
   horaInicio: string,
@@ -88,6 +95,7 @@ function calcularFechaFinDesdeBaseDatos(
   return fin;
 }
 
+// Calcula la duración guardada en la base de datos.
 function calcularDuracionDesdeBaseDatos(
   fecha: string,
   horaInicio: string,
@@ -100,6 +108,7 @@ function calcularDuracionDesdeBaseDatos(
   return Math.round((fin.getTime() - inicio.getTime()) / 60_000);
 }
 
+// Convierte una reserva de Supabase.
 function convertirReservaBaseDatos(reserva: ReservaBaseDatos): Reserva {
   const horaInicio = normalizarHora(reserva.hora_inicio);
 
@@ -142,14 +151,17 @@ function convertirReservaBaseDatos(reserva: ReservaBaseDatos): Reserva {
   };
 }
 
+// Obtiene el inicio de una reserva.
 function obtenerInicioReserva(reserva: Reserva) {
   return crearFechaHora(reserva.fecha, reserva.horaInicio);
 }
 
+// Obtiene el final de una reserva.
 function obtenerFinReserva(reserva: Reserva) {
   return crearFechaHora(reserva.fechaFin, reserva.horaFin);
 }
 
+// Comprueba si dos reservas se solapan.
 function reservasSeSolapan(
   inicioA: Date,
   finA: Date,
@@ -161,6 +173,7 @@ function reservasSeSolapan(
   );
 }
 
+// Calcula el estado actual de una reserva.
 function calcularEstadoActual(reserva: Reserva): EstadoReserva {
   if (
     reserva.estado === "cancelada" ||
@@ -201,6 +214,7 @@ function calcularEstadoActual(reserva: Reserva): EstadoReserva {
   return "confirmada";
 }
 
+// Actualiza automáticamente los estados.
 async function actualizarEstados(reservas: Reserva[]): Promise<Reserva[]> {
   const reservasActualizadas = await Promise.all(
     reservas.map(async (reserva): Promise<Reserva> => {
@@ -246,6 +260,7 @@ async function actualizarEstados(reservas: Reserva[]): Promise<Reserva[]> {
   return reservasActualizadas;
 }
 
+// Añade las fechas completas a una reserva.
 function convertirReservaConFechas(reserva: Reserva): ReservaConFechas {
   return {
     ...reserva,
@@ -256,6 +271,7 @@ function convertirReservaConFechas(reserva: Reserva): ReservaConFechas {
   };
 }
 
+// Comprueba si una reserva sigue vigente.
 function reservaSigueVigente(reserva: Reserva) {
   return (
     reserva.estado !== "cancelada" &&
@@ -264,6 +280,7 @@ function reservaSigueVigente(reserva: Reserva) {
   );
 }
 
+// Normaliza un texto para compararlo.
 function normalizarTexto(texto: string) {
   return texto
     .trim()
@@ -272,6 +289,7 @@ function normalizarTexto(texto: string) {
     .replace(/[\u0300-\u036f]/g, "");
 }
 
+// Busca un cargador simulado por nombre.
 function buscarCargadorSimuladoPorNombre(nombre: string) {
   const nombreNormalizado = normalizarTexto(nombre);
 
@@ -280,6 +298,7 @@ function buscarCargadorSimuladoPorNombre(nombre: string) {
   );
 }
 
+// Crea una reserva de demostración.
 function crearReservaDemostracion(
   cargadorId: string,
   tomaId: string,
@@ -315,6 +334,7 @@ function crearReservaDemostracion(
   };
 }
 
+// Obtiene las reservas de demostración.
 async function obtenerReservasDemostracion(
   cargadorId: string,
   tomaId: string,
@@ -378,6 +398,7 @@ async function obtenerReservasDemostracion(
   return [];
 }
 
+// Obtiene todas las reservas de una toma.
 async function obtenerReservasDeTomaCompletas(
   cargadorId: string,
   tomaId: string,
@@ -426,6 +447,7 @@ async function obtenerReservasDeTomaCompletas(
   return actualizarEstados(reservas);
 }
 
+// Lee todas las reservas de Supabase.
 async function leerReservasBaseDatos(): Promise<Reserva[]> {
   const { data, error } = await supabase.from("reservas").select(
     `
@@ -449,12 +471,14 @@ async function leerReservasBaseDatos(): Promise<Reserva[]> {
   return ((data ?? []) as ReservaBaseDatos[]).map(convertirReservaBaseDatos);
 }
 
+// Obtiene todas las reservas.
 export async function obtenerReservas(): Promise<Reserva[]> {
   const reservas = await leerReservasBaseDatos();
 
   return actualizarEstados(reservas);
 }
 
+// Obtiene una reserva por su ID.
 export async function obtenerReservaPorId(
   reservaId: string,
   usuarioId?: string,
@@ -502,6 +526,7 @@ export async function obtenerReservaPorId(
   return reservaActualizada ?? null;
 }
 
+// Obtiene las reservas de un usuario.
 export async function obtenerReservasUsuario(
   usuarioId: string,
 ): Promise<Reserva[]> {
@@ -538,6 +563,7 @@ export async function obtenerReservasUsuario(
   return actualizarEstados(reservas.map(convertirReservaBaseDatos));
 }
 
+// Obtiene las reservas vigentes de una toma.
 export async function obtenerReservasToma(
   cargadorId: string,
   tomaId: string,
@@ -552,6 +578,7 @@ export async function obtenerReservasToma(
   return reservas.filter(reservaSigueVigente);
 }
 
+// Crea una nueva reserva.
 export async function crearReserva(
   datosReserva: DatosNuevaReserva,
 ): Promise<Reserva> {
@@ -699,6 +726,7 @@ export async function crearReserva(
   return convertirReservaBaseDatos(data as ReservaBaseDatos);
 }
 
+// Cancela una reserva futura.
 export async function cancelarReserva(
   reservaId: string,
   usuarioId: string,
@@ -755,6 +783,7 @@ export async function cancelarReserva(
   return convertirReservaBaseDatos(data as ReservaBaseDatos);
 }
 
+// Marca una reserva como activa.
 export async function marcarReservaComoActiva(
   reservaId: string,
   usuarioId: string,
@@ -831,6 +860,7 @@ export async function marcarReservaComoActiva(
   return convertirReservaBaseDatos(data as ReservaBaseDatos);
 }
 
+// Marca una reserva como finalizada.
 export async function marcarReservaComoFinalizada(
   reservaId: string,
   usuarioId: string,
@@ -878,6 +908,7 @@ export async function marcarReservaComoFinalizada(
   return convertirReservaBaseDatos(data as ReservaBaseDatos);
 }
 
+// Obtiene la próxima reserva de un cargador.
 export async function obtenerReservaActivaDelCargador(
   usuarioId: string,
   cargadorId: string,
@@ -901,6 +932,7 @@ export async function obtenerReservaActivaDelCargador(
   return reservaEncontrada ?? null;
 }
 
+// Comprueba si una reserva puede iniciarse.
 export function puedeIniciarCarga(reserva: Reserva, fechaActual = new Date()) {
   if (reserva.estado !== "confirmada") {
     return false;
@@ -922,10 +954,12 @@ export function puedeIniciarCarga(reserva: Reserva, fechaActual = new Date()) {
   );
 }
 
+// Devuelve la fecha de inicio.
 export function obtenerFechaHoraInicio(reserva: Reserva) {
   return obtenerInicioReserva(reserva);
 }
 
+// Devuelve la fecha de finalización.
 export function obtenerFechaHoraFin(reserva: Reserva) {
   return obtenerFinReserva(reserva);
 }

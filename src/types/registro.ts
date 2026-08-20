@@ -1,7 +1,10 @@
+// Tipos de usuario disponibles en el registro.
 export type TipoUsuario = "" | "particular" | "empresa" | "servicio-publico";
 
+// Relación del usuario con el Ayuntamiento.
 export type Filiacion = "" | "residente" | "trabajador" | "actividad";
 
+// Datos de cada usuario del formulario.
 export interface DatosUsuarioRegistro {
   nombre: string;
   apellidos: string;
@@ -13,6 +16,7 @@ export interface DatosUsuarioRegistro {
   filiacion: Filiacion;
 }
 
+// Datos completos de la solicitud de registro.
 export interface DatosFormularioRegistro {
   clienteId: string;
   matricula: string;
@@ -24,4 +28,5 @@ export interface DatosFormularioRegistro {
   aceptaCondiciones: boolean;
 }
 
+// Errores asociados a cada campo del formulario.
 export type ErroresRegistro = Record<string, string>;

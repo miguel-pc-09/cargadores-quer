@@ -1,5 +1,6 @@
 import type { Cargador } from "../types/charger";
 
+// Cargadores simulados para demostración.
 export const cargadoresSimulados: Cargador[] = [
   {
     id: "centro-cultural",
@@ -48,9 +49,7 @@ export const cargadoresSimulados: Cargador[] = [
         potenciaMaximaKw: 7.4,
         permiteReserva: true,
 
-        /*
-         * Simulación de un vehículo que está cargando actualmente.
-         */
+        // Toma ocupada de demostración.
         disponibleDesde: "14:30",
         usuarioActual: "Usuario de demostración",
       },
@@ -75,9 +74,7 @@ export const cargadoresSimulados: Cargador[] = [
         potenciaMaximaKw: 7.4,
         permiteReserva: true,
 
-        /*
-         * Simulación de una carga actualmente en curso.
-         */
+        // Carga en curso de demostración.
         disponibleDesde: "13:00",
         usuarioActual: "Usuario de demostración",
       },
@@ -118,9 +115,7 @@ export const cargadoresSimulados: Cargador[] = [
         potenciaMaximaKw: 11,
         permiteReserva: true,
 
-        /*
-         * Simulación de una toma reservada por otro usuario.
-         */
+        // Reserva de otro usuario para demostración.
         disponibleDesde: "17:00",
         usuarioActual: "Usuario de demostración",
       },

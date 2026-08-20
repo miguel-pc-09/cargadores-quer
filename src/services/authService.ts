@@ -11,6 +11,7 @@ import type {
   UsuarioAutenticado,
 } from "../types/auth";
 
+// Datos del perfil guardado en Supabase.
 interface PerfilSupabase {
   id: string;
   nombre: string | null;
@@ -21,12 +22,13 @@ interface PerfilSupabase {
   estado_cuenta: EstadoCuenta;
 }
 
+// Datos necesarios para comprobar una solicitud.
 interface SolicitudAccesoBD {
   estado: "pendiente" | "aprobada" | "rechazada";
-
   motivo_rechazo: string | null;
 }
 
+// Convierte el perfil de Supabase al usuario de la aplicación.
 function convertirPerfilEnUsuario(
   perfil: PerfilSupabase,
   email: string,
@@ -50,6 +52,7 @@ function convertirPerfilEnUsuario(
   };
 }
 
+// Comprueba una solicitud cuando todavía no existe perfil.
 async function comprobarSolicitudSinPerfil(usuarioId: string) {
   const { data, error } = await supabase
     .from("solicitudes_registro")
@@ -89,6 +92,7 @@ async function comprobarSolicitudSinPerfil(usuarioId: string) {
   );
 }
 
+// Recupera el perfil completo del usuario.
 async function obtenerPerfilUsuario(
   usuarioId: string,
   email: string,
@@ -124,6 +128,7 @@ async function obtenerPerfilUsuario(
   return convertirPerfilEnUsuario(data as PerfilSupabase, email);
 }
 
+// Comprueba si la cuenta puede acceder al servicio.
 function comprobarAcceso(usuario: UsuarioAutenticado) {
   if (usuario.rol === "administrador") {
     return;
@@ -146,6 +151,7 @@ function comprobarAcceso(usuario: UsuarioAutenticado) {
   }
 }
 
+// Obtiene el usuario a partir de una sesión de Supabase.
 export async function obtenerUsuarioPorSesion(
   usuarioAuth: User,
 ): Promise<UsuarioAutenticado> {
@@ -159,6 +165,7 @@ export async function obtenerUsuarioPorSesion(
   return usuario;
 }
 
+// Inicia sesión con correo y contraseña.
 export async function iniciarSesion(
   credenciales: CredencialesLogin,
 ): Promise<ResultadoLogin> {
@@ -185,12 +192,14 @@ export async function iniciarSesion(
       usuario,
     };
   } catch (error) {
+    // Cierra la sesión si la cuenta no tiene acceso.
     await supabase.auth.signOut();
 
     throw error;
   }
 }
 
+// Cierra la sesión actual.
 export async function cerrarSesion(): Promise<void> {
   const { error } = await supabase.auth.signOut();
 
@@ -199,6 +208,7 @@ export async function cerrarSesion(): Promise<void> {
   }
 }
 
+// Recupera la sesión guardada al abrir la aplicación.
 export async function obtenerSesionActual(): Promise<SesionUsuario | null> {
   const { data, error } = await supabase.auth.getSession();
 
@@ -221,6 +231,7 @@ export async function obtenerSesionActual(): Promise<SesionUsuario | null> {
       iniciadaEn: sesion.user.last_sign_in_at ?? new Date().toISOString(),
     };
   } catch {
+    // Elimina sesiones que ya no tengan acceso válido.
     await supabase.auth.signOut();
 
     return null;

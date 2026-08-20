@@ -1,5 +1,7 @@
+// Estados posibles de una carga.
 export type EstadoCarga = "activa" | "finalizada" | "cancelada";
 
+// Datos necesarios para crear una carga.
 export interface DatosNuevaCarga {
   usuarioId: string;
   reservaId: string;
@@ -12,6 +14,7 @@ export interface DatosNuevaCarga {
   potenciaMaximaKw: number;
 }
 
+// Datos completos de una carga.
 export interface Carga extends DatosNuevaCarga {
   id: string;
   estado: EstadoCarga;

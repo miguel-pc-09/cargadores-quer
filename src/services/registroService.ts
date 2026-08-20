@@ -3,19 +3,23 @@ import { supabase } from "./supabaseClient";
 import type { Cliente } from "../types/cliente";
 import type { DatosFormularioRegistro } from "../types/registro";
 
+// Datos necesarios para enviar una solicitud.
 export interface SolicitudRegistro {
   cliente: Cliente;
   formulario: DatosFormularioRegistro;
 }
 
+// Función para normalizar la matrícula.
 function normalizarMatricula(matricula: string) {
   return matricula.trim().toUpperCase().replace(/[\s-]/g, "");
 }
 
+// Función para normalizar el documento.
 function normalizarDocumento(documento: string) {
   return documento.trim().toUpperCase().replace(/[\s-]/g, "");
 }
 
+// Función para proteger el documento con SHA-256.
 async function crearHashDocumento(documento: string) {
   const contenido = new TextEncoder().encode(normalizarDocumento(documento));
 
@@ -26,6 +30,7 @@ async function crearHashDocumento(documento: string) {
     .join("");
 }
 
+// Función para mostrar errores de registro más claros.
 function obtenerMensajeError(mensaje: string) {
   const mensajeMinusculas = mensaje.toLowerCase();
 
@@ -43,6 +48,7 @@ function obtenerMensajeError(mensaje: string) {
   return "No se ha podido completar el registro.";
 }
 
+// Función para enviar una nueva solicitud de registro.
 export async function enviarSolicitudRegistro(
   solicitud: SolicitudRegistro,
 ): Promise<void> {
@@ -56,6 +62,7 @@ export async function enviarSolicitudRegistro(
 
   const dniProtegido = await crearHashDocumento(usuario.dni);
 
+  // Crea el usuario pendiente de aprobación.
   const { data, error } = await supabase.auth.signUp({
     email,
 
@@ -64,19 +71,12 @@ export async function enviarSolicitudRegistro(
     options: {
       data: {
         nombre: usuario.nombre.trim(),
-
         apellidos: usuario.apellidos.trim(),
-
         telefono: usuario.telefono.trim(),
-
         dni: dniProtegido,
-
         cliente: cliente.nombre,
-
         tipo_usuario: formulario.tipoUsuario,
-
         filiacion: usuario.filiacion,
-
         matricula,
       },
     },
@@ -91,6 +91,7 @@ export async function enviarSolicitudRegistro(
   }
 
   try {
+    // Procesa inmediatamente la nueva solicitud.
     if (data.session) {
       const { error: errorAviso } = await supabase.functions.invoke(
         "procesar-solicitudes",
@@ -109,6 +110,7 @@ export async function enviarSolicitudRegistro(
       }
     }
   } finally {
+    // Cierra la sesión temporal creada durante el registro.
     if (data.session) {
       const { error: errorCierre } = await supabase.auth.signOut();
 

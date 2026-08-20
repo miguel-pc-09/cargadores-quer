@@ -1,5 +1,6 @@
 import type { Cliente } from "../types/cliente";
 
+// Lista de clientes disponibles.
 export const clientes: Cliente[] = [
   {
     id: "ayuntamiento-quer",

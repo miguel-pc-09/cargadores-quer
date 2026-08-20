@@ -1,5 +1,7 @@
+// Estados posibles de un cargador.
 export type EstadoCargador = "conectado" | "desconectado" | "mantenimiento";
 
+// Estados posibles de una toma.
 export type EstadoToma =
   | "libre"
   | "ocupada"
@@ -7,6 +9,7 @@ export type EstadoToma =
   | "fuera-servicio"
   | "mi-carga";
 
+// Datos de una toma.
 export interface TomaCargador {
   id: string;
   nombre: string;
@@ -18,6 +21,7 @@ export interface TomaCargador {
   usuarioActual?: string;
 }
 
+// Datos de un cargador.
 export interface Cargador {
   id: string;
   nombre: string;
