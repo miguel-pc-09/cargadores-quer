@@ -105,7 +105,7 @@ function AdminLayout() {
 
   return (
     <div className="admin-layout">
-      ∫{/* Barra superior del panel de administración */}
+      {/* Barra superior del panel de administración */}
       <header className="admin-layout__barra">
         <div className="admin-layout__barra-contenido">
           <div className="admin-layout__zona-izquierda">
