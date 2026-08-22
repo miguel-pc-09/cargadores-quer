@@ -1,7 +1,6 @@
 # 📂 Estructura del proyecto
 
 Este documento explica la función de cada carpeta y archivo principal de **CargaQuer**.
-
 Su objetivo es facilitar la comprensión del proyecto a cualquier desarrollador que necesite revisarlo, mantenerlo o continuar su desarrollo.
 
 ---
@@ -32,6 +31,7 @@ Su objetivo es facilitar la comprensión del proyecto a cualquier desarrollador 
 - [📌 Flujo de una reserva](#-flujo-de-una-reserva)
 - [📌 Estados de reserva](#-estados-de-reserva)
 - [📌 Flujo de carga](#-flujo-de-carga)
+- [📌 Automatización de estados](#-automatización-de-estados)
 - [📌 Datos DEMO](#-datos-demo)
 - [📌 Separación general del proyecto](#-separación-general-del-proyecto)
 - [📌 Archivos principales de la raíz](#-archivos-principales-de-la-raíz)
@@ -41,13 +41,11 @@ Su objetivo es facilitar la comprensión del proyecto a cualquier desarrollador 
 # 📁 public/
 
 Contiene archivos estáticos que se copian directamente a la versión final de la aplicación.
-
 No contiene lógica de React.
 
 ## `_redirects`
 
 Configuración utilizada por Netlify para que las rutas internas de React Router funcionen correctamente al actualizar la página o acceder directamente a una URL.
-
 Contenido:
 
 ```text
@@ -75,9 +73,7 @@ Archivo SVG con recursos gráficos utilizados por la aplicación.
 # 📁 src/
 
 Contiene todo el código fuente del frontend.
-
 La mayor parte del desarrollo de CargaQuer se encuentra dentro de esta carpeta.
-
 La estructura se divide en:
 
 ```text
@@ -102,7 +98,6 @@ src/
 # 📁 src/components/
 
 Contiene componentes reutilizables de React.
-
 Los componentes se agrupan según la parte de la aplicación donde se utilizan.
 
 ---
@@ -114,13 +109,11 @@ Componentes relacionados con la representación de cargadores y tomas.
 ## `TarjetaCargador.tsx`
 
 Representa visualmente un cargador dentro del listado de cargadores.
-
 Muestra la información principal del cargador y permite acceder a su detalle.
 
 ## `EstadoToma.tsx`
 
 Representa visualmente el estado de una toma.
-
 Se utiliza para mostrar de forma consistente si una toma está disponible, ocupada o en otro estado.
 
 ---
@@ -132,7 +125,6 @@ Componentes utilizados dentro de la pantalla de detalle de un cargador.
 ## `TarjetaTomaDetalle.tsx`
 
 Representa cada toma disponible dentro de un cargador.
-
 Muestra información como:
 
 - Nombre de la toma.
@@ -154,7 +146,6 @@ Componentes reutilizados dentro del panel privado del usuario.
 ## `BarraSuperior.tsx`
 
 Barra superior del panel de usuario.
-
 Gestiona elementos comunes como:
 
 - Información de sesión.
@@ -164,7 +155,6 @@ Gestiona elementos comunes como:
 ## `MenuLateral.tsx`
 
 Menú lateral de navegación.
-
 Permite acceder a:
 
 - Inicio.
@@ -199,7 +189,6 @@ Componentes reutilizables utilizados en el formulario de registro.
 ## `CampoTexto.tsx`
 
 Componente reutilizable para campos de texto.
-
 Gestiona de forma común:
 
 - Etiqueta.
@@ -232,7 +221,6 @@ Permite seleccionar el día en el que se realizará la reserva.
 ## `SelectorHoraReserva.tsx`
 
 Muestra los horarios disponibles de una toma.
-
 Permite seleccionar una hora teniendo en cuenta:
 
 - Horas pasadas.
@@ -242,7 +230,6 @@ Permite seleccionar una hora teniendo en cuenta:
 ## `ControlDuracionReserva.tsx`
 
 Permite seleccionar la duración de una reserva.
-
 Trabaja con:
 
 - Incrementos de 30 minutos.
@@ -252,7 +239,6 @@ Trabaja con:
 ## `ResumenReserva.tsx`
 
 Muestra el resumen final antes de confirmar una reserva.
-
 Incluye:
 
 - Cargador.
@@ -273,7 +259,6 @@ Contiene los contextos globales de React.
 ## `AuthContextBase.ts`
 
 Define el contexto de autenticación y su tipo.
-
 Contiene:
 
 - `AuthContextValue`.
@@ -286,9 +271,7 @@ Está separado del proveedor para mantener correctamente la compatibilidad con F
 ## `AuthContext.tsx`
 
 Contiene `AuthProvider`.
-
 Se encarga de mantener la sesión del usuario disponible para toda la aplicación.
-
 Gestiona:
 
 - Usuario autenticado.
@@ -307,7 +290,6 @@ Hooks personalizados de React.
 ## `useAuth.ts`
 
 Hook utilizado para acceder al contexto de autenticación.
-
 Permite obtener fácilmente:
 
 - Usuario actual.
@@ -328,7 +310,6 @@ Contiene datos locales utilizados por la aplicación.
 ## `cargadores.ts`
 
 Contiene cargadores y situaciones de demostración.
-
 Estos datos se mantienen intencionadamente para que durante las pruebas puedan representarse situaciones como:
 
 - Tomas ocupadas.
@@ -343,7 +324,6 @@ No son datos antiguos ni deben eliminarse durante la limpieza del proyecto.
 ## `clientes.ts`
 
 Contiene los clientes u organizaciones disponibles en el proceso de registro.
-
 Actualmente permite representar la entidad responsable del servicio.
 
 ---
@@ -357,7 +337,6 @@ Contiene las estructuras visuales comunes utilizadas por varias páginas.
 ## `PrivateLayout.tsx`
 
 Layout utilizado por las páginas privadas del usuario.
-
 Incluye la estructura común del panel:
 
 - Barra superior.
@@ -371,7 +350,6 @@ Las páginas internas se muestran dentro de este layout mediante React Router.
 ## `AdminLayout.tsx`
 
 Layout exclusivo del panel de administración.
-
 Mantiene la estructura y navegación administrativa separada del panel de usuario.
 
 ---
@@ -379,7 +357,6 @@ Mantiene la estructura y navegación administrativa separada del panel de usuari
 # 📁 src/pages/
 
 Contiene las páginas completas de la aplicación.
-
 Cada carpeta corresponde a una sección o pantalla principal.
 
 ---
@@ -389,7 +366,6 @@ Cada carpeta corresponde a una sección o pantalla principal.
 ## `LoginPage.tsx`
 
 Pantalla de inicio de sesión.
-
 Gestiona:
 
 - Correo electrónico.
@@ -410,7 +386,6 @@ Según el rol del usuario, después del acceso se redirige al panel correspondie
 ## `RegistroPage.tsx`
 
 Formulario de solicitud de alta.
-
 Gestiona:
 
 - Organización o cliente.
@@ -440,9 +415,7 @@ Pantalla utilizada para iniciar el proceso de recuperación de contraseña.
 ## `InicioPage.tsx`
 
 Pantalla principal del usuario después de iniciar sesión.
-
 Muestra un resumen del estado de la cuenta y accesos rápidos a las funciones principales.
-
 Puede mostrar información relacionada con:
 
 - Cargadores.
@@ -459,9 +432,7 @@ Puede mostrar información relacionada con:
 ## `CargadoresPage.tsx`
 
 Listado general de cargadores.
-
 Obtiene los datos mediante `chargersService.ts`.
-
 Muestra:
 
 - Nombre.
@@ -477,7 +448,6 @@ Muestra:
 ## `DetalleCargadorPage.tsx`
 
 Pantalla de detalle de un cargador.
-
 Permite consultar:
 
 - Información del cargador.
@@ -494,7 +464,6 @@ También comprueba si el usuario tiene una reserva que pueda iniciarse.
 ## `DetalleTomaPage.tsx`
 
 Pantalla de información específica de una toma.
-
 Permite consultar sus datos antes de continuar hacia el proceso de reserva.
 
 ---
@@ -504,7 +473,6 @@ Permite consultar sus datos antes de continuar hacia el proceso de reserva.
 ## `ReservaTomaPage.tsx`
 
 Pantalla principal para crear una reserva.
-
 Gestiona:
 
 - Día.
@@ -524,7 +492,6 @@ Gestiona:
 ## `ReservasPage.tsx`
 
 Pantalla de reservas del usuario.
-
 Divide la información en:
 
 - Reservas activas.
@@ -548,16 +515,19 @@ Una reserva que no se inicia dentro del margen permitido pasa automáticamente a
 ## `CargaActivaPage.tsx`
 
 Pantalla utilizada mientras una sesión de carga está en curso.
-
 Muestra información como:
 
 - Hora de inicio.
 - Tiempo transcurrido.
-- Potencia.
-- Energía consumida.
-- Tiempo estimado.
+- Potencia actual.
+- Energía suministrada.
+- Tiempo restante estimado.
+- Hora prevista de finalización.
+- Progreso de la sesión.
 
-Permite finalizar la carga.
+Permite finalizar manualmente la carga antes de la hora prevista.
+También controla el final automático de la sesión cuando se alcanza `fechaHoraFinPrevista`.
+Los cálculos de tiempo y energía se limitan al final previsto para evitar que una sesión continúe acumulando datos después de terminar su franja.
 
 ---
 
@@ -566,13 +536,18 @@ Permite finalizar la carga.
 ## `CargasPage.tsx`
 
 Pantalla de historial de cargas.
-
 Muestra:
 
 - Cargas realizadas.
 - Energía total.
+- Energía acumulada durante el mes.
 - Tiempo acumulado.
+- Coste estimado cuando exista tarifa.
 - Información de cada sesión.
+
+Mientras existe una carga activa, la página vuelve a consultar los datos periódicamente para reflejar automáticamente los cambios realizados en Supabase.
+También actualiza la información cuando el usuario vuelve a la pestaña del navegador.
+De esta forma, cuando una carga termina automáticamente, la fila pasa de `En curso` a finalizada sin necesidad de abrir la sesión de carga.
 
 ---
 
@@ -581,9 +556,7 @@ Muestra:
 ## `PerfilPage.tsx`
 
 Pantalla con los datos del usuario y del vehículo.
-
 Permite consultar y modificar la información autorizada.
-
 Utiliza `usersService.ts` para gestionar los datos del vehículo.
 
 ---
@@ -593,7 +566,6 @@ Utiliza `usersService.ts` para gestionar los datos del vehículo.
 ## `AyudaPage.tsx`
 
 Pantalla informativa sobre el funcionamiento de CargaQuer.
-
 Explica aspectos relacionados con:
 
 - Reservas.
@@ -613,9 +585,7 @@ Contiene todas las pantallas exclusivas del administrador.
 ## `AdministracionPage.tsx`
 
 Pantalla principal del panel administrativo.
-
 Muestra un resumen del servicio.
-
 Incluye información como:
 
 - Usuarios registrados.
@@ -633,7 +603,6 @@ Incluye información como:
 ## `UsuariosPage.tsx`
 
 Gestión de usuarios.
-
 Muestra:
 
 - Nombre.
@@ -656,7 +625,6 @@ Los valores protegidos del DNI se muestran abreviados para mantener la tabla leg
 ## `ValidacionesPage.tsx`
 
 Muestra las solicitudes de registro pendientes.
-
 El administrador puede:
 
 - Revisar la solicitud.
@@ -670,7 +638,6 @@ La aceptación utiliza el flujo de solicitudes almacenado en Supabase.
 ## `CargadoresAdminPage.tsx`
 
 Pantalla administrativa de cargadores.
-
 Muestra las tomas agrupadas por cargador.
 
 Incluye:
@@ -690,7 +657,6 @@ Incluye:
 ## `IncidenciasAdminPage.tsx`
 
 Pantalla de incidencias.
-
 Muestra:
 
 - Cargador afectado.
@@ -743,7 +709,6 @@ Comprueba que:
 ## `AdminRoute.tsx`
 
 Protege las rutas administrativas.
-
 Solo permite el acceso a usuarios con rol de administrador.
 
 ---
@@ -751,7 +716,6 @@ Solo permite el acceso a usuarios con rol de administrador.
 # 📁 src/services/
 
 Contiene la comunicación con Supabase y la lógica de acceso a datos.
-
 Las páginas utilizan estos servicios para evitar realizar consultas directamente desde los componentes.
 
 ---
@@ -864,6 +828,10 @@ Permite:
 - Iniciar una carga.
 - Finalizar una carga.
 - Actualizar la reserva asociada al terminar.
+
+También controla los cálculos de tiempo y energía de las cargas.
+Cuando una carga supera su hora prevista, los cálculos se limitan a `fechaHoraFinPrevista`.
+Esto evita que una sesión siga acumulando duración o energía después de finalizar su franja reservada.
 
 ---
 
@@ -1314,17 +1282,30 @@ Estas funciones se ejecutan en Supabase y permiten realizar procesos que no debe
 
 ### `index.ts`
 
-Gestiona los avisos de correo relacionados con CargaQuer.
+Gestiona los avisos de correo y determinados procesos automáticos de CargaQuer.
 
 Procesa información de `avisos_email` y utiliza el servicio de correo configurado en Supabase.
 
 Entre los avisos previstos se encuentran:
 
 - Aviso previo al inicio de una reserva.
-- Aviso previo al final.
+- Aviso previo al final de una carga.
 - Avisos relacionados con aprobaciones.
 
-También registra el resultado del envío para evitar duplicados.
+Cuando la función es ejecutada desde el proceso automático también puede:
+
+- Caducar reservas que no se han iniciado dentro del margen permitido.
+- Finalizar cargas que han alcanzado su hora prevista.
+
+El resultado del procesamiento incluye información sobre:
+
+- Reservas caducadas.
+- Cargas finalizadas.
+- Accesos aprobados.
+- Avisos de reserva enviados.
+- Avisos de fin de carga enviados.
+
+También registra el resultado de los correos para evitar envíos duplicados.
 
 ---
 
@@ -1363,6 +1344,60 @@ Incluye la lógica SQL necesaria para:
 Contiene la configuración SQL relacionada con automatizaciones y avisos.
 
 Incluye elementos necesarios para trabajar con los avisos almacenados en `avisos_email`.
+
+También contiene funciones utilizadas para:
+
+- Detectar reservas próximas.
+- Detectar cargas próximas a finalizar.
+- Caducar reservas no iniciadas.
+- Preparar información necesaria para los avisos automáticos.
+
+---
+
+## `cargaquer_finalizar_cargas_vencidas.sql`
+
+Configura la finalización automática de las sesiones de carga.
+
+Crea la función:
+
+```text
+cargaquer_finalizar_cargas_vencidas()
+```
+
+Esta función busca cargas que cumplan:
+
+```text
+estado = activa
+fecha_hora_fin_prevista <= fecha actual
+```
+
+Cuando encuentra una carga vencida:
+
+- Cambia su estado a `finalizada`.
+- Guarda `fecha_hora_fin_real` utilizando la hora prevista.
+- Calcula la energía únicamente hasta el final de la sesión.
+- Finaliza también la reserva asociada si continúa activa.
+
+También crea:
+
+```text
+cargaquer_procesar_estados_automaticos()
+```
+
+Esta función agrupa los procesos automáticos de:
+
+- Caducidad de reservas no iniciadas.
+- Finalización de cargas vencidas.
+
+El archivo habilita `pg_cron` y registra el trabajo:
+
+```text
+cargaquer-estados-automaticos
+```
+
+Este trabajo se ejecuta cada minuto.
+
+Gracias a esta automatización, las reservas y cargas pueden actualizar su estado aunque el usuario haya cerrado sesión, el navegador o la aplicación.
 
 ---
 
@@ -1486,6 +1521,20 @@ src/services/supabaseClient.ts
 ```
 
 Los valores reales se mantienen fuera del código fuente.
+
+Las Edge Functions utilizan variables configuradas como secretos dentro de Supabase.
+
+Entre ellas:
+
+```text
+SUPABASE_URL
+SUPABASE_SERVICE_ROLE_KEY
+RESEND_API_KEY
+EMAIL_FROM
+CRON_SECRET
+```
+
+Estos valores tampoco deben almacenarse directamente en el repositorio.
 
 ---
 
@@ -1666,12 +1715,18 @@ Inicio de carga
        ▼
 Carga activa
        │
-       ▼
-Finalizar carga
+       ├── Finalización manual
        │
-       ▼
-Histórico de cargas
+       └── Finalización automática
+                │
+                ▼
+       Histórico de cargas
 ```
+
+La carga puede finalizar de dos formas:
+
+- Manualmente, si el usuario termina antes de la hora prevista.
+- Automáticamente, cuando alcanza el final de la reserva.
 
 La reserva y la carga se almacenan de forma separada.
 
@@ -1681,6 +1736,66 @@ Esto permite mantener:
 - Estado real de la sesión.
 - Histórico de utilización.
 - Estadísticas.
+
+---
+
+# 📌 Automatización de estados
+
+CargaQuer utiliza procesos automáticos en Supabase para mantener actualizados los estados de reservas y cargas.
+
+La automatización principal utiliza `pg_cron`.
+
+Cada minuto se ejecuta:
+
+```text
+cargaquer_procesar_estados_automaticos()
+```
+
+Esta función ejecuta dos procesos:
+
+```text
+cargaquer_caducar_reservas_no_iniciadas()
+cargaquer_finalizar_cargas_vencidas()
+```
+
+## Caducidad de reservas
+
+Si una reserva confirmada no inicia una carga dentro de los 15 minutos permitidos:
+
+```text
+confirmada → caducada
+```
+
+La franja deja de bloquear la toma y vuelve a quedar disponible para otros usuarios.
+
+## Finalización de cargas
+
+Si una carga activa alcanza su hora prevista:
+
+```text
+activa → finalizada
+```
+
+La finalización utiliza la hora prevista como límite.
+
+Esto evita que una carga continúe acumulando:
+
+- Tiempo.
+- Energía.
+- Estadísticas.
+
+después de terminar su franja.
+
+La automatización funciona aunque:
+
+- El usuario cierre sesión.
+- Cierre el navegador.
+- Cierre la aplicación.
+- No vuelva a entrar en la pantalla de carga.
+
+El frontend mantiene además comprobaciones adicionales para reflejar estos cambios correctamente en la interfaz.
+
+Mientras existe una carga activa, `CargasPage.tsx` consulta periódicamente los datos para detectar el cambio de estado y actualizar automáticamente el historial.
 
 ---
 
@@ -1723,85 +1838,3 @@ La aplicación sigue esta organización:
 
 ---
 
-# 📌 Archivos principales de la raíz
-
-## `index.html`
-
-Documento HTML base utilizado por Vite.
-
-Contiene el elemento donde React monta la aplicación.
-
----
-
-## `package.json`
-
-Define:
-
-- Información básica del proyecto.
-- Dependencias.
-- Dependencias de desarrollo.
-- Scripts de npm.
-
----
-
-## `package-lock.json`
-
-Guarda las versiones exactas de las dependencias instaladas.
-
-Permite reproducir la misma instalación en otros equipos.
-
----
-
-## `vite.config.ts`
-
-Configuración de Vite.
-
-Define la configuración utilizada durante desarrollo y compilación.
-
----
-
-## `tsconfig.json`
-
-Configuración general de TypeScript.
-
----
-
-## `tsconfig.app.json`
-
-Configuración TypeScript utilizada por el código del frontend.
-
----
-
-## `tsconfig.node.json`
-
-Configuración TypeScript utilizada por los archivos que se ejecutan en entorno Node, como la configuración de Vite.
-
----
-
-## `.gitignore`
-
-Define los archivos y carpetas que Git no debe subir al repositorio.
-
-Entre ellos:
-
-```text
-node_modules
-dist
-.env.local
-.DS_Store
-supabase/.temp
-```
-
----
-
-## `README.md`
-
-Documento principal visible desde GitHub.
-
-Se utiliza como presentación general del proyecto.
-
----
-
-## `DOCUMENTACION_PROYECTO.md`
-
-Documento técnico que describe la estructura interna de CargaQuer y la responsabilidad de sus carpetas y archivos.
