@@ -127,6 +127,7 @@ Supabase
           │
           ▼
      Automatizaciones
+```
 
 ---
 
