@@ -8,6 +8,12 @@ La aplicación plantea una solución sencilla para que los vecinos puedan consul
 
 > Proyecto desarrollado como aplicación web completa, desde el diseño de la interfaz hasta la integración con backend, base de datos y automatizaciones.
 
+### 🌐 Demo
+
+La aplicación está desplegada en Netlify y puede probarse desde:
+
+👉 **[Abrir CargaQuer](https://cargaquer.netlify.app/)**
+
 ---
 
 ## 🎯 ¿Qué problema intenta resolver?
