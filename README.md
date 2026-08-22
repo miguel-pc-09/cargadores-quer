@@ -1,32 +1,124 @@
-# React + TypeScript + Vite
+# ⚡ CargaQuer
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+**CargaQuer** es una aplicación web para la gestión de reservas y sesiones de carga de vehículos eléctricos en puntos de carga municipales.
 
-Currently, two official plugins are available:
+El proyecto nace a partir de una situación real: la necesidad de organizar el uso compartido de cargadores públicos cuando varios usuarios necesitan utilizar las mismas tomas.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+La aplicación plantea una solución sencilla para que los vecinos puedan consultar los cargadores disponibles, reservar una toma, iniciar su sesión de carga y consultar posteriormente su actividad, mientras que la administración dispone de herramientas para gestionar usuarios, cargadores e incidencias.
 
-## React Compiler
+> Proyecto desarrollado como aplicación web completa, desde el diseño de la interfaz hasta la integración con backend, base de datos y automatizaciones.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+---
 
-## Expanding the Oxlint configuration
+## 🎯 ¿Qué problema intenta resolver?
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+Cuando varios usuarios utilizan los mismos cargadores municipales pueden aparecer situaciones como:
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
-```
+- No saber si una toma está disponible.
+- Coincidir varios vehículos en el mismo cargador.
+- No conocer durante cuánto tiempo estará ocupado.
+- Tener que organizar los turnos de forma manual.
+- No disponer de un historial de utilización.
+- Dificultad para gestionar usuarios e incidencias desde la administración.
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+**CargaQuer centraliza este proceso en una única aplicación.**
+
+El usuario puede reservar previamente una franja horaria y consultar el estado de los cargadores antes de desplazarse hasta ellos.
+
+---
+
+## ⚡ Funcionamiento
+
+El flujo principal de utilización es sencillo:
+
+**Cargador → Toma → Reserva → Carga → Histórico**
+
+El usuario puede consultar los diferentes puntos de carga y comprobar el estado de sus tomas.
+
+Una vez seleccionada una toma puede reservar una franja disponible, con intervalos de 30 minutos y una duración máxima de 4 horas.
+
+Cuando llega el momento de la reserva puede iniciar la carga y consultar durante la sesión información como:
+
+- Tiempo transcurrido.
+- Energía suministrada.
+- Potencia actual.
+- Hora prevista de finalización.
+- Tiempo restante.
+- Progreso de la sesión.
+
+Al finalizar, la sesión pasa automáticamente al histórico de cargas.
+
+---
+
+## 🖥️ Vista general
+
+
+![Panel principal de CargaQuer](docs/capturas/inicio.png)
+
+El panel principal permite consultar rápidamente el estado de la cuenta, las próximas reservas, la actividad reciente y acceder a las principales funciones de la aplicación.
+
+---
+
+## 🔌 Gestión de cargadores y reservas
+
+![Cargadores y reservas](docs/capturas/cargadores.png)
+
+Los usuarios pueden consultar los cargadores municipales, acceder a cada una de sus tomas y comprobar su disponibilidad antes de realizar una reserva.
+
+El sistema controla los horarios ocupados, los solapamientos y las reservas existentes para evitar que dos usuarios puedan reservar la misma toma durante el mismo periodo.
+
+---
+
+## 🔋 Sesiones de carga
+
+![Sesión de carga](docs/capturas/carga-activa.png)
+
+Durante una sesión activa se muestra la información principal de la carga y su evolución.
+
+Las sesiones pueden finalizarse manualmente o alcanzar automáticamente su hora prevista de finalización.
+
+Una vez terminadas quedan registradas en **Mis cargas**, permitiendo mantener un histórico de utilización y calcular estadísticas de consumo y tiempo.
+
+---
+
+## 🛡️ Administración
+
+![Panel de administración](docs/capturas/administracion.png)
+
+CargaQuer también dispone de un área independiente para la administración del servicio.
+
+Desde ella es posible consultar y gestionar:
+
+- Usuarios.
+- Solicitudes de alta.
+- Cargadores y tomas.
+- Incidencias.
+- Estadísticas de utilización.
+- Consumo energético.
+- Actividad reciente.
+
+Los nuevos usuarios pasan por un proceso de validación antes de poder acceder al servicio.
+
+---
+
+## 🧩 Arquitectura
+
+La aplicación está organizada separando las diferentes responsabilidades del proyecto:
+
+```text
+Frontend
+   │
+   │ React + TypeScript
+   ▼
+Servicios de la aplicación
+   │
+   │ Supabase JavaScript Client
+   ▼
+Supabase
+   ├── Authentication
+   ├── PostgreSQL
+   ├── RPC / funciones SQL
+   └── Edge Functions
+          │
+          ▼
+     Automatizaciones
