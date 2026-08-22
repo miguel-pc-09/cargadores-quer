@@ -1,6 +1,6 @@
 import { useContext } from "react";
 
-import { AuthContext } from "../context/AuthContext";
+import { AuthContext } from "../context/AuthContextBase";
 
 // Hook para acceder a la sesión del usuario.
 function useAuth() {

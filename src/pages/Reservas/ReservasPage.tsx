@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 
 import { Link } from "react-router-dom";
 
@@ -16,14 +16,18 @@ import type { Carga } from "../../types/carga";
 import type { Cargador } from "../../types/charger";
 import type { EstadoReserva, Reserva } from "../../types/reservation";
 
+import { formatearDuracionReserva } from "../../utils/formateadores";
+
 import "../../styles/Reservas/ReservasPage.css";
 
 type PestanaReservas = "activas" | "historico";
 
+// Crea una fecha completa con día y hora.
 function crearFechaHora(fecha: string, hora: string) {
   return new Date(`${fecha}T${hora}:00`);
 }
 
+// Función para formatear fecha y hora.
 function formatearFechaHora(fecha: string, hora: string) {
   const fechaHora = crearFechaHora(fecha, hora);
 
@@ -36,22 +40,7 @@ function formatearFechaHora(fecha: string, hora: string) {
   }).format(fechaHora);
 }
 
-function formatearDuracion(minutosTotales: number) {
-  const horas = Math.floor(minutosTotales / 60);
-
-  const minutos = minutosTotales % 60;
-
-  if (horas === 0) {
-    return `${minutos} min`;
-  }
-
-  if (minutos === 0) {
-    return `${horas} ${horas === 1 ? "hora" : "horas"}`;
-  }
-
-  return `${horas} h ${minutos} min`;
-}
-
+// Función para obtener el texto del estado.
 function obtenerTextoEstado(estado: EstadoReserva) {
   const textos: Record<EstadoReserva, string> = {
     confirmada: "Próxima",
@@ -64,6 +53,7 @@ function obtenerTextoEstado(estado: EstadoReserva) {
   return textos[estado];
 }
 
+// Función para obtener los datos del cargador.
 function obtenerDatosCargador(reserva: Reserva, cargadores: Cargador[]) {
   const cargador = cargadores.find(
     (cargadorActual) => cargadorActual.id === reserva.cargadorId,
@@ -84,28 +74,38 @@ function ReservasPage() {
 
   const usuarioId = usuario?.id ?? "";
 
+  // Estado para guardar las reservas.
   const [reservas, setReservas] = useState<Reserva[]>([]);
 
+  // Estado para guardar los cargadores.
   const [cargadores, setCargadores] = useState<Cargador[]>([]);
 
+  // Estado para guardar las cargas.
   const [cargas, setCargas] = useState<Carga[]>([]);
 
+  // Estado para controlar la pestaña activa.
   const [pestanaActiva, setPestanaActiva] =
     useState<PestanaReservas>("activas");
 
+  // Estado para controlar la carga.
   const [cargando, setCargando] = useState(true);
 
+  // Estado para guardar errores.
   const [mensajeError, setMensajeError] = useState("");
 
+  // Estado para guardar mensajes.
   const [mensajeExito, setMensajeExito] = useState("");
 
+  // Estado para guardar la reserva pendiente de cancelar.
   const [reservaPendienteCancelar, setReservaPendienteCancelar] = useState<
     string | null
   >(null);
 
+  // Estado para guardar la reserva en proceso.
   const [cancelandoId, setCancelandoId] = useState<string | null>(null);
 
-  const cargarReservas = async () => {
+  // Función para cargar las reservas.
+  const cargarReservas = useCallback(async () => {
     if (!usuarioId) {
       setReservas([]);
       setCargadores([]);
@@ -136,11 +136,12 @@ function ReservasPage() {
     } finally {
       setCargando(false);
     }
-  };
+  }, [usuarioId]);
 
+  // Carga las reservas al cambiar de usuario.
   useEffect(() => {
     void cargarReservas();
-  }, [usuarioId]);
+  }, [cargarReservas]);
 
   const reservasActivas = useMemo(
     () =>
@@ -177,6 +178,7 @@ function ReservasPage() {
   const reservasMostradas =
     pestanaActiva === "activas" ? reservasActivas : reservasHistoricas;
 
+  // Función para solicitar una cancelación.
   const solicitarCancelacion = (reservaId: string) => {
     setReservaPendienteCancelar(reservaId);
 
@@ -184,6 +186,7 @@ function ReservasPage() {
     setMensajeError("");
   };
 
+  // Función para cerrar la confirmación.
   const cerrarConfirmacionCancelacion = () => {
     if (cancelandoId) {
       return;
@@ -192,6 +195,7 @@ function ReservasPage() {
     setReservaPendienteCancelar(null);
   };
 
+  // Función para confirmar una cancelación.
   const confirmarCancelacion = async (reservaId: string) => {
     if (!usuarioId) {
       setMensajeError("No se ha podido identificar al usuario.");
@@ -350,6 +354,7 @@ function ReservasPage() {
                   ? `/panel/cargas/${cargaActiva.id}`
                   : `/panel/cargadores/${reserva.cargadorId}?reservaId=${reserva.id}`;
 
+                // Comprueba si la reserva puede cancelarse.
                 const puedeCancelar = reserva.estado === "confirmada";
 
                 const estaConfirmandoCancelacion =
@@ -386,7 +391,7 @@ function ReservasPage() {
                       </td>
 
                       <td className="mis-reservas__duracion">
-                        {formatearDuracion(reserva.duracionMinutos)}
+                        {formatearDuracionReserva(reserva.duracionMinutos)}
                       </td>
 
                       <td>

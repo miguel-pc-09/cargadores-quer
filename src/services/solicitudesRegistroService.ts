@@ -41,7 +41,7 @@ const DEMO_VALIDACIONES: ValidacionPendiente[] = [
 
     apellidos: "García Martín",
 
-    dniProtegido: "Documento protegido",
+    dniProtegido: "8F3A21…C91D",
 
     email: "laura.garcia@demo.cargaquer.es",
 
@@ -57,7 +57,7 @@ const DEMO_VALIDACIONES: ValidacionPendiente[] = [
 
     apellidos: "Sánchez López",
 
-    dniProtegido: "Documento protegido",
+    dniProtegido: "4B72D8…A305",
 
     email: "javier.sanchez@demo.cargaquer.es",
 
@@ -70,19 +70,19 @@ function esDemo(solicitudId: string) {
   return solicitudId.startsWith(DEMO);
 }
 
-// Formatea el documento protegido.
+// Formatea el DNI protegido.
 function formatearDocumentoProtegido(valor: string | null) {
   const hash = valor?.trim() ?? "";
 
   if (!hash) {
-    return "Protegido";
+    return "—";
   }
 
-  if (hash.length <= 18) {
-    return "Protegido";
+  if (hash.length <= 12) {
+    return hash;
   }
 
-  return `${hash.slice(0, 8)}…${hash.slice(-8)}`;
+  return `${hash.slice(0, 6).toUpperCase()}…${hash.slice(-4).toUpperCase()}`;
 }
 
 // Obtiene las solicitudes pendientes.
@@ -141,7 +141,6 @@ export async function aceptarValidacion(
     throw new Error(`No se ha podido aprobar la solicitud: ${error.message}`);
   }
 
-  // Procesa el aviso de aprobación.
   const { error: errorAviso } = await supabase.functions.invoke(
     "procesar-avisos",
     {

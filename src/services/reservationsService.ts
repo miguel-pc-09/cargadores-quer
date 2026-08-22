@@ -447,37 +447,6 @@ async function obtenerReservasDeTomaCompletas(
   return actualizarEstados(reservas);
 }
 
-// Lee todas las reservas de Supabase.
-async function leerReservasBaseDatos(): Promise<Reserva[]> {
-  const { data, error } = await supabase.from("reservas").select(
-    `
-        id,
-        usuario_id,
-        cargador_id,
-        toma_id,
-        fecha,
-        hora_inicio,
-        hora_fin,
-        estado,
-        creada_en,
-        actualizada_en
-      `,
-  );
-
-  if (error) {
-    throw new Error(`No se han podido cargar las reservas: ${error.message}`);
-  }
-
-  return ((data ?? []) as ReservaBaseDatos[]).map(convertirReservaBaseDatos);
-}
-
-// Obtiene todas las reservas.
-export async function obtenerReservas(): Promise<Reserva[]> {
-  const reservas = await leerReservasBaseDatos();
-
-  return actualizarEstados(reservas);
-}
-
 // Obtiene una reserva por su ID.
 export async function obtenerReservaPorId(
   reservaId: string,
@@ -726,7 +695,7 @@ export async function crearReserva(
   return convertirReservaBaseDatos(data as ReservaBaseDatos);
 }
 
-// Cancela una reserva futura.
+// Cancela una reserva confirmada.
 export async function cancelarReserva(
   reservaId: string,
   usuarioId: string,
@@ -740,15 +709,10 @@ export async function cancelarReserva(
   if (
     reservaEncontrada.estado === "activa" ||
     reservaEncontrada.estado === "finalizada" ||
+    reservaEncontrada.estado === "cancelada" ||
     reservaEncontrada.estado === "caducada"
   ) {
     throw new Error("Esta reserva ya no puede cancelarse.");
-  }
-
-  const inicio = obtenerInicioReserva(reservaEncontrada);
-
-  if (Date.now() >= inicio.getTime()) {
-    throw new Error("La reserva ya ha comenzado y no puede cancelarse.");
   }
 
   const { data, error } = await supabase
@@ -760,6 +724,7 @@ export async function cancelarReserva(
     })
     .eq("id", reservaId)
     .eq("usuario_id", usuarioId)
+    .eq("estado", "confirmada")
     .select(
       `
           id,
@@ -855,54 +820,6 @@ export async function marcarReservaComoActiva(
 
   if (error) {
     throw new Error(`No se ha podido iniciar la reserva: ${error.message}`);
-  }
-
-  return convertirReservaBaseDatos(data as ReservaBaseDatos);
-}
-
-// Marca una reserva como finalizada.
-export async function marcarReservaComoFinalizada(
-  reservaId: string,
-  usuarioId: string,
-): Promise<Reserva> {
-  const reservaEncontrada = await obtenerReservaPorId(reservaId, usuarioId);
-
-  if (!reservaEncontrada) {
-    throw new Error("No se ha encontrado la reserva.");
-  }
-
-  if (reservaEncontrada.estado !== "activa") {
-    throw new Error("Esta reserva no tiene una carga activa.");
-  }
-
-  const { data, error } = await supabase
-    .from("reservas")
-    .update({
-      estado: "finalizada",
-
-      actualizada_en: new Date().toISOString(),
-    })
-    .eq("id", reservaId)
-    .eq("usuario_id", usuarioId)
-    .eq("estado", "activa")
-    .select(
-      `
-          id,
-          usuario_id,
-          cargador_id,
-          toma_id,
-          fecha,
-          hora_inicio,
-          hora_fin,
-          estado,
-          creada_en,
-          actualizada_en
-        `,
-    )
-    .single();
-
-  if (error) {
-    throw new Error(`No se ha podido finalizar la reserva: ${error.message}`);
   }
 
   return convertirReservaBaseDatos(data as ReservaBaseDatos);

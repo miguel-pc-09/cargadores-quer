@@ -1,16 +1,5 @@
 import { supabase } from "./supabaseClient";
 
-// Datos de una validación pendiente.
-export interface ValidacionPendiente {
-  vehiculoId: string;
-  usuarioId: string;
-  nombre: string;
-  apellidos: string;
-  dni: string;
-  email: string;
-  matricula: string;
-}
-
 // Datos de un usuario en administración.
 export interface UsuarioAdministracion {
   id: string;
@@ -76,24 +65,6 @@ export interface ResumenAdministracion {
   cargadores: number;
   tomas: number;
   movimientos: MovimientoAdministracion[];
-}
-
-// Perfil usado en validaciones.
-interface PerfilValidacionBD {
-  id: string;
-  nombre: string | null;
-  apellidos: string | null;
-  dni: string | null;
-  email: string | null;
-  estado_cuenta: string;
-}
-
-// Vehículo usado en validaciones.
-interface VehiculoValidacionBD {
-  id: string;
-  usuario_id: string;
-  matricula: string;
-  perfiles: PerfilValidacionBD | PerfilValidacionBD[] | null;
 }
 
 // Perfil de usuario en la base de datos.
@@ -170,28 +141,6 @@ interface TomaIncidenciaBD {
 
 // Prefijo para los datos de demostración.
 const DEMO = "demo-admin-";
-
-// Validaciones de demostración.
-const DEMO_VALIDACIONES: ValidacionPendiente[] = [
-  {
-    vehiculoId: DEMO + "vehiculo-1",
-    usuarioId: DEMO + "usuario-1",
-    nombre: "Laura",
-    apellidos: "García Martín",
-    dni: "12345678A",
-    email: "laura.garcia@demo.cargaquer.es",
-    matricula: "1234LGM",
-  },
-  {
-    vehiculoId: DEMO + "vehiculo-2",
-    usuarioId: DEMO + "usuario-2",
-    nombre: "Javier",
-    apellidos: "Sánchez López",
-    dni: "23456789B",
-    email: "javier.sanchez@demo.cargaquer.es",
-    matricula: "5678JSL",
-  },
-];
 
 // Usuarios de demostración.
 const DEMO_USUARIOS: UsuarioAdministracion[] = [
@@ -490,12 +439,6 @@ const DEMO_MOVIMIENTOS: MovimientoAdministracion[] = [
 // Comprueba si un dato es de demostración.
 const esDemo = (id: string) => id.startsWith(DEMO);
 
-// Obtiene el perfil asociado al vehículo.
-const obtenerPerfil = (
-  perfiles: VehiculoValidacionBD["perfiles"],
-): PerfilValidacionBD | null =>
-  Array.isArray(perfiles) ? (perfiles[0] ?? null) : perfiles;
-
 // Convierte un texto en fecha.
 const obtenerFecha = (texto: string | null) => (texto ? new Date(texto) : null);
 
@@ -519,148 +462,6 @@ const obtenerInicioSemana = (fecha: Date) => {
   return inicio;
 };
 
-// Obtiene las validaciones pendientes.
-export async function obtenerValidacionesPendientes(): Promise<
-  ValidacionPendiente[]
-> {
-  const { data, error } = await supabase
-    .from("vehiculos")
-    .select(
-      `
-        id,
-        usuario_id,
-        matricula,
-        estado_validacion,
-        perfiles (
-          id,
-          nombre,
-          apellidos,
-          dni,
-          email,
-          estado_cuenta
-        )
-      `,
-    )
-    .eq("estado_validacion", "pendiente");
-
-  if (error) {
-    throw new Error(
-      `No se han podido cargar las validaciones: ${error.message}`,
-    );
-  }
-
-  // Prepara los datos de cada validación.
-  const resultado = ((data ?? []) as VehiculoValidacionBD[])
-    .map((vehiculo) => {
-      const perfil = obtenerPerfil(vehiculo.perfiles);
-
-      if (!perfil) {
-        return null;
-      }
-
-      return {
-        vehiculoId: vehiculo.id,
-        usuarioId: vehiculo.usuario_id,
-        nombre: perfil.nombre?.trim() || "Sin nombre",
-        apellidos: perfil.apellidos?.trim() || "",
-        dni: perfil.dni?.trim() || "—",
-        email: perfil.email?.trim() || "—",
-        matricula: vehiculo.matricula?.trim() || "—",
-      };
-    })
-    .filter(
-      (validacion): validacion is ValidacionPendiente => validacion !== null,
-    );
-
-  return resultado.length ? resultado : [...DEMO_VALIDACIONES];
-}
-
-// Acepta una validación pendiente.
-export async function aceptarValidacion(
-  validacion: ValidacionPendiente,
-): Promise<void> {
-  if (esDemo(validacion.vehiculoId)) {
-    return;
-  }
-
-  const ahora = new Date().toISOString();
-
-  // Valida el vehículo.
-  const { error: errorVehiculo } = await supabase
-    .from("vehiculos")
-    .update({
-      estado_validacion: "validado",
-      motivo_rechazo: null,
-      actualizado_en: ahora,
-    })
-    .eq("id", validacion.vehiculoId)
-    .eq("usuario_id", validacion.usuarioId);
-
-  if (errorVehiculo) {
-    throw new Error(
-      `No se ha podido validar el vehículo: ${errorVehiculo.message}`,
-    );
-  }
-
-  // Activa la cuenta del usuario.
-  const { error: errorPerfil } = await supabase
-    .from("perfiles")
-    .update({
-      estado_cuenta: "verificada",
-      actualizado_en: ahora,
-    })
-    .eq("id", validacion.usuarioId);
-
-  if (errorPerfil) {
-    throw new Error(
-      `El vehículo se ha validado, pero no se ha podido activar la cuenta: ${errorPerfil.message}`,
-    );
-  }
-}
-
-// Rechaza una validación pendiente.
-export async function rechazarValidacion(
-  validacion: ValidacionPendiente,
-): Promise<void> {
-  if (esDemo(validacion.vehiculoId)) {
-    return;
-  }
-
-  const ahora = new Date().toISOString();
-
-  // Rechaza el vehículo.
-  const { error: errorVehiculo } = await supabase
-    .from("vehiculos")
-    .update({
-      estado_validacion: "rechazado",
-      motivo_rechazo: "Validación rechazada por el Ayuntamiento.",
-      actualizado_en: ahora,
-    })
-    .eq("id", validacion.vehiculoId)
-    .eq("usuario_id", validacion.usuarioId);
-
-  if (errorVehiculo) {
-    throw new Error(
-      `No se ha podido rechazar la validación: ${errorVehiculo.message}`,
-    );
-  }
-
-  // Bloquea la cuenta del usuario.
-  const { error: errorPerfil } = await supabase
-    .from("perfiles")
-    .update({
-      estado_cuenta: "bloqueada",
-      actualizado_en: ahora,
-    })
-    .eq("id", validacion.usuarioId);
-
-  if (errorPerfil) {
-    throw new Error(
-      `La matrícula se ha rechazado, pero no se ha podido bloquear la cuenta: ${errorPerfil.message}`,
-    );
-  }
-}
-
 // Obtiene los usuarios de administración.
 export async function obtenerUsuariosAdministracion(): Promise<
   UsuarioAdministracion[]
@@ -671,10 +472,12 @@ export async function obtenerUsuariosAdministracion(): Promise<
         .from("perfiles")
         .select("id,nombre,apellidos,dni,email,estado_cuenta")
         .eq("rol", "usuario")
-        .in("estado_cuenta", ["verificada", "bloqueada"])
         .order("nombre", { ascending: true }),
 
-      supabase.from("vehiculos").select("usuario_id,matricula"),
+      supabase
+        .from("vehiculos")
+        .select("usuario_id,matricula")
+        .order("creado_en", { ascending: true }),
 
       supabase.from("cargas").select("usuario_id,energia_consumida_kwh"),
     ]);
@@ -987,9 +790,8 @@ export async function obtenerIncidenciasAdministracion(): Promise<
 
 // Obtiene el resumen de administración.
 export async function obtenerResumenAdministracion(): Promise<ResumenAdministracion> {
-  const [usuarios, validaciones, tomas, incidencias] = await Promise.all([
+  const [usuarios, tomas, incidencias] = await Promise.all([
     obtenerUsuariosAdministracion(),
-    obtenerValidacionesPendientes(),
     obtenerCargadoresAdministracion(),
     obtenerIncidenciasAdministracion(),
   ]);
@@ -1019,7 +821,7 @@ export async function obtenerResumenAdministracion(): Promise<ResumenAdministrac
     usuariosActivos: activos,
     cargasRealizadas: cargas,
     energiaSuministradaKwh: Number(energia.toFixed(2)),
-    validacionesPendientes: validaciones.length,
+    validacionesPendientes: 0,
     incidenciasAbiertas: incidencias.length,
     cargadores,
     tomas: tomas.length,

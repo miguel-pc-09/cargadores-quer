@@ -9,19 +9,40 @@ import {
 
 import "../../styles/Administracion/UsuariosPage.css";
 
+// Función para obtener el nombre completo.
 function obtenerNombreCompleto(usuario: UsuarioAdministracion) {
   return `${usuario.nombre} ${usuario.apellidos}`.trim();
 }
 
+// Función para formatear el DNI protegido.
+function formatearDniProtegido(valor: string) {
+  const dni = valor.trim();
+
+  if (!dni || dni === "—") {
+    return "—";
+  }
+
+  if (dni.length <= 12) {
+    return dni;
+  }
+
+  return `${dni.slice(0, 6).toUpperCase()}…${dni.slice(-4).toUpperCase()}`;
+}
+
 function UsuariosPage() {
+  // Estado para guardar los usuarios.
   const [usuarios, setUsuarios] = useState<UsuarioAdministracion[]>([]);
 
+  // Estado para controlar la carga.
   const [cargando, setCargando] = useState(true);
 
+  // Estado para guardar el usuario en proceso.
   const [procesandoId, setProcesandoId] = useState<string | null>(null);
 
+  // Estado para guardar errores.
   const [error, setError] = useState("");
 
+  // Función para cargar los usuarios.
   const cargarUsuarios = useCallback(async () => {
     try {
       setCargando(true);
@@ -42,10 +63,12 @@ function UsuariosPage() {
     }
   }, []);
 
+  // Carga los usuarios al abrir la pantalla.
   useEffect(() => {
     void cargarUsuarios();
   }, [cargarUsuarios]);
 
+  // Función para cambiar el estado de un usuario.
   async function cambiarEstadoUsuario(usuario: UsuarioAdministracion) {
     if (procesandoId) {
       return;
@@ -140,12 +163,19 @@ function UsuariosPage() {
               <thead>
                 <tr>
                   <th>Nombre</th>
+
                   <th>DNI / NIE</th>
+
                   <th>Correo</th>
+
                   <th>Matrícula</th>
+
                   <th>Nº cargas</th>
+
                   <th>Consumo</th>
+
                   <th>Estado</th>
+
                   <th>Acción</th>
                 </tr>
               </thead>
@@ -159,8 +189,10 @@ function UsuariosPage() {
                   </tr>
                 ) : (
                   usuarios.map((usuario) => {
+                    // Comprueba si el usuario está bloqueado.
                     const bloqueado = usuario.estadoCuenta === "bloqueada";
 
+                    // Comprueba si el usuario se está procesando.
                     const procesando = procesandoId === usuario.id;
 
                     return (
@@ -169,7 +201,7 @@ function UsuariosPage() {
                           <strong>{obtenerNombreCompleto(usuario)}</strong>
                         </td>
 
-                        <td>{usuario.dni}</td>
+                        <td>{formatearDniProtegido(usuario.dni)}</td>
 
                         <td>{usuario.email}</td>
 

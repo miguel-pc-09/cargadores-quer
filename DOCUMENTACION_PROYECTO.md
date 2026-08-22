@@ -1,103 +1,171 @@
 # 📂 Estructura del proyecto
 
-Este documento explica la función de cada carpeta y archivo principal del proyecto.
+Este documento explica la función de cada carpeta y archivo principal de **CargaQuer**.
+
+Su objetivo es facilitar la comprensión del proyecto a cualquier desarrollador que necesite revisarlo, mantenerlo o continuar su desarrollo.
+
+---
+
+# 📑 Índice
+
+- [📁 public/](#-public)
+- [📁 src/](#-src)
+  - [components/](#-srccomponents)
+  - [context/](#-srccontext)
+  - [hooks/](#-srchooks)
+  - [data/](#-srcdata)
+  - [layouts/](#-srclayouts)
+  - [pages/](#-srcpages)
+  - [router/](#-srcrouter)
+  - [services/](#-srcservices)
+  - [types/](#-srctypes)
+  - [utils/](#-srcutils)
+  - [styles/](#-srcstyles)
+- [📁 supabase/](#-supabase)
+  - [Edge Functions](#-supabasefunctions)
+  - [Migraciones](#-supabasemigrations)
+- [📌 Tablas principales de Supabase](#-tablas-principales-de-supabase)
+- [📌 Variables de entorno](#-variables-de-entorno)
+- [📌 Organización de rutas](#-organización-de-rutas)
+- [📌 Flujo de autenticación](#-flujo-de-autenticación)
+- [📌 Flujo de registro](#-flujo-de-registro)
+- [📌 Flujo de una reserva](#-flujo-de-una-reserva)
+- [📌 Estados de reserva](#-estados-de-reserva)
+- [📌 Flujo de carga](#-flujo-de-carga)
+- [📌 Datos DEMO](#-datos-demo)
+- [📌 Separación general del proyecto](#-separación-general-del-proyecto)
+- [📌 Archivos principales de la raíz](#-archivos-principales-de-la-raíz)
+
+---
+
+# 📁 public/
+
+Contiene archivos estáticos que se copian directamente a la versión final de la aplicación.
+
+No contiene lógica de React.
+
+## `_redirects`
+
+Configuración utilizada por Netlify para que las rutas internas de React Router funcionen correctamente al actualizar la página o acceder directamente a una URL.
+
+Contenido:
+
+```text
+/* /index.html 200
+```
+
+Esto evita errores 404 en rutas como:
+
+```text
+/panel/cargadores
+/panel/mis-reservas
+/administracion/usuarios
+```
+
+## `favicon.svg`
+
+Icono principal utilizado por el navegador.
+
+## `icons.svg`
+
+Archivo SVG con recursos gráficos utilizados por la aplicación.
 
 ---
 
 # 📁 src/
 
-Contiene todo el código fuente de la aplicación.
+Contiene todo el código fuente del frontend.
 
-Todo el desarrollo principal se realiza dentro de esta carpeta.
+La mayor parte del desarrollo de CargaQuer se encuentra dentro de esta carpeta.
 
----
+La estructura se divide en:
 
-# 📁 assets/
-
-Recursos estáticos de la aplicación.
-
-Puede contener:
-
-- Logos.
-- Imágenes.
-- Iconos.
-- Fuentes.
-- Archivos multimedia.
-
-No contiene lógica de la aplicación.
-
----
-
-# 📁 components/
-
-Componentes reutilizables de React.
-
-Aquí se guardan elementos que pueden utilizarse en varias páginas.
-
-Ejemplos:
-
-- Header.
-- Sidebar.
-- Botones.
-- Tarjetas.
-- Modales.
-- Loader.
-- Formularios reutilizables.
-
-## 📁 common/
-
-Componentes genéricos reutilizables en distintas partes de la aplicación.
-
-Ejemplos:
-
-- Botones.
-- Ventanas modales.
-- Indicadores de carga.
-- Mensajes de estado.
-
-## 📁 navigation/
-
-Componentes relacionados con la navegación.
-
-Ejemplos:
-
-- Header.
-- Sidebar.
-- Menú móvil.
-
-## 📁 cargadores/
-
-Componentes reutilizables relacionados con los cargadores.
-
-Ejemplos:
-
-- Tarjeta de cargador.
-- Estado de un conector.
-- Información de una toma.
+```text
+src/
+├── components/
+├── context/
+├── data/
+├── hooks/
+├── layouts/
+├── pages/
+├── router/
+├── services/
+├── styles/
+├── types/
+├── utils/
+├── App.tsx
+└── main.tsx
+```
 
 ---
 
-# 📁 layouts/
+# 📁 src/components/
 
-Plantillas generales de la aplicación.
+Contiene componentes reutilizables de React.
 
-Permiten reutilizar una misma estructura visual en varias páginas.
+Los componentes se agrupan según la parte de la aplicación donde se utilizan.
 
-## PublicLayout.tsx
+---
 
-Diseño utilizado por las páginas públicas.
+# 📁 src/components/cargadores/
 
-Ejemplos:
+Componentes relacionados con la representación de cargadores y tomas.
 
-- Login.
-- Registro.
-- Recuperar contraseña.
+## `TarjetaCargador.tsx`
 
-## PrivateLayout.tsx
+Representa visualmente un cargador dentro del listado de cargadores.
 
-Diseño utilizado por las páginas privadas del usuario.
+Muestra la información principal del cargador y permite acceder a su detalle.
 
-Ejemplos:
+## `EstadoToma.tsx`
+
+Representa visualmente el estado de una toma.
+
+Se utiliza para mostrar de forma consistente si una toma está disponible, ocupada o en otro estado.
+
+---
+
+# 📁 src/components/detalleCargador/
+
+Componentes utilizados dentro de la pantalla de detalle de un cargador.
+
+## `TarjetaTomaDetalle.tsx`
+
+Representa cada toma disponible dentro de un cargador.
+
+Muestra información como:
+
+- Nombre de la toma.
+- Estado.
+- Potencia.
+- Disponibilidad.
+- Acciones disponibles.
+
+## `EstadoConexionCargador.tsx`
+
+Muestra el estado general de conexión o disponibilidad del cargador.
+
+---
+
+# 📁 src/components/panelUsuario/
+
+Componentes reutilizados dentro del panel privado del usuario.
+
+## `BarraSuperior.tsx`
+
+Barra superior del panel de usuario.
+
+Gestiona elementos comunes como:
+
+- Información de sesión.
+- Tema visual.
+- Acciones generales.
+
+## `MenuLateral.tsx`
+
+Menú lateral de navegación.
+
+Permite acceder a:
 
 - Inicio.
 - Cargadores.
@@ -106,463 +174,1634 @@ Ejemplos:
 - Ayuda.
 - Perfil.
 
-## AdminLayout.tsx
+## `TarjetaEstado.tsx`
 
-Diseño exclusivo del panel de administración.
+Tarjeta utilizada para representar estados del usuario o del servicio.
 
----
+## `ActividadReciente.tsx`
 
-# 📁 pages/
+Muestra información sobre actividad reciente del usuario.
 
-Cada carpeta representa una página completa de la aplicación.
+## `AlertaUsuario.tsx`
 
-## 📁 Inicio/
+Representa avisos y alertas dentro del panel.
 
-### InicioPage.tsx
+## `TarjetaResumen.tsx`
 
-Pantalla principal del usuario después de iniciar sesión.
-
-Mostrará accesos rápidos a:
-
-- Cargadores.
-- Historial de cargas.
-- Reservas.
-- Ayuda.
-- Perfil.
+Tarjeta reutilizable utilizada para mostrar datos resumidos en la pantalla principal.
 
 ---
 
-## 📁 Cargadores/
+# 📁 src/components/registro/
 
-### CargadoresPage.tsx
+Componentes reutilizables utilizados en el formulario de registro.
 
-Listado de cargadores disponibles.
+## `CampoTexto.tsx`
 
-Mostrará:
+Componente reutilizable para campos de texto.
 
-- Nombre del cargador.
-- Número de conectores.
-- Estado de cada conector.
-- Acciones disponibles.
+Gestiona de forma común:
 
----
+- Etiqueta.
+- Input.
+- Error.
+- Estado del campo.
 
-## 📁 Cargas/
+## `CampoSelect.tsx`
 
-### CargasPage.tsx
+Componente reutilizable para campos de selección.
 
-Historial de todas las cargas realizadas por el usuario.
+## `FormularioUsuario.tsx`
 
----
+Agrupa los campos relacionados con los datos personales del usuario durante el registro.
 
-## 📁 Reservas/
+## `MensajeCampo.tsx`
 
-### ReservasPage.tsx
-
-Gestión de las reservas del usuario.
-
-Mostrará:
-
-- Reservas activas.
-- Historial de reservas.
+Muestra mensajes de validación asociados a los campos del formulario.
 
 ---
 
-## 📁 Ayuda/
+# 📁 src/components/reservas/
 
-### AyudaPage.tsx
+Componentes reutilizables del proceso de reserva.
 
-Explicaciones sobre el funcionamiento de la aplicación.
+## `SelectorDiaReserva.tsx`
 
-Contendrá información sobre:
+Permite seleccionar el día en el que se realizará la reserva.
 
-- Cómo reservar.
-- Cómo iniciar una carga.
-- Cómo finalizar una carga.
-- Significado de los estados.
-- Problemas frecuentes.
-- Contacto o asistencia.
+## `SelectorHoraReserva.tsx`
 
----
+Muestra los horarios disponibles de una toma.
 
-## 📁 Perfil/
+Permite seleccionar una hora teniendo en cuenta:
 
-### PerfilPage.tsx
+- Horas pasadas.
+- Reservas existentes.
+- Franjas no disponibles.
 
-Datos personales del usuario.
+## `ControlDuracionReserva.tsx`
 
-Los campos aparecerán bloqueados inicialmente.
+Permite seleccionar la duración de una reserva.
 
-El usuario deberá pulsar el botón de edición antes de modificar los datos permitidos.
+Trabaja con:
 
----
+- Incrementos de 30 minutos.
+- Duración mínima.
+- Duración máxima de 4 horas.
 
-## 📁 Login/
+## `ResumenReserva.tsx`
 
-### LoginPage.tsx
-
-Pantalla de inicio de sesión.
+Muestra el resumen final antes de confirmar una reserva.
 
 Incluye:
 
-- Email.
-- Contraseña.
-- Mostrar u ocultar contraseña.
-- Recordar sesión.
-- Recuperar contraseña.
-- Enlace al registro.
-- Validación de campos.
-- Avisos de error.
+- Cargador.
+- Toma.
+- Día.
+- Hora de inicio.
+- Hora de fin.
+- Duración.
 
 ---
 
-## 📁 Registro/
+# 📁 src/context/
 
-### RegistroPage.tsx
-
-Formulario de solicitud de alta de nuevos usuarios.
-
-Incluye:
-
-- Selección de ayuntamiento u organización.
-- Datos del vehículo.
-- Datos del usuario principal.
-- Segundo conductor opcional.
-- Aceptación del tratamiento de datos.
-- Validación de todos los campos.
-
-Después de enviar correctamente la solicitud, el usuario será redirigido al Login.
+Contiene los contextos globales de React.
 
 ---
 
-## 📁 Administracion/
+## `AuthContextBase.ts`
 
-### AdministracionPage.tsx
+Define el contexto de autenticación y su tipo.
 
-Panel exclusivo para administradores.
+Contiene:
 
-Permitirá gestionar:
+- `AuthContextValue`.
+- `AuthContext`.
 
-- Solicitudes pendientes.
-- Usuarios.
-- Ayuntamientos o empresas.
-- Cargadores.
-- Conectores.
-- Reservas.
-- Cargas.
+Está separado del proveedor para mantener correctamente la compatibilidad con Fast Refresh.
 
 ---
 
-# 📁 router/
+## `AuthContext.tsx`
 
-Gestión de todas las rutas de la aplicación.
+Contiene `AuthProvider`.
 
-Aquí se define qué página se muestra según la URL.
+Se encarga de mantener la sesión del usuario disponible para toda la aplicación.
 
-## AppRouter.tsx
+Gestiona:
 
-Contendrá la configuración principal de rutas.
-
-## PrivateRoute.tsx
-
-Controlará el acceso a páginas privadas.
-
-Solo permitirá entrar a usuarios autenticados.
-
-## AdminRoute.tsx
-
-Controlará el acceso al panel de administración.
-
-Solo permitirá entrar a usuarios administradores.
-
----
-
-# 📁 services/
-
-Contiene la comunicación con Supabase y el acceso a la base de datos.
-
-Toda llamada a la base de datos debe realizarse desde esta carpeta.
-
-## supabase.ts
-
-Configuración de la conexión con Supabase.
-
-## authService.ts
-
-Gestionará:
-
+- Usuario autenticado.
+- Estado de carga de la sesión.
 - Inicio de sesión.
 - Cierre de sesión.
-- Registro.
-- Recuperación de contraseña.
-- Sesión del usuario.
-
-## chargersService.ts
-
-Gestionará los cargadores y sus conectores.
-
-## reservationsService.ts
-
-Gestionará las reservas.
-
-## usersService.ts
-
-Gestionará los datos de los usuarios.
-
-Más adelante se podrán añadir otros servicios, por ejemplo:
-
-- `clientesService.ts`
-- `cargasService.ts`
-- `correoService.ts`
+- Rol del usuario.
+- Cambios de sesión de Supabase.
 
 ---
 
-# 📁 hooks/
+# 📁 src/hooks/
 
 Hooks personalizados de React.
 
-Contienen lógica reutilizable.
+## `useAuth.ts`
 
-## useAuth.ts
+Hook utilizado para acceder al contexto de autenticación.
 
-Gestionará el usuario autenticado y su sesión.
+Permite obtener fácilmente:
 
-## useChargers.ts
+- Usuario actual.
+- Estado de autenticación.
+- Rol.
+- Funciones de login y logout.
 
-Gestionará la carga de datos de los cargadores.
-
-## useReservations.ts
-
-Gestionará las reservas del usuario.
-
----
-
-# 📁 context/
-
-Contextos globales de React.
-
-## AuthContext.tsx
-
-Permitirá compartir la información del usuario autenticado entre distintas páginas y componentes.
+También evita utilizar `AuthContext` fuera de `AuthProvider`.
 
 ---
 
-# 📁 types/
+# 📁 src/data/
 
-Interfaces y tipos de TypeScript.
+Contiene datos locales utilizados por la aplicación.
 
-Centraliza los modelos de datos utilizados en la aplicación.
+---
 
-## auth.ts
+## `cargadores.ts`
 
-Tipos relacionados con la autenticación.
+Contiene cargadores y situaciones de demostración.
 
-## user.ts
+Estos datos se mantienen intencionadamente para que durante las pruebas puedan representarse situaciones como:
 
-Tipos generales relacionados con los usuarios.
+- Tomas ocupadas.
+- Tomas disponibles.
+- Reservas de otros usuarios.
+- Estados diferentes de cargadores.
 
-## charger.ts
+No son datos antiguos ni deben eliminarse durante la limpieza del proyecto.
 
-Tipos relacionados con cargadores y conectores.
+---
 
-## reservation.ts
+## `clientes.ts`
 
-Tipos relacionados con las reservas.
+Contiene los clientes u organizaciones disponibles en el proceso de registro.
 
-## cliente.ts
+Actualmente permite representar la entidad responsable del servicio.
 
-Define la estructura de los ayuntamientos, empresas u organizaciones que utilizan la aplicación.
+---
 
-Ejemplos de datos:
+# 📁 src/layouts/
 
-- Identificador.
+Contiene las estructuras visuales comunes utilizadas por varias páginas.
+
+---
+
+## `PrivateLayout.tsx`
+
+Layout utilizado por las páginas privadas del usuario.
+
+Incluye la estructura común del panel:
+
+- Barra superior.
+- Menú lateral.
+- Área principal de contenido.
+
+Las páginas internas se muestran dentro de este layout mediante React Router.
+
+---
+
+## `AdminLayout.tsx`
+
+Layout exclusivo del panel de administración.
+
+Mantiene la estructura y navegación administrativa separada del panel de usuario.
+
+---
+
+# 📁 src/pages/
+
+Contiene las páginas completas de la aplicación.
+
+Cada carpeta corresponde a una sección o pantalla principal.
+
+---
+
+# 📁 src/pages/Login/
+
+## `LoginPage.tsx`
+
+Pantalla de inicio de sesión.
+
+Gestiona:
+
+- Correo electrónico.
+- Contraseña.
+- Mostrar u ocultar contraseña.
+- Inicio de sesión mediante Supabase.
+- Errores de autenticación.
+- Acceso al registro.
+- Recuperación de contraseña.
+- Tema visual.
+
+Según el rol del usuario, después del acceso se redirige al panel correspondiente.
+
+---
+
+# 📁 src/pages/Registro/
+
+## `RegistroPage.tsx`
+
+Formulario de solicitud de alta.
+
+Gestiona:
+
+- Organización o cliente.
+- Matrícula.
+- Datos personales.
+- DNI/NIE.
+- Correo.
+- Teléfono.
+- Contraseña.
+- Validaciones.
+- Condiciones necesarias para enviar la solicitud.
+
+Una solicitud enviada correctamente queda pendiente de revisión administrativa.
+
+---
+
+# 📁 src/pages/RecuperarContrasena/
+
+## `RecuperarContrasenaPage.tsx`
+
+Pantalla utilizada para iniciar el proceso de recuperación de contraseña.
+
+---
+
+# 📁 src/pages/Inicio/
+
+## `InicioPage.tsx`
+
+Pantalla principal del usuario después de iniciar sesión.
+
+Muestra un resumen del estado de la cuenta y accesos rápidos a las funciones principales.
+
+Puede mostrar información relacionada con:
+
+- Cargadores.
+- Reservas.
+- Cargas.
+- Estado del usuario.
+- Actividad reciente.
+- Avisos.
+
+---
+
+# 📁 src/pages/Cargadores/
+
+## `CargadoresPage.tsx`
+
+Listado general de cargadores.
+
+Obtiene los datos mediante `chargersService.ts`.
+
+Muestra:
+
 - Nombre.
-- Tipo de entidad.
-- Correo para recibir solicitudes.
-- Estado activo o inactivo.
+- Ubicación.
+- Estado.
+- Tomas disponibles.
+- Información general.
 
-## registro.ts
+---
 
-Contiene los tipos e interfaces utilizados por el formulario de registro.
+# 📁 src/pages/DetalleCargador/
+
+## `DetalleCargadorPage.tsx`
+
+Pantalla de detalle de un cargador.
+
+Permite consultar:
+
+- Información del cargador.
+- Estado.
+- Tomas asociadas.
+- Disponibilidad.
+
+También comprueba si el usuario tiene una reserva que pueda iniciarse.
+
+---
+
+# 📁 src/pages/DetalleToma/
+
+## `DetalleTomaPage.tsx`
+
+Pantalla de información específica de una toma.
+
+Permite consultar sus datos antes de continuar hacia el proceso de reserva.
+
+---
+
+# 📁 src/pages/ReservaToma/
+
+## `ReservaTomaPage.tsx`
+
+Pantalla principal para crear una reserva.
+
+Gestiona:
+
+- Día.
+- Hora.
+- Duración.
+- Horarios disponibles.
+- Horarios ocupados.
+- Reservas DEMO.
+- Solapamientos.
+- Límite máximo de 4 horas.
+- Confirmación de reserva.
+
+---
+
+# 📁 src/pages/Reservas/
+
+## `ReservasPage.tsx`
+
+Pantalla de reservas del usuario.
+
+Divide la información en:
+
+- Reservas activas.
+- Histórico.
+
+Permite:
+
+- Consultar reservas futuras.
+- Cancelar una reserva confirmada.
+- Consultar reservas activas.
+- Consultar reservas canceladas.
+- Consultar reservas finalizadas.
+- Consultar reservas caducadas.
+
+Una reserva que no se inicia dentro del margen permitido pasa automáticamente a estado `caducada`.
+
+---
+
+# 📁 src/pages/CargaActiva/
+
+## `CargaActivaPage.tsx`
+
+Pantalla utilizada mientras una sesión de carga está en curso.
+
+Muestra información como:
+
+- Hora de inicio.
+- Tiempo transcurrido.
+- Potencia.
+- Energía consumida.
+- Tiempo estimado.
+
+Permite finalizar la carga.
+
+---
+
+# 📁 src/pages/Cargas/
+
+## `CargasPage.tsx`
+
+Pantalla de historial de cargas.
+
+Muestra:
+
+- Cargas realizadas.
+- Energía total.
+- Tiempo acumulado.
+- Información de cada sesión.
+
+---
+
+# 📁 src/pages/Perfil/
+
+## `PerfilPage.tsx`
+
+Pantalla con los datos del usuario y del vehículo.
+
+Permite consultar y modificar la información autorizada.
+
+Utiliza `usersService.ts` para gestionar los datos del vehículo.
+
+---
+
+# 📁 src/pages/Ayuda/
+
+## `AyudaPage.tsx`
+
+Pantalla informativa sobre el funcionamiento de CargaQuer.
+
+Explica aspectos relacionados con:
+
+- Reservas.
+- Inicio de carga.
+- Finalización.
+- Estados.
+- Problemas habituales.
+
+---
+
+# 📁 src/pages/Administracion/
+
+Contiene todas las pantallas exclusivas del administrador.
+
+---
+
+## `AdministracionPage.tsx`
+
+Pantalla principal del panel administrativo.
+
+Muestra un resumen del servicio.
+
+Incluye información como:
+
+- Usuarios registrados.
+- Usuarios activos.
+- Cargas realizadas.
+- Energía suministrada.
+- Validaciones pendientes.
+- Incidencias.
+- Cargadores.
+- Tomas.
+- Movimientos recientes.
+
+---
+
+## `UsuariosPage.tsx`
+
+Gestión de usuarios.
+
+Muestra:
+
+- Nombre.
+- DNI/NIE protegido.
+- Correo.
+- Matrícula.
+- Número de cargas.
+- Consumo.
+- Estado.
+
+Permite:
+
+- Bloquear usuarios.
+- Desbloquear usuarios.
+
+Los valores protegidos del DNI se muestran abreviados para mantener la tabla legible.
+
+---
+
+## `ValidacionesPage.tsx`
+
+Muestra las solicitudes de registro pendientes.
+
+El administrador puede:
+
+- Revisar la solicitud.
+- Aceptarla.
+- Rechazarla.
+
+La aceptación utiliza el flujo de solicitudes almacenado en Supabase.
+
+---
+
+## `CargadoresAdminPage.tsx`
+
+Pantalla administrativa de cargadores.
+
+Muestra las tomas agrupadas por cargador.
+
+Incluye:
+
+- Cargador.
+- Toma.
+- Estado.
+- Incidencias.
+- Cargas semanales.
+- Potencia.
+- Cargas mensuales.
+- Cargas anuales.
+- Energía suministrada.
+
+---
+
+## `IncidenciasAdminPage.tsx`
+
+Pantalla de incidencias.
+
+Muestra:
+
+- Cargador afectado.
+- Toma.
+- Tipo de incidencia.
+- Descripción.
+- Estado.
+- Empresa suministradora.
+- Teléfono.
+- Correo.
+- Empresa instaladora.
+- Datos de contacto.
+
+Incluye datos DEMO cuando la información necesaria no está disponible.
+
+---
+
+# 📁 src/router/
+
+Gestiona las rutas de la aplicación.
+
+---
+
+## `AppRouter.tsx`
+
+Configuración principal de React Router.
+
+Define:
+
+- Rutas públicas.
+- Rutas privadas.
+- Rutas administrativas.
+- Layouts.
+- Redirecciones.
+
+---
+
+## `PrivateRoute.tsx`
+
+Protege las páginas privadas.
+
+Comprueba que:
+
+- La sesión haya terminado de cargarse.
+- Exista un usuario autenticado.
+- El usuario tenga acceso al panel privado.
+
+---
+
+## `AdminRoute.tsx`
+
+Protege las rutas administrativas.
+
+Solo permite el acceso a usuarios con rol de administrador.
+
+---
+
+# 📁 src/services/
+
+Contiene la comunicación con Supabase y la lógica de acceso a datos.
+
+Las páginas utilizan estos servicios para evitar realizar consultas directamente desde los componentes.
+
+---
+
+## `supabaseClient.ts`
+
+Configura el cliente de Supabase utilizado en toda la aplicación.
+
+Lee las variables:
+
+```text
+VITE_SUPABASE_URL
+VITE_SUPABASE_ANON_KEY
+```
+
+Exporta una única instancia de Supabase reutilizada por todos los servicios.
+
+---
+
+## `authService.ts`
+
+Gestiona la autenticación.
+
+Incluye operaciones relacionadas con:
+
+- Inicio de sesión.
+- Cierre de sesión.
+- Recuperación de la sesión.
+- Datos del usuario autenticado.
+- Roles.
+- Estado de cuenta.
+
+---
+
+## `registroService.ts`
+
+Gestiona el envío de solicitudes de registro.
+
+Realiza tareas como:
+
+- Normalizar matrícula.
+- Normalizar DNI/NIE.
+- Generar un hash SHA-256 del documento.
+- Crear el usuario inicial en Supabase Auth.
+- Ejecutar el procesamiento de la solicitud.
+- Cerrar la sesión temporal creada durante el registro.
+
+---
+
+## `solicitudesRegistroService.ts`
+
+Gestiona las solicitudes pendientes desde el panel administrativo.
+
+Permite:
+
+- Obtener solicitudes pendientes.
+- Aprobar solicitudes.
+- Rechazar solicitudes.
+- Obtener el número de solicitudes pendientes para el resumen administrativo.
+
+Utiliza las funciones RPC de Supabase correspondientes al proceso de aprobación y rechazo.
+
+---
+
+## `chargersService.ts`
+
+Gestiona cargadores y tomas.
+
+Permite:
+
+- Obtener cargadores.
+- Buscar cargadores concretos.
+- Obtener información de sus tomas.
+- Combinar datos reales con situaciones DEMO necesarias para las pruebas.
+
+---
+
+## `reservationsService.ts`
+
+Contiene la lógica principal de las reservas.
+
+Gestiona:
+
+- Creación.
+- Consulta.
+- Cancelación.
+- Activación.
+- Caducidad.
+- Estados.
+- Solapamientos.
+- Reservas de una toma.
+- Reservas del usuario.
+- Reservas DEMO.
+- Fechas de inicio y fin.
+
+También controla el margen disponible para iniciar una carga.
+
+---
+
+## `cargasService.ts`
+
+Gestiona las sesiones de carga.
+
+Permite:
+
+- Obtener las cargas de un usuario.
+- Obtener una carga activa.
+- Buscar una carga por reserva.
+- Buscar una carga activa en una toma.
+- Iniciar una carga.
+- Finalizar una carga.
+- Actualizar la reserva asociada al terminar.
+
+---
+
+## `usersService.ts`
+
+Gestiona los datos relacionados con el vehículo.
+
+Permite:
+
+- Obtener el vehículo de un usuario.
+- Actualizar matrícula.
+- Comprobar si el vehículo está validado.
+- Comprobar si el usuario puede reservar.
+- Comprobar si puede iniciar una carga.
+
+---
+
+## `panelUsuarioService.ts`
+
+Obtiene y prepara la información necesaria para la pantalla de inicio del usuario.
+
+Agrupa datos procedentes de diferentes partes de la aplicación para construir el resumen del panel.
+
+---
+
+## `estadisticasService.ts`
+
+Contiene cálculos relacionados con el historial de cargas.
+
+Permite preparar estadísticas como:
+
+- Energía acumulada.
+- Tiempo acumulado.
+- Datos resumidos de las sesiones.
+
+---
+
+## `adminService.ts`
+
+Servicio principal del panel administrativo.
+
+Gestiona:
+
+- Usuarios.
+- Bloqueo y desbloqueo.
+- Cargadores.
+- Tomas.
+- Estadísticas administrativas.
+- Incidencias.
+- Resumen general.
+- Datos DEMO de administración.
+
+---
+
+# 📁 src/types/
+
+Contiene los tipos e interfaces de TypeScript.
+
+Centraliza las estructuras utilizadas por componentes, páginas y servicios.
+
+---
+
+## `auth.ts`
+
+Tipos relacionados con autenticación.
+
+Incluye estructuras para:
+
+- Usuario autenticado.
+- Credenciales.
+- Sesión.
+- Roles.
+- Estados de cuenta.
+
+---
+
+## `carga.ts`
+
+Tipos relacionados con las cargas.
+
+Define:
+
+- Estados.
+- Estructura de una carga.
+- Datos necesarios para iniciar una carga.
+
+---
+
+## `charger.ts`
+
+Tipos de cargadores y tomas.
+
+Define estructuras utilizadas para representar:
+
+- Cargadores.
+- Tomas.
+- Estados.
+- Potencia.
+- Disponibilidad.
+
+---
+
+## `cliente.ts`
+
+Tipos relacionados con los clientes u organizaciones que utilizan CargaQuer.
+
+---
+
+## `panelUsuario.ts`
+
+Tipos utilizados en el panel principal del usuario.
+
+Incluye estructuras relacionadas con:
+
+- Resumen.
+- Alertas.
+- Actividad.
+- Estado.
+
+---
+
+## `registro.ts`
+
+Tipos utilizados durante el proceso de registro.
+
+Define:
+
+- Datos del formulario.
+- Usuario principal.
+- Tipo de usuario.
+- Filiación.
+- Errores.
+- Datos necesarios para enviar la solicitud.
+
+---
+
+## `reservation.ts`
+
+Tipos relacionados con reservas.
+
+Incluye:
+
+- Estado de reserva.
+- Datos para crear una reserva.
+- Reserva almacenada.
+- Reserva con fechas completas.
+
+Estados utilizados:
+
+```text
+confirmada
+activa
+finalizada
+cancelada
+caducada
+```
+
+---
+
+## `user.ts`
+
+Tipos relacionados con el vehículo del usuario.
 
 Incluye:
 
 - Datos del vehículo.
-- Datos del usuario principal.
-- Datos del segundo conductor.
-- Tipo de usuario.
-- Filiación con el ayuntamiento.
-- Errores del formulario.
+- Estado de validación.
 
 ---
 
-# 📁 data/
-
-Datos provisionales utilizados durante el desarrollo.
-
-## mockChargers.ts
-
-Datos de ejemplo de los cargadores.
-
-Se utilizarán mientras la aplicación todavía no esté conectada a Supabase.
-
-## clientes.ts
-
-Listado provisional de ayuntamientos, empresas u organizaciones disponibles en el formulario de registro.
-
-Más adelante estos datos se obtendrán desde la base de datos.
-
----
-
-# 📁 utils/
+# 📁 src/utils/
 
 Funciones auxiliares reutilizables.
 
-## validators.ts
+---
 
-Funciones de validación.
+## `validators.ts`
 
-Ejemplos:
+Funciones utilizadas para validar datos de formularios.
 
-- Email.
+Incluye comprobaciones relacionadas con:
+
+- Correo.
 - Contraseña.
-- DNI o NIE.
+- DNI/NIE.
 - Teléfono.
 - Matrícula.
 
-## formatters.ts
+---
 
-Funciones para dar formato a los datos.
+## `formateadores.ts`
 
-Ejemplos:
+Funciones reutilizables para presentar información.
 
-- Fechas.
-- Horas.
-- Teléfonos.
-- Matrículas.
+Actualmente contiene el formateo común de la duración de las reservas.
 
-## constants.ts
-
-Valores fijos utilizados en distintas partes de la aplicación.
-
-Ejemplos:
-
-- Estados de solicitud.
-- Tipos de usuario.
-- Estados de conectores.
-- Textos comunes.
+Este archivo evita duplicar funciones de formato entre diferentes componentes.
 
 ---
 
-# 📁 styles/
+# 📁 src/styles/
 
-Contiene todos los estilos CSS del proyecto.
+Contiene todos los estilos CSS.
 
-Las páginas están separadas de sus estilos.
+Los estilos se mantienen separados de los componentes y páginas.
 
-## variables.css
+La estructura actual es:
 
-Variables CSS reutilizables en toda la aplicación.
+```text
+styles/
+├── Administracion/
+├── Ayuda/
+├── CargaActiva/
+├── Cargadores/
+├── Cargas/
+├── DetalleCargador/
+├── DetalleToma/
+├── Login/
+├── PanelUsuario/
+├── Perfil/
+├── RecuperarContrasena/
+├── Registro/
+├── ReservaToma/
+├── Reservas/
+├── global.css
+└── variables.css
+```
 
-Contiene:
+---
+
+## `variables.css`
+
+Contiene variables CSS reutilizadas por toda la aplicación.
+
+Centraliza valores visuales como:
 
 - Colores.
+- Fondos.
 - Bordes.
 - Sombras.
 - Radios.
-- Tamaños comunes.
-
-## global.css
-
-Estilos generales aplicados a toda la aplicación.
-
-Contiene:
-
-- Box sizing.
-- Estilos de `body`.
-- Tipografía general.
-- Configuración básica de botones, inputs y enlaces.
-
-## responsive.css
-
-Estilos responsive comunes para varias páginas.
-
-Puede permanecer vacío si cada página gestiona su propio responsive.
-
-## 📁 Login/
-
-### LoginPage.css
-
-Estilos exclusivos de la página de Login.
-
-## 📁 Registro/
-
-### RegistroPage.css
-
-Estilos exclusivos de la página de Registro.
-
-En el futuro se crearán carpetas equivalentes para cada página:
-
-- `Inicio/`
-- `Cargadores/`
-- `Cargas/`
-- `Reservas/`
-- `Ayuda/`
-- `Perfil/`
-- `Administracion/`
+- Valores comunes.
 
 ---
 
-# App.tsx
+## `global.css`
 
-Componente principal de la aplicación.
+Contiene los estilos generales.
 
-Actualmente contiene las rutas básicas.
+Gestiona aspectos como:
 
-Más adelante podrá delegar toda la configuración de rutas a `router/AppRouter.tsx`.
+- `box-sizing`.
+- `body`.
+- Tipografía.
+- Fondo.
+- Elementos globales.
+- Comportamientos generales de la interfaz.
 
 ---
 
-# main.tsx
+# 📁 src/styles/Administracion/
 
-Punto de entrada de React.
+## `AdministracionPage.css`
+
+Estilos del resumen administrativo.
+
+## `UsuariosPage.css`
+
+Estilos de la tabla y gestión de usuarios.
+
+## `ValidacionesPage.css`
+
+Estilos de las solicitudes pendientes.
+
+## `CargadoresAdminPage.css`
+
+Estilos de la gestión de cargadores y tomas.
+
+## `IncidenciasAdminPage.css`
+
+Estilos de las tarjetas de incidencias.
+
+## `AdminLayout.css`
+
+Estilos generales del layout administrativo.
+
+---
+
+# 📁 src/styles/PanelUsuario/
+
+## `InicioPage.css`
+
+Estilos de la pantalla principal del usuario.
+
+## `PrivateLayout.css`
+
+Estilos de la estructura general del panel privado.
+
+---
+
+# 📁 src/styles/Cargadores/
+
+## `CargadoresPage.css`
+
+Estilos del listado de cargadores.
+
+---
+
+# 📁 src/styles/DetalleCargador/
+
+## `DetalleCargadorPage.css`
+
+Estilos de la pantalla de detalle del cargador.
+
+---
+
+# 📁 src/styles/DetalleToma/
+
+## `DetalleTomaPage.css`
+
+Estilos de la pantalla de detalle de una toma.
+
+---
+
+# 📁 src/styles/ReservaToma/
+
+## `ReservaTomaPage.css`
+
+Estilos del proceso de creación de reservas.
+
+---
+
+# 📁 src/styles/Reservas/
+
+## `ReservasPage.css`
+
+Estilos de Mis reservas y del histórico.
+
+---
+
+# 📁 src/styles/CargaActiva/
+
+## `CargaActivaPage.css`
+
+Estilos de la pantalla de carga en curso.
+
+---
+
+# 📁 src/styles/Cargas/
+
+## `CargasPage.css`
+
+Estilos del historial de cargas.
+
+---
+
+# 📁 src/styles/Perfil/
+
+## `PerfilPage.css`
+
+Estilos de la página de perfil.
+
+---
+
+# 📁 src/styles/Ayuda/
+
+## `AyudaPage.css`
+
+Estilos de la página de ayuda.
+
+---
+
+# 📁 src/styles/Login/
+
+## `LoginPage.css`
+
+Estilos de la pantalla de inicio de sesión.
+
+---
+
+# 📁 src/styles/Registro/
+
+## `RegistroPage.css`
+
+Estilos del formulario de registro.
+
+---
+
+# 📁 src/styles/RecuperarContrasena/
+
+## `RecuperarContrasenaPage.css`
+
+Estilos de la recuperación de contraseña.
+
+---
+
+# `src/App.tsx`
+
+Componente principal de React.
+
+Integra:
+
+- `AuthProvider`.
+- `AppRouter`.
+
+Sirve como punto de unión entre el contexto global y el sistema de rutas.
+
+---
+
+# `src/main.tsx`
+
+Punto de entrada del frontend.
 
 Se encarga de:
 
-- Cargar la aplicación.
+- Crear la raíz de React.
 - Renderizar `App`.
-- Importar los estilos globales.
+- Cargar los estilos globales.
+- Inicializar la configuración visual necesaria al arrancar.
 
 ---
 
-# vite-env.d.ts
+# 📁 supabase/
 
-Declaraciones de tipos necesarias para trabajar con Vite y TypeScript.
+Contiene la parte del proyecto relacionada con Supabase que se mantiene junto al código fuente.
 
----
+La estructura principal es:
 
-# 📌 Organización general
+```text
+supabase/
+├── functions/
+└── migrations/
+```
 
-La aplicación sigue esta separación:
-
-- `pages/` contiene las páginas.
-- `styles/` contiene los estilos.
-- `components/` contiene elementos reutilizables.
-- `services/` contiene acceso a la base de datos.
-- `types/` contiene interfaces y tipos.
-- `data/` contiene datos provisionales.
-- `utils/` contiene funciones auxiliares.
-- `router/` contiene las rutas.
-- `layouts/` contiene las estructuras visuales comunes.
+La carpeta temporal `.temp/` es generada por Supabase CLI y no forma parte del código fuente.
 
 ---
 
-# 📌 Flujo principal de la aplicación
+# 📁 supabase/functions/
 
-1. El usuario accede al Login.
-2. Si no tiene cuenta, solicita el registro.
-3. La solicitud queda pendiente.
-4. La entidad responsable revisa la solicitud.
-5. El usuario recibe un correo cuando la cuenta es aprobada.
-6. El usuario inicia sesión.
-7. Accede a cargadores, reservas, cargas, ayuda y perfil.
+Contiene las Edge Functions.
+
+Estas funciones se ejecutan en Supabase y permiten realizar procesos que no deben depender directamente del navegador.
+
+---
+
+## 📁 `procesar-avisos/`
+
+### `index.ts`
+
+Gestiona los avisos de correo relacionados con CargaQuer.
+
+Procesa información de `avisos_email` y utiliza el servicio de correo configurado en Supabase.
+
+Entre los avisos previstos se encuentran:
+
+- Aviso previo al inicio de una reserva.
+- Aviso previo al final.
+- Avisos relacionados con aprobaciones.
+
+También registra el resultado del envío para evitar duplicados.
+
+---
+
+## 📁 `procesar-solicitudes/`
+
+### `index.ts`
+
+Gestiona el procesamiento de nuevas solicitudes de registro.
+
+Se utiliza después del alta inicial para preparar y enviar los avisos relacionados con una nueva solicitud pendiente.
+
+---
+
+# 📁 supabase/migrations/
+
+Contiene scripts SQL utilizados para configurar o actualizar la base de datos.
+
+---
+
+## `solicitudes_registro.sql`
+
+Configura el sistema de solicitudes de registro.
+
+Incluye la lógica SQL necesaria para:
+
+- Solicitudes pendientes.
+- Aprobación.
+- Rechazo.
+- Creación de los datos necesarios después de la aprobación.
+- Limpieza del flujo antiguo de registro.
+
+---
+
+## `automatizaciones.sql`
+
+Contiene la configuración SQL relacionada con automatizaciones y avisos.
+
+Incluye elementos necesarios para trabajar con los avisos almacenados en `avisos_email`.
+
+---
+
+# 📌 Tablas principales de Supabase
+
+CargaQuer trabaja principalmente con las siguientes tablas:
+
+```text
+perfiles
+vehiculos
+cargadores
+tomas
+reservas
+cargas
+incidencias
+solicitudes_registro
+avisos_email
+```
+
+---
+
+## `perfiles`
+
+Contiene los perfiles de usuarios autorizados.
+
+Incluye información necesaria para:
+
+- Identificación.
+- Rol.
+- Estado de cuenta.
+- Gestión administrativa.
+
+---
+
+## `vehiculos`
+
+Contiene los vehículos vinculados a los usuarios.
+
+Incluye datos como:
+
+- Usuario.
+- Matrícula.
+- Estado de validación.
+
+---
+
+## `cargadores`
+
+Contiene los cargadores disponibles en el sistema.
+
+---
+
+## `tomas`
+
+Contiene las tomas asociadas a cada cargador.
+
+---
+
+## `reservas`
+
+Contiene las reservas realizadas.
+
+Incluye:
+
+- Usuario.
+- Cargador.
+- Toma.
+- Fecha.
+- Hora de inicio.
+- Hora de fin.
+- Estado.
+
+---
+
+## `cargas`
+
+Contiene las sesiones reales de carga.
+
+Mantiene información independiente de la reserva que originó la sesión.
+
+---
+
+## `incidencias`
+
+Contiene las incidencias relacionadas con cargadores y tomas.
+
+---
+
+## `solicitudes_registro`
+
+Contiene las solicitudes pendientes de aprobación administrativa.
+
+---
+
+## `avisos_email`
+
+Registra los correos que deben enviarse o que ya han sido procesados.
+
+Permite controlar:
+
+- Tipo de aviso.
+- Estado.
+- Resultado del envío.
+- Intentos.
+
+---
+
+# 📌 Variables de entorno
+
+El frontend utiliza:
+
+```text
+VITE_SUPABASE_URL
+VITE_SUPABASE_ANON_KEY
+```
+
+Estas variables se utilizan en:
+
+```text
+src/services/supabaseClient.ts
+```
+
+Los valores reales se mantienen fuera del código fuente.
+
+---
+
+# 📌 Organización de rutas
+
+Las rutas principales están definidas en:
+
+```text
+src/router/AppRouter.tsx
+```
+
+La aplicación se divide en tres zonas.
+
+## Públicas
+
+```text
+/login
+/registro
+/recuperar-contrasena
+```
+
+## Panel de usuario
+
+```text
+/panel
+/panel/cargadores
+/panel/cargadores/:cargadorId
+/panel/cargadores/:cargadorId/tomas/:tomaId
+/panel/cargadores/:cargadorId/tomas/:tomaId/reservar
+/panel/cargas/:cargaId
+/panel/mis-cargas
+/panel/mis-reservas
+/panel/ayuda
+/panel/perfil
+```
+
+## Administración
+
+```text
+/administracion
+/administracion/usuarios
+/administracion/validaciones
+/administracion/cargadores
+/administracion/incidencias
+```
+
+---
+
+# 📌 Flujo de autenticación
+
+El flujo principal de autenticación es:
+
+```text
+Login
+   │
+   ▼
+authService.ts
+   │
+   ▼
+Supabase Auth
+   │
+   ▼
+AuthContext
+   │
+   ├── Usuario ──► Panel privado
+   │
+   └── Administrador ──► Panel administrativo
+```
+
+---
+
+# 📌 Flujo de registro
+
+El proceso de registro funciona de la siguiente forma:
+
+```text
+Registro
+   │
+   ▼
+Validación del formulario
+   │
+   ▼
+registroService.ts
+   │
+   ▼
+Supabase Auth
+   │
+   ▼
+solicitudes_registro
+   │
+   ▼
+Validación administrativa
+   │
+   ├── Aceptar
+   │
+   └── Rechazar
+```
+
+El usuario no obtiene acceso normal al servicio hasta que la solicitud es aprobada.
+
+---
+
+# 📌 Flujo de una reserva
+
+```text
+Seleccionar cargador
+        │
+        ▼
+Seleccionar toma
+        │
+        ▼
+Seleccionar día
+        │
+        ▼
+Seleccionar hora
+        │
+        ▼
+Seleccionar duración
+        │
+        ▼
+Comprobar disponibilidad
+        │
+        ▼
+Crear reserva
+```
+
+Las reservas:
+
+- Funcionan en bloques de 30 minutos.
+- Tienen un máximo de 4 horas.
+- Comprueban solapamientos.
+- Admiten reservas que terminan al día siguiente.
+- Pueden cancelarse mientras estén confirmadas.
+- Caducan si la carga no se inicia dentro del margen permitido.
+
+---
+
+# 📌 Estados de reserva
+
+```text
+confirmada
+activa
+finalizada
+cancelada
+caducada
+```
+
+### `confirmada`
+
+Reserva creada y pendiente de iniciar.
+
+### `activa`
+
+La carga asociada ya ha comenzado.
+
+### `finalizada`
+
+La reserva terminó correctamente.
+
+### `cancelada`
+
+El usuario canceló la reserva.
+
+### `caducada`
+
+La reserva no se inició dentro de los 15 minutos disponibles.
+
+---
+
+# 📌 Flujo de carga
+
+```text
+Reserva confirmada
+       │
+       ▼
+Inicio de carga
+       │
+       ▼
+Carga activa
+       │
+       ▼
+Finalizar carga
+       │
+       ▼
+Histórico de cargas
+```
+
+La reserva y la carga se almacenan de forma separada.
+
+Esto permite mantener:
+
+- Estado de la reserva.
+- Estado real de la sesión.
+- Histórico de utilización.
+- Estadísticas.
+
+---
+
+# 📌 Datos DEMO
+
+CargaQuer contiene situaciones de demostración creadas intencionadamente.
+
+Se utilizan para que determinadas pantallas no aparezcan vacías durante las pruebas.
+
+Pueden representar:
+
+- Cargadores ocupados.
+- Tomas reservadas.
+- Reservas de otros usuarios.
+- Usuarios administrativos.
+- Incidencias.
+- Actividad reciente.
+
+Estos datos forman parte del entorno de demostración y no deben confundirse con código obsoleto.
+
+---
+
+# 📌 Separación general del proyecto
+
+La aplicación sigue esta organización:
+
+- `components/` → componentes reutilizables.
+- `context/` → estado global.
+- `data/` → datos locales y DEMO.
+- `hooks/` → hooks personalizados.
+- `layouts/` → estructuras comunes.
+- `pages/` → pantallas completas.
+- `router/` → rutas y protección.
+- `services/` → lógica y acceso a Supabase.
+- `styles/` → estilos CSS.
+- `types/` → tipos e interfaces.
+- `utils/` → funciones auxiliares.
+- `supabase/functions/` → lógica ejecutada en Supabase.
+- `supabase/migrations/` → configuración SQL de la base de datos.
+
+---
+
+# 📌 Archivos principales de la raíz
+
+## `index.html`
+
+Documento HTML base utilizado por Vite.
+
+Contiene el elemento donde React monta la aplicación.
+
+---
+
+## `package.json`
+
+Define:
+
+- Información básica del proyecto.
+- Dependencias.
+- Dependencias de desarrollo.
+- Scripts de npm.
+
+---
+
+## `package-lock.json`
+
+Guarda las versiones exactas de las dependencias instaladas.
+
+Permite reproducir la misma instalación en otros equipos.
+
+---
+
+## `vite.config.ts`
+
+Configuración de Vite.
+
+Define la configuración utilizada durante desarrollo y compilación.
+
+---
+
+## `tsconfig.json`
+
+Configuración general de TypeScript.
+
+---
+
+## `tsconfig.app.json`
+
+Configuración TypeScript utilizada por el código del frontend.
+
+---
+
+## `tsconfig.node.json`
+
+Configuración TypeScript utilizada por los archivos que se ejecutan en entorno Node, como la configuración de Vite.
+
+---
+
+## `.gitignore`
+
+Define los archivos y carpetas que Git no debe subir al repositorio.
+
+Entre ellos:
+
+```text
+node_modules
+dist
+.env.local
+.DS_Store
+supabase/.temp
+```
+
+---
+
+## `README.md`
+
+Documento principal visible desde GitHub.
+
+Se utiliza como presentación general del proyecto.
+
+---
+
+## `DOCUMENTACION_PROYECTO.md`
+
+Documento técnico que describe la estructura interna de CargaQuer y la responsabilidad de sus carpetas y archivos.

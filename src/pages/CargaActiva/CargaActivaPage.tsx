@@ -15,6 +15,7 @@ import type { Cargador } from "../../types/charger";
 
 import "../../styles/CargaActiva/CargaActivaPage.css";
 
+// Función para formatear números.
 function formatearNumero(numero: number, decimales = 2) {
   return numero.toLocaleString("es-ES", {
     minimumFractionDigits: decimales,
@@ -22,9 +23,12 @@ function formatearNumero(numero: number, decimales = 2) {
   });
 }
 
+// Función para formatear el tiempo.
 function formatearTiempo(minutos: number) {
   const minutosSeguros = Math.max(0, Math.floor(minutos));
+
   const horas = Math.floor(minutosSeguros / 60);
+
   const minutosRestantes = minutosSeguros % 60;
 
   if (horas === 0) {
@@ -38,6 +42,7 @@ function formatearTiempo(minutos: number) {
   return `${horas} h ${minutosRestantes} min`;
 }
 
+// Función para formatear una fecha.
 function formatearFecha(fechaIso: string) {
   const fecha = new Date(fechaIso);
 
@@ -52,6 +57,7 @@ function formatearFecha(fechaIso: string) {
   }).format(fecha);
 }
 
+// Función para formatear una hora.
 function formatearHora(fechaIso: string) {
   const fecha = new Date(fechaIso);
 
@@ -65,10 +71,12 @@ function formatearHora(fechaIso: string) {
   }).format(fecha);
 }
 
+// Función para obtener un cargador.
 function obtenerCargador(cargadores: Cargador[], cargadorId: string) {
   return cargadores.find((cargador) => cargador.id === cargadorId);
 }
 
+// Función para obtener una toma.
 function obtenerToma(cargador: Cargador | undefined, tomaId: string) {
   return cargador?.tomas.find((toma) => toma.id === tomaId);
 }
@@ -82,18 +90,25 @@ function CargaActivaPage() {
 
   const usuarioId = usuario?.id ?? "";
 
+  // Estado para guardar la carga.
   const [carga, setCarga] = useState<Carga | null>(null);
 
+  // Estado para guardar los cargadores.
   const [cargadores, setCargadores] = useState<Cargador[]>([]);
 
+  // Estado para controlar la carga de datos.
   const [cargando, setCargando] = useState(true);
 
+  // Estado para controlar la finalización.
   const [finalizando, setFinalizando] = useState(false);
 
+  // Estado para guardar errores.
   const [error, setError] = useState("");
 
+  // Estado para actualizar los tiempos.
   const [ahora, setAhora] = useState(() => new Date());
 
+  // Función para cargar los datos.
   const cargarDatos = useCallback(async () => {
     if (!usuarioId || !cargaId) {
       setCarga(null);
@@ -132,10 +147,12 @@ function CargaActivaPage() {
     }
   }, [cargaId, usuarioId]);
 
+  // Carga los datos al abrir la pantalla.
   useEffect(() => {
     void cargarDatos();
   }, [cargarDatos]);
 
+  // Actualiza el reloj de la sesión.
   useEffect(() => {
     if (!carga) {
       return;
@@ -175,7 +192,13 @@ function CargaActivaPage() {
 
     const inicio = new Date(carga.fechaHoraInicio).getTime();
 
-    const diferencia = ahora.getTime() - inicio;
+    const finPrevisto = new Date(carga.fechaHoraFinPrevista).getTime();
+
+    const momentoActual = Number.isNaN(finPrevisto)
+      ? ahora.getTime()
+      : Math.min(ahora.getTime(), finPrevisto);
+
+    const diferencia = momentoActual - inicio;
 
     if (Number.isNaN(inicio) || diferencia <= 0) {
       return 0;
@@ -235,19 +258,26 @@ function CargaActivaPage() {
 
     const inicio = new Date(carga.fechaHoraInicio).getTime();
 
+    const finPrevisto = new Date(carga.fechaHoraFinPrevista).getTime();
+
     if (Number.isNaN(inicio)) {
       return carga.energiaConsumidaKwh;
     }
 
+    const momentoActual = Number.isNaN(finPrevisto)
+      ? ahora.getTime()
+      : Math.min(ahora.getTime(), finPrevisto);
+
     const horasTranscurridas = Math.max(
       0,
-      (ahora.getTime() - inicio) / 3_600_000,
+      (momentoActual - inicio) / 3_600_000,
     );
 
     return Number((horasTranscurridas * carga.potenciaActualKw).toFixed(2));
   }, [ahora, carga]);
 
-  async function manejarFinalizarCarga() {
+  // Función para finalizar la carga.
+  const manejarFinalizarCarga = useCallback(async () => {
     if (!usuarioId || !cargaId || !carga || finalizando) {
       return;
     }
@@ -278,7 +308,22 @@ function CargaActivaPage() {
     } finally {
       setFinalizando(false);
     }
-  }
+  }, [carga, cargaId, finalizando, navigate, usuarioId]);
+
+  // Finaliza la carga al alcanzar su hora prevista.
+  useEffect(() => {
+    if (!carga?.fechaHoraFinPrevista || finalizando) {
+      return;
+    }
+
+    const finPrevisto = new Date(carga.fechaHoraFinPrevista).getTime();
+
+    if (Number.isNaN(finPrevisto) || ahora.getTime() < finPrevisto) {
+      return;
+    }
+
+    void manejarFinalizarCarga();
+  }, [ahora, carga, finalizando, manejarFinalizarCarga]);
 
   if (cargando) {
     return (

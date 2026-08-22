@@ -9,21 +9,28 @@ import {
 
 import "../../styles/Administracion/ValidacionesPage.css";
 
+// Función para obtener el nombre completo.
 function obtenerNombreCompleto(validacion: ValidacionPendiente) {
   return `${validacion.nombre} ${validacion.apellidos}`.trim();
 }
 
 function ValidacionesPage() {
+  // Estado para guardar las validaciones.
   const [validaciones, setValidaciones] = useState<ValidacionPendiente[]>([]);
 
+  // Estado para controlar la carga.
   const [cargando, setCargando] = useState(true);
 
+  // Estado para guardar la solicitud en proceso.
   const [procesandoId, setProcesandoId] = useState<string | null>(null);
 
+  // Estado para guardar mensajes.
   const [mensaje, setMensaje] = useState("");
 
+  // Estado para guardar errores.
   const [error, setError] = useState("");
 
+  // Función para cargar las validaciones.
   const cargarValidaciones = useCallback(async () => {
     try {
       setCargando(true);
@@ -44,10 +51,12 @@ function ValidacionesPage() {
     }
   }, []);
 
+  // Carga las validaciones al abrir la pantalla.
   useEffect(() => {
     void cargarValidaciones();
   }, [cargarValidaciones]);
 
+  // Función para aceptar una solicitud.
   async function aceptar(validacion: ValidacionPendiente) {
     if (procesandoId) {
       return;
@@ -80,6 +89,7 @@ function ValidacionesPage() {
     }
   }
 
+  // Función para rechazar una solicitud.
   async function rechazar(validacion: ValidacionPendiente) {
     if (procesandoId) {
       return;
@@ -173,7 +183,7 @@ function ValidacionesPage() {
                 <tr>
                   <th>Nombre</th>
 
-                  <th>Documento</th>
+                  <th>DNI / NIE</th>
 
                   <th>Correo</th>
 
@@ -192,6 +202,7 @@ function ValidacionesPage() {
                   </tr>
                 ) : (
                   validaciones.map((validacion) => {
+                    // Comprueba si la solicitud se está procesando.
                     const procesando = procesandoId === validacion.solicitudId;
 
                     return (

@@ -1,4 +1,4 @@
-import { formatearDuracion } from "./ControlDuracionReserva";
+import { formatearDuracionReserva } from "../../utils/formateadores";
 
 // Propiedades del resumen de la reserva.
 interface ResumenReservaProps {
@@ -69,7 +69,7 @@ function ResumenReserva({
 
         <div>
           <dt>Duración</dt>
-          <dd>{formatearDuracion(duracionMinutos)}</dd>
+          <dd>{formatearDuracionReserva(duracionMinutos)}</dd>
         </div>
       </dl>
 

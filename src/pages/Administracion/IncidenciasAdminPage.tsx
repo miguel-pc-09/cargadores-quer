@@ -7,6 +7,60 @@ import {
 
 import "../../styles/Administracion/IncidenciasAdminPage.css";
 
+interface ContactoEmpresa {
+  nombre: string;
+  telefono: string;
+  correo: string;
+}
+
+// Datos de contacto para la demostración.
+const CONTACTO_SUMINISTRADORA_DEMO: ContactoEmpresa = {
+  nombre: "Iberdrola",
+  telefono: "900 000 101",
+  correo: "suministro@demo.cargaquer.es",
+};
+
+const CONTACTO_INSTALADORA_DEMO: ContactoEmpresa = {
+  nombre: "Elecnor",
+  telefono: "900 000 202",
+  correo: "instalacion@demo.cargaquer.es",
+};
+
+// Comprueba si falta un dato.
+const datoVacio = (valor: string) => {
+  const dato = valor.trim();
+
+  return !dato || dato === "—";
+};
+
+// Prepara los datos de contacto de una incidencia.
+const obtenerContactos = (incidencia: IncidenciaAdministracion) => {
+  const suministradora: ContactoEmpresa = {
+    nombre: datoVacio(incidencia.empresaSuministradora)
+      ? CONTACTO_SUMINISTRADORA_DEMO.nombre
+      : incidencia.empresaSuministradora,
+    telefono: datoVacio(incidencia.telefonoSuministradora)
+      ? CONTACTO_SUMINISTRADORA_DEMO.telefono
+      : incidencia.telefonoSuministradora,
+    correo: CONTACTO_SUMINISTRADORA_DEMO.correo,
+  };
+
+  const instaladora: ContactoEmpresa = {
+    nombre: datoVacio(incidencia.empresaInstaladora)
+      ? CONTACTO_INSTALADORA_DEMO.nombre
+      : incidencia.empresaInstaladora,
+    telefono: datoVacio(incidencia.telefonoInstaladora)
+      ? CONTACTO_INSTALADORA_DEMO.telefono
+      : incidencia.telefonoInstaladora,
+    correo: CONTACTO_INSTALADORA_DEMO.correo,
+  };
+
+  return {
+    suministradora,
+    instaladora,
+  };
+};
+
 function IncidenciasAdminPage() {
   const [incidencias, setIncidencias] = useState<IncidenciaAdministracion[]>(
     [],
@@ -74,49 +128,72 @@ function IncidenciasAdminPage() {
         </div>
       ) : (
         <div className="incidencias-admin__lista">
-          {incidencias.map((incidencia) => (
-            <article key={incidencia.id} className="incidencias-admin__tarjeta">
-              <header className="incidencias-admin__tarjeta-cabecera">
-                <div>
-                  <span className="incidencias-admin__tipo">
-                    {incidencia.tipo}
+          {incidencias.map((incidencia) => {
+            const contactos = obtenerContactos(incidencia);
+
+            return (
+              <article
+                key={incidencia.id}
+                className="incidencias-admin__tarjeta"
+              >
+                <header className="incidencias-admin__tarjeta-cabecera">
+                  <div>
+                    <span className="incidencias-admin__tipo">
+                      {incidencia.tipo}
+                    </span>
+
+                    <h2>{incidencia.cargadorNombre}</h2>
+
+                    <p>{incidencia.tomaNombre}</p>
+                  </div>
+
+                  <span className="incidencias-admin__estado">
+                    {incidencia.estado}
                   </span>
+                </header>
 
-                  <h2>{incidencia.cargadorNombre}</h2>
+                <div className="incidencias-admin__descripcion">
+                  <strong>Incidencia</strong>
 
-                  <p>{incidencia.tomaNombre}</p>
+                  <p>{incidencia.descripcion}</p>
                 </div>
 
-                <span className="incidencias-admin__estado">
-                  {incidencia.estado}
-                </span>
-              </header>
+                <div className="incidencias-admin__empresas">
+                  <section className="incidencias-admin__empresa">
+                    <span>Empresa suministradora</span>
 
-              <div className="incidencias-admin__descripcion">
-                <strong>Incidencia</strong>
+                    <strong>{contactos.suministradora.nombre}</strong>
 
-                <p>{incidencia.descripcion}</p>
-              </div>
+                    <div className="incidencias-admin__contacto">
+                      <p>
+                        <b>Teléfono:</b> {contactos.suministradora.telefono}
+                      </p>
 
-              <div className="incidencias-admin__empresas">
-                <section className="incidencias-admin__empresa">
-                  <span>Empresa suministradora</span>
+                      <p>
+                        <b>Correo:</b> {contactos.suministradora.correo}
+                      </p>
+                    </div>
+                  </section>
 
-                  <strong>{incidencia.empresaSuministradora}</strong>
+                  <section className="incidencias-admin__empresa">
+                    <span>Empresa instaladora</span>
 
-                  <p>{incidencia.telefonoSuministradora}</p>
-                </section>
+                    <strong>{contactos.instaladora.nombre}</strong>
 
-                <section className="incidencias-admin__empresa">
-                  <span>Empresa instaladora</span>
+                    <div className="incidencias-admin__contacto">
+                      <p>
+                        <b>Teléfono:</b> {contactos.instaladora.telefono}
+                      </p>
 
-                  <strong>{incidencia.empresaInstaladora}</strong>
-
-                  <p>{incidencia.telefonoInstaladora}</p>
-                </section>
-              </div>
-            </article>
-          ))}
+                      <p>
+                        <b>Correo:</b> {contactos.instaladora.correo}
+                      </p>
+                    </div>
+                  </section>
+                </div>
+              </article>
+            );
+          })}
         </div>
       )}
     </section>

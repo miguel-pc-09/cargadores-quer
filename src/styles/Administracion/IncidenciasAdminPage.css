@@ -108,6 +108,7 @@
 }
 
 .incidencias-admin__empresa {
+  min-width: 0;
   padding: 20px 22px;
 }
 
@@ -115,7 +116,7 @@
   border-left: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.incidencias-admin__empresa span {
+.incidencias-admin__empresa > span {
   display: block;
   margin-bottom: 7px;
   color: #8f9eae;
@@ -124,16 +125,29 @@
   text-transform: uppercase;
 }
 
-.incidencias-admin__empresa strong {
+.incidencias-admin__empresa > strong {
   display: block;
   color: #ffffff;
   font-size: 0.95rem;
 }
 
-.incidencias-admin__empresa p {
-  margin: 6px 0 0;
+.incidencias-admin__contacto {
+  display: grid;
+  gap: 5px;
+  margin-top: 9px;
+}
+
+.incidencias-admin__contacto p {
+  margin: 0;
+  overflow-wrap: anywhere;
   color: #45b7ff;
-  font-size: 0.88rem;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.incidencias-admin__contacto b {
+  color: #aeb9c9;
+  font-weight: 700;
 }
 
 .incidencias-admin__cargando,
@@ -246,7 +260,7 @@
 html[data-tema="claro"] .incidencias-admin__cabecera h1,
 html[data-tema="claro"] .incidencias-admin__tarjeta-cabecera h2,
 html[data-tema="claro"] .incidencias-admin__descripcion strong,
-html[data-tema="claro"] .incidencias-admin__empresa strong,
+html[data-tema="claro"] .incidencias-admin__empresa > strong,
 html[data-tema="claro"] .incidencias-admin__vacio h2 {
   color: #172238;
 }
@@ -254,7 +268,7 @@ html[data-tema="claro"] .incidencias-admin__vacio h2 {
 html[data-tema="claro"] .incidencias-admin__cabecera p,
 html[data-tema="claro"] .incidencias-admin__tarjeta-cabecera p,
 html[data-tema="claro"] .incidencias-admin__descripcion p,
-html[data-tema="claro"] .incidencias-admin__empresa span,
+html[data-tema="claro"] .incidencias-admin__empresa > span,
 html[data-tema="claro"] .incidencias-admin__cargando,
 html[data-tema="claro"] .incidencias-admin__vacio,
 html[data-tema="claro"] .incidencias-admin__vacio p {
@@ -299,12 +313,18 @@ html[data-tema="claro"] .incidencias-admin__descripcion {
 
 /* Empresas */
 
-html[data-tema="claro"] .incidencias-admin__empresa + .incidencias-admin__empresa {
+html[data-tema="claro"]
+  .incidencias-admin__empresa
+  + .incidencias-admin__empresa {
   border-left-color: #e8eef1;
 }
 
-html[data-tema="claro"] .incidencias-admin__empresa p {
+html[data-tema="claro"] .incidencias-admin__contacto p {
   color: #167eb5;
+}
+
+html[data-tema="claro"] .incidencias-admin__contacto b {
+  color: #64748b;
 }
 
 /* Vacío / cargando */

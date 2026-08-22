@@ -72,13 +72,32 @@ function convertirCarga(carga: CargaBaseDatos): Carga {
   };
 }
 
+// Obtiene la fecha real de finalización.
+function obtenerFechaHoraFinCarga(carga: Carga) {
+  const ahora = Date.now();
+
+  const finPrevisto = new Date(carga.fechaHoraFinPrevista).getTime();
+
+  if (Number.isNaN(finPrevisto)) {
+    return new Date(ahora).toISOString();
+  }
+
+  return new Date(Math.min(ahora, finPrevisto)).toISOString();
+}
+
 // Calcula la energía consumida.
 function calcularEnergiaConsumida(carga: Carga) {
   const inicio = new Date(carga.fechaHoraInicio).getTime();
 
-  const fin = carga.fechaHoraFinReal
+  const finReal = carga.fechaHoraFinReal
     ? new Date(carga.fechaHoraFinReal).getTime()
     : Date.now();
+
+  const finPrevisto = new Date(carga.fechaHoraFinPrevista).getTime();
+
+  const fin = Number.isNaN(finPrevisto)
+    ? finReal
+    : Math.min(finReal, finPrevisto);
 
   if (Number.isNaN(inicio) || Number.isNaN(fin)) {
     return carga.energiaConsumidaKwh;
@@ -100,40 +119,6 @@ function actualizarEnergiaCargaActiva(carga: Carga): Carga {
 
     energiaConsumidaKwh: calcularEnergiaConsumida(carga),
   };
-}
-
-// Obtiene todas las cargas.
-export async function obtenerCargas(): Promise<Carga[]> {
-  const { data, error } = await supabase
-    .from("cargas")
-    .select(
-      `
-        id,
-        usuario_id,
-        reserva_id,
-        cargador_id,
-        toma_id,
-        estado,
-        fecha_hora_inicio,
-        fecha_hora_fin_prevista,
-        fecha_hora_fin_real,
-        potencia_actual_kw,
-        energia_consumida_kwh,
-        coste_estimado,
-        creada_en
-      `,
-    )
-    .order("fecha_hora_inicio", {
-      ascending: false,
-    });
-
-  if (error) {
-    throw new Error(`No se han podido cargar las sesiones: ${error.message}`);
-  }
-
-  return ((data ?? []) as CargaBaseDatos[])
-    .map(convertirCarga)
-    .map(actualizarEnergiaCargaActiva);
 }
 
 // Obtiene las cargas de un usuario.
@@ -171,43 +156,6 @@ export async function obtenerCargasUsuario(
   return ((data ?? []) as CargaBaseDatos[])
     .map(convertirCarga)
     .map(actualizarEnergiaCargaActiva);
-}
-
-// Obtiene una carga por su ID.
-export async function obtenerCargaPorId(
-  cargaId: string,
-): Promise<Carga | null> {
-  const { data, error } = await supabase
-    .from("cargas")
-    .select(
-      `
-        id,
-        usuario_id,
-        reserva_id,
-        cargador_id,
-        toma_id,
-        estado,
-        fecha_hora_inicio,
-        fecha_hora_fin_prevista,
-        fecha_hora_fin_real,
-        potencia_actual_kw,
-        energia_consumida_kwh,
-        coste_estimado,
-        creada_en
-      `,
-    )
-    .eq("id", cargaId)
-    .maybeSingle();
-
-  if (error) {
-    throw new Error(`No se ha podido obtener la carga: ${error.message}`);
-  }
-
-  if (!data) {
-    return null;
-  }
-
-  return actualizarEnergiaCargaActiva(convertirCarga(data as CargaBaseDatos));
 }
 
 // Obtiene una carga activa del usuario.
@@ -425,10 +373,11 @@ export async function finalizarCarga(
     throw new Error("No se ha encontrado la carga activa.");
   }
 
-  const fechaHoraFinReal = new Date().toISOString();
+  const fechaHoraFinReal = obtenerFechaHoraFinCarga(cargaEncontrada);
 
   const energiaConsumidaKwh = calcularEnergiaConsumida({
     ...cargaEncontrada,
+
     fechaHoraFinReal,
   });
 
@@ -436,7 +385,9 @@ export async function finalizarCarga(
     .from("cargas")
     .update({
       estado: "finalizada",
+
       fecha_hora_fin_real: fechaHoraFinReal,
+
       energia_consumida_kwh: energiaConsumidaKwh,
     })
     .eq("id", cargaId)
@@ -473,6 +424,7 @@ export async function finalizarCarga(
       .from("reservas")
       .update({
         estado: "finalizada",
+
         actualizada_en: fechaHoraFinReal,
       })
       .eq("id", cargaFinalizada.reservaId)
@@ -488,69 +440,4 @@ export async function finalizarCarga(
   }
 
   return cargaFinalizada;
-}
-
-// Cancela una carga activa.
-export async function cancelarCarga(cargaId: string): Promise<Carga> {
-  const cargaEncontrada = await obtenerCargaPorId(cargaId);
-
-  if (!cargaEncontrada) {
-    throw new Error("No se ha encontrado la carga.");
-  }
-
-  if (cargaEncontrada.estado !== "activa") {
-    throw new Error("La carga ya no está activa.");
-  }
-
-  const fechaHoraFinReal = new Date().toISOString();
-
-  const energiaConsumidaKwh = calcularEnergiaConsumida({
-    ...cargaEncontrada,
-
-    fechaHoraFinReal,
-  });
-
-  const { data, error } = await supabase
-    .from("cargas")
-    .update({
-      estado: "cancelada",
-
-      fecha_hora_fin_real: fechaHoraFinReal,
-
-      energia_consumida_kwh: energiaConsumidaKwh,
-    })
-    .eq("id", cargaId)
-    .select(
-      `
-        id,
-        usuario_id,
-        reserva_id,
-        cargador_id,
-        toma_id,
-        estado,
-        fecha_hora_inicio,
-        fecha_hora_fin_prevista,
-        fecha_hora_fin_real,
-        potencia_actual_kw,
-        energia_consumida_kwh,
-        coste_estimado,
-        creada_en
-      `,
-    )
-    .single();
-
-  if (error) {
-    throw new Error(`No se ha podido cancelar la carga: ${error.message}`);
-  }
-
-  return convertirCarga(data as CargaBaseDatos);
-}
-
-// Calcula la energía total de las cargas.
-export function calcularEnergiaTotal(cargas: Carga[]) {
-  return Number(
-    cargas
-      .reduce((total, carga) => total + carga.energiaConsumidaKwh, 0)
-      .toFixed(2),
-  );
 }

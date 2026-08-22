@@ -429,6 +429,8 @@ Deno.serve(async (request) => {
   const resultado = {
     reservasCaducadas: 0,
 
+    cargasFinalizadas: 0,
+
     accesosAprobados: 0,
 
     avisosReserva: 0,
@@ -490,6 +492,16 @@ Deno.serve(async (request) => {
       }
 
       resultado.reservasCaducadas = Number(totalCaducadas) || 0;
+
+      // Finaliza cargas que han alcanzado su hora prevista.
+      const { data: totalFinalizadas, error: errorFinalizacion } =
+        await supabase.rpc("cargaquer_finalizar_cargas_vencidas");
+
+      if (errorFinalizacion) {
+        throw new Error(errorFinalizacion.message);
+      }
+
+      resultado.cargasFinalizadas = Number(totalFinalizadas) || 0;
 
       // Obtiene reservas próximas a comenzar.
       const reservas = await obtenerRpc<ReservaAviso>(

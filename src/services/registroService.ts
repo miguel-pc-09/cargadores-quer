@@ -90,35 +90,33 @@ export async function enviarSolicitudRegistro(
     throw new Error("No se ha podido crear la solicitud de acceso.");
   }
 
-  try {
-    // Procesa inmediatamente la nueva solicitud.
-    if (data.session) {
-      const { error: errorAviso } = await supabase.functions.invoke(
-        "procesar-solicitudes",
-        {
-          body: {
-            origen: "registro",
-          },
+  // Procesa inmediatamente la nueva solicitud.
+  if (data.session) {
+    const { error: errorAviso } = await supabase.functions.invoke(
+      "procesar-solicitudes",
+      {
+        body: {
+          origen: "registro",
         },
+      },
+    );
+
+    if (errorAviso) {
+      console.error(
+        "La solicitud se ha creado, pero no se ha podido enviar el aviso inmediato:",
+        errorAviso,
       );
-
-      if (errorAviso) {
-        console.error(
-          "La solicitud se ha creado, pero no se ha podido enviar el aviso inmediato:",
-          errorAviso,
-        );
-      }
     }
-  } finally {
-    // Cierra la sesión temporal creada durante el registro.
-    if (data.session) {
-      const { error: errorCierre } = await supabase.auth.signOut();
+  }
 
-      if (errorCierre) {
-        throw new Error(
-          "La solicitud se ha creado, pero no se ha podido cerrar la sesión temporal.",
-        );
-      }
+  // Cierra la sesión temporal creada durante el registro.
+  if (data.session) {
+    const { error: errorCierre } = await supabase.auth.signOut();
+
+    if (errorCierre) {
+      throw new Error(
+        "La solicitud se ha creado, pero no se ha podido cerrar la sesión temporal.",
+      );
     }
   }
 }

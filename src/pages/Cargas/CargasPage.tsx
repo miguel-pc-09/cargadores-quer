@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
 import useAuth from "../../hooks/useAuth";
@@ -18,10 +18,12 @@ import type { Cargador } from "../../types/charger";
 
 import "../../styles/Cargas/CargasPage.css";
 
+// Estado recibido al navegar hasta Mis cargas.
 interface EstadoNavegacion {
   mensaje?: string;
 }
 
+// Formatea una fecha y hora.
 function formatearFechaHora(fechaIso: string) {
   const fecha = new Date(fechaIso);
 
@@ -38,6 +40,7 @@ function formatearFechaHora(fechaIso: string) {
   }).format(fecha);
 }
 
+// Calcula la duración real de una carga.
 function calcularDuracionReal(carga: Carga) {
   const inicio = new Date(carga.fechaHoraInicio).getTime();
 
@@ -45,13 +48,21 @@ function calcularDuracionReal(carga: Carga) {
     ? new Date(carga.fechaHoraFinReal).getTime()
     : Date.now();
 
-  if (Number.isNaN(inicio) || Number.isNaN(fin)) {
+  const finPrevisto = new Date(carga.fechaHoraFinPrevista).getTime();
+
+  const finLimitado =
+    carga.estado === "activa" && !Number.isNaN(finPrevisto)
+      ? Math.min(fin, finPrevisto)
+      : fin;
+
+  if (Number.isNaN(inicio) || Number.isNaN(finLimitado)) {
     return 0;
   }
 
-  return Math.max(0, Math.round((fin - inicio) / 60_000));
+  return Math.max(0, Math.round((finLimitado - inicio) / 60_000));
 }
 
+// Obtiene la información del cargador y la toma.
 function obtenerInformacionCargador(carga: Carga, cargadores: Cargador[]) {
   const cargador = cargadores.find(
     (cargadorActual) => cargadorActual.id === carga.cargadorId,
@@ -76,6 +87,7 @@ function obtenerInformacionCargador(carga: Carga, cargadores: Cargador[]) {
 
 function CargasPage() {
   const location = useLocation();
+
   const navigate = useNavigate();
 
   const { usuario } = useAuth();
@@ -84,20 +96,26 @@ function CargasPage() {
 
   const estadoNavegacion = location.state as EstadoNavegacion | null;
 
+  // Estado para guardar las cargas.
   const [cargas, setCargas] = useState<Carga[]>([]);
 
+  // Estado para guardar los cargadores.
   const [cargadores, setCargadores] = useState<Cargador[]>([]);
 
+  // Estado para controlar la carga inicial.
   const [cargando, setCargando] = useState(true);
 
+  // Estado para mostrar mensajes correctos.
   const [mensajeExito, setMensajeExito] = useState(
     estadoNavegacion?.mensaje ?? "",
   );
 
+  // Estado para mostrar errores.
   const [mensajeError, setMensajeError] = useState("");
 
-  useEffect(() => {
-    const cargarDatos = async () => {
+  // Función para cargar los datos.
+  const cargarDatos = useCallback(
+    async (mostrarCarga = false) => {
       if (!usuarioId) {
         setCargas([]);
         setCargadores([]);
@@ -106,7 +124,10 @@ function CargasPage() {
         return;
       }
 
-      setCargando(true);
+      if (mostrarCarga) {
+        setCargando(true);
+      }
+
       setMensajeError("");
 
       try {
@@ -123,13 +144,56 @@ function CargasPage() {
 
         setMensajeError("No hemos podido cargar tu historial de cargas.");
       } finally {
-        setCargando(false);
+        if (mostrarCarga) {
+          setCargando(false);
+        }
+      }
+    },
+    [usuarioId],
+  );
+
+  // Carga los datos al abrir la pantalla.
+  useEffect(() => {
+    void cargarDatos(true);
+  }, [cargarDatos]);
+
+  // Comprueba si existe alguna carga activa.
+  const hayCargaActiva = useMemo(
+    () => cargas.some((carga) => carga.estado === "activa"),
+    [cargas],
+  );
+
+  // Actualiza las cargas mientras exista una sesión activa.
+  useEffect(() => {
+    if (!hayCargaActiva) {
+      return;
+    }
+
+    const intervalo = window.setInterval(() => {
+      void cargarDatos();
+    }, 5000);
+
+    return () => {
+      window.clearInterval(intervalo);
+    };
+  }, [cargarDatos, hayCargaActiva]);
+
+  // Actualiza los datos al volver a la pestaña.
+  useEffect(() => {
+    const actualizarAlVolver = () => {
+      if (document.visibilityState === "visible") {
+        void cargarDatos();
       }
     };
 
-    void cargarDatos();
-  }, [usuarioId]);
+    document.addEventListener("visibilitychange", actualizarAlVolver);
 
+    return () => {
+      document.removeEventListener("visibilitychange", actualizarAlVolver);
+    };
+  }, [cargarDatos]);
+
+  // Limpia el mensaje recibido por navegación.
   useEffect(() => {
     if (!estadoNavegacion?.mensaje) {
       return;
@@ -141,11 +205,13 @@ function CargasPage() {
     });
   }, [estadoNavegacion, location.pathname, navigate]);
 
+  // Calcula las estadísticas.
   const estadisticas = useMemo(
     () => calcularEstadisticasCargas(cargas),
     [cargas],
   );
 
+  // Ordena las cargas por fecha.
   const cargasOrdenadas = useMemo(
     () =>
       [...cargas].sort(

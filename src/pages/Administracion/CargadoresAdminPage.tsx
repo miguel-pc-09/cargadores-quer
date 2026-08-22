@@ -7,6 +7,7 @@ import {
 
 import "../../styles/Administracion/CargadoresAdminPage.css";
 
+// Función para formatear el estado.
 function formatearEstado(estado: string) {
   const estadoLimpio = estado.trim();
 
@@ -17,6 +18,7 @@ function formatearEstado(estado: string) {
   return estadoLimpio.charAt(0).toUpperCase() + estadoLimpio.slice(1);
 }
 
+// Función para obtener la clase del estado.
 function obtenerClaseEstado(estado: string) {
   const estadoNormalizado = estado.toLowerCase();
 
@@ -37,15 +39,45 @@ function obtenerClaseEstado(estado: string) {
   return "cargadores-admin__estado--disponible";
 }
 
+// Agrupa las tomas manteniendo el orden de los cargadores.
+function ordenarTomas(tomas: TomaAdministracion[]) {
+  const ordenCargadores = new Map<string, number>();
+
+  tomas.forEach((toma) => {
+    if (!ordenCargadores.has(toma.cargadorId)) {
+      ordenCargadores.set(toma.cargadorId, ordenCargadores.size);
+    }
+  });
+
+  return [...tomas].sort((a, b) => {
+    const ordenA = ordenCargadores.get(a.cargadorId) ?? 0;
+    const ordenB = ordenCargadores.get(b.cargadorId) ?? 0;
+
+    if (ordenA !== ordenB) {
+      return ordenA - ordenB;
+    }
+
+    return a.tomaNombre.localeCompare(b.tomaNombre, "es", {
+      numeric: true,
+      sensitivity: "base",
+    });
+  });
+}
+
 function CargadoresAdminPage() {
+  // Estado para guardar las tomas.
   const [tomas, setTomas] = useState<TomaAdministracion[]>([]);
 
+  // Estado para controlar la carga.
   const [cargando, setCargando] = useState(true);
 
+  // Estado para guardar errores.
   const [error, setError] = useState("");
 
+  // Estado para guardar la toma desplegada.
   const [tomaDesplegadaId, setTomaDesplegadaId] = useState<string | null>(null);
 
+  // Función para cargar los cargadores.
   const cargarCargadores = useCallback(async () => {
     try {
       setCargando(true);
@@ -54,7 +86,7 @@ function CargadoresAdminPage() {
 
       const resultado = await obtenerCargadoresAdministracion();
 
-      setTomas(resultado);
+      setTomas(ordenarTomas(resultado));
     } catch (errorCarga) {
       setError(
         errorCarga instanceof Error
@@ -66,10 +98,12 @@ function CargadoresAdminPage() {
     }
   }, []);
 
+  // Carga los cargadores al abrir la pantalla.
   useEffect(() => {
     void cargarCargadores();
   }, [cargarCargadores]);
 
+  // Función para mostrar u ocultar los detalles.
   function cambiarDesplegable(tomaId: string) {
     setTomaDesplegadaId((actual) => (actual === tomaId ? null : tomaId));
   }
@@ -140,6 +174,7 @@ function CargadoresAdminPage() {
                   </tr>
                 ) : (
                   tomas.map((toma) => {
+                    // Comprueba si la toma está desplegada.
                     const desplegada = tomaDesplegadaId === toma.id;
 
                     return (
