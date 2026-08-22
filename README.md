@@ -58,7 +58,6 @@ Al finalizar, la sesión pasa automáticamente al histórico de cargas.
 
 ## 🖥️ Vista general
 
-
 ![Panel principal de CargaQuer](docs/capturas/inicio.png)
 
 El panel principal permite consultar rápidamente el estado de la cuenta, las próximas reservas, la actividad reciente y acceder a las principales funciones de la aplicación.
@@ -128,3 +127,14 @@ Supabase
           │
           ▼
      Automatizaciones
+
+---
+
+## 👨‍💻 Autor
+
+Proyecto desarrollado por **Miguel Ángel Perucha Castelló**.
+
+🌐 [Portfolio](https://mapdev-portfolio.netlify.app/)  
+💼 [LinkedIn](https://www.linkedin.com/in/miguel-%C3%A1ngel-perucha-castell%C3%B3)
+
+Espero que CargaQuer resulte interesante. Cualquier comentario, sugerencia o feedback sobre el proyecto es bienvenido.
