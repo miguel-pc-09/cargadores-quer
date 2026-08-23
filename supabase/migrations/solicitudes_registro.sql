@@ -2,7 +2,8 @@
 
 create extension if not exists pgcrypto;
 
--- Tabla de solicitudes pendientes.
+
+-- Tabla de solicitudes de registro.
 create table if not exists public.solicitudes_registro (
   id uuid primary key default gen_random_uuid(),
 
@@ -50,6 +51,7 @@ create table if not exists public.solicitudes_registro (
     default now()
 );
 
+
 alter table public.solicitudes_registro
   enable row level security;
 
@@ -96,22 +98,7 @@ where dni is not null
   and dni !~ '^[0-9a-fA-F]{64}$';
 
 
--- Elimina vehículos creados por el flujo antiguo.
-delete from public.vehiculos v
-using public.solicitudes_registro s
-where v.usuario_id = s.usuario_id
-  and s.estado = 'pendiente';
-
-
--- Elimina perfiles creados por el flujo antiguo.
-delete from public.perfiles p
-using public.solicitudes_registro s
-where p.id = s.usuario_id
-  and p.rol = 'usuario'
-  and s.estado = 'pendiente';
-
-
--- Elimina el trigger antiguo.
+-- Elimina el trigger anterior.
 drop trigger if exists cargaquer_nuevo_usuario
 on auth.users;
 
@@ -198,7 +185,7 @@ using (
 );
 
 
--- Función para crear una solicitud de registro.
+-- Función para registrar y aprobar un nuevo usuario.
 create or replace function
 public.cargaquer_crear_solicitud_registro()
 returns trigger
@@ -356,7 +343,7 @@ begin
   end if;
 
 
-  -- Guarda la solicitud pendiente.
+  -- Guarda la solicitud aprobada.
   insert into public.solicitudes_registro (
     usuario_id,
     nombre,
@@ -381,7 +368,51 @@ begin
     v_tipo_usuario,
     v_filiacion,
     v_matricula,
-    'pendiente'
+    'aprobada'
+  );
+
+
+  -- Crea el perfil verificado.
+  insert into public.perfiles (
+    id,
+    nombre,
+    apellidos,
+    telefono,
+    dni,
+    rol,
+    estado_cuenta,
+    cliente,
+    tipo_usuario,
+    filiacion,
+    email
+  )
+  values (
+    new.id,
+    v_nombre,
+    v_apellidos,
+    v_telefono,
+    v_dni,
+    'usuario',
+    'verificada',
+    v_cliente,
+    v_tipo_usuario,
+    v_filiacion,
+    lower(new.email)
+  );
+
+
+  -- Crea el vehículo validado.
+  insert into public.vehiculos (
+    usuario_id,
+    matricula,
+    estado_validacion,
+    motivo_rechazo
+  )
+  values (
+    new.id,
+    v_matricula,
+    'validado',
+    null
   );
 
 
@@ -391,7 +422,7 @@ end;
 $$;
 
 
--- Ejecuta la solicitud al crear un usuario.
+-- Ejecuta el registro al crear un usuario.
 create trigger cargaquer_nuevo_usuario
 after insert
 on auth.users
@@ -400,7 +431,7 @@ execute function
 public.cargaquer_crear_solicitud_registro();
 
 
--- Función para aprobar una solicitud.
+-- Función para aprobar una solicitud pendiente.
 create or replace function
 public.cargaquer_aprobar_solicitud(
   p_solicitud_id uuid

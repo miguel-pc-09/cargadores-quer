@@ -10,6 +10,11 @@ type Tema = "oscuro" | "claro";
 
 const TEMA_GUARDADO = "cargaquer-tema";
 
+// Comprueba si el correo tiene formato válido.
+function esEmailValido(valor: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valor);
+}
+
 function LoginPage() {
   const navigate = useNavigate();
 
@@ -57,6 +62,14 @@ function LoginPage() {
 
     if (!emailLimpio || !contrasena) {
       setError("Introduce tu correo electrónico y contraseña.");
+
+      return;
+    }
+
+    const esAdmin = emailLimpio === "admin";
+
+    if (!esAdmin && !esEmailValido(emailLimpio)) {
+      setError("Introduce un correo electrónico válido.");
 
       return;
     }
@@ -174,8 +187,9 @@ function LoginPage() {
 
               <input
                 id="email"
-                type="email"
-                autoComplete="email"
+                type="text"
+                autoComplete="username"
+                inputMode="email"
                 placeholder="usuario@email.com"
                 value={email}
                 disabled={enviando}

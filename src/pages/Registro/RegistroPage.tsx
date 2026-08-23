@@ -335,7 +335,7 @@ function RegistroPage() {
         formulario,
       });
 
-      navigate("/login", {
+      navigate("/panel", {
         replace: true,
       });
     } catch (error) {

@@ -3,7 +3,7 @@ import { supabase } from "./supabaseClient";
 import type { Cliente } from "../types/cliente";
 import type { DatosFormularioRegistro } from "../types/registro";
 
-// Datos necesarios para enviar una solicitud.
+// Datos necesarios para enviar un registro.
 export interface SolicitudRegistro {
   cliente: Cliente;
   formulario: DatosFormularioRegistro;
@@ -42,13 +42,13 @@ function obtenerMensajeError(mensaje: string) {
     mensajeMinusculas.includes("duplicate key") ||
     mensajeMinusculas.includes("solicitudes_registro")
   ) {
-    return "Ya existe una solicitud asociada a estos datos.";
+    return "Ya existe una cuenta asociada a estos datos.";
   }
 
   return "No se ha podido completar el registro.";
 }
 
-// Función para enviar una nueva solicitud de registro.
+// Función para registrar un nuevo usuario.
 export async function enviarSolicitudRegistro(
   solicitud: SolicitudRegistro,
 ): Promise<void> {
@@ -62,7 +62,7 @@ export async function enviarSolicitudRegistro(
 
   const dniProtegido = await crearHashDocumento(usuario.dni);
 
-  // Crea el usuario pendiente de aprobación.
+  // Crea el usuario con acceso directo.
   const { data, error } = await supabase.auth.signUp({
     email,
 
@@ -87,36 +87,6 @@ export async function enviarSolicitudRegistro(
   }
 
   if (!data.user) {
-    throw new Error("No se ha podido crear la solicitud de acceso.");
-  }
-
-  // Procesa inmediatamente la nueva solicitud.
-  if (data.session) {
-    const { error: errorAviso } = await supabase.functions.invoke(
-      "procesar-solicitudes",
-      {
-        body: {
-          origen: "registro",
-        },
-      },
-    );
-
-    if (errorAviso) {
-      console.error(
-        "La solicitud se ha creado, pero no se ha podido enviar el aviso inmediato:",
-        errorAviso,
-      );
-    }
-  }
-
-  // Cierra la sesión temporal creada durante el registro.
-  if (data.session) {
-    const { error: errorCierre } = await supabase.auth.signOut();
-
-    if (errorCierre) {
-      throw new Error(
-        "La solicitud se ha creado, pero no se ha podido cerrar la sesión temporal.",
-      );
-    }
+    throw new Error("No se ha podido crear la cuenta.");
   }
 }

@@ -28,6 +28,13 @@ interface SolicitudAccesoBD {
   motivo_rechazo: string | null;
 }
 
+// Datos devueltos por el acceso administrativo.
+interface AccesoAdminRespuesta {
+  accessToken?: string;
+  refreshToken?: string;
+  error?: string;
+}
+
 // Convierte el perfil de Supabase al usuario de la aplicación.
 function convertirPerfilEnUsuario(
   perfil: PerfilSupabase,
@@ -151,6 +158,35 @@ function comprobarAcceso(usuario: UsuarioAutenticado) {
   }
 }
 
+// Inicia sesión usando el alias del administrador.
+async function iniciarSesionAdmin(contrasena: string): Promise<User> {
+  const { data, error } = await supabase.functions.invoke<AccesoAdminRespuesta>(
+    "acceso-admin",
+    {
+      body: {
+        contrasena,
+      },
+    },
+  );
+
+  if (error || !data?.accessToken || !data.refreshToken) {
+    throw new Error(data?.error || "Usuario o contraseña incorrectos.");
+  }
+
+  const { data: datosSesion, error: errorSesion } =
+    await supabase.auth.setSession({
+      access_token: data.accessToken,
+
+      refresh_token: data.refreshToken,
+    });
+
+  if (errorSesion || !datosSesion.user) {
+    throw new Error("No se ha podido iniciar la sesión administrativa.");
+  }
+
+  return datosSesion.user;
+}
+
 // Obtiene el usuario a partir de una sesión de Supabase.
 export async function obtenerUsuarioPorSesion(
   usuarioAuth: User,
@@ -165,28 +201,36 @@ export async function obtenerUsuarioPorSesion(
   return usuario;
 }
 
-// Inicia sesión con correo y contraseña.
+// Inicia sesión con correo o alias administrativo.
 export async function iniciarSesion(
   credenciales: CredencialesLogin,
 ): Promise<ResultadoLogin> {
-  const email = credenciales.email.trim().toLowerCase();
+  const identificador = credenciales.email.trim().toLowerCase();
 
-  const { data, error } = await supabase.auth.signInWithPassword({
-    email,
+  let usuarioAuth: User;
 
-    password: credenciales.contrasena,
-  });
+  if (identificador === "admin") {
+    usuarioAuth = await iniciarSesionAdmin(credenciales.contrasena);
+  } else {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email: identificador,
 
-  if (error) {
-    throw new Error("Correo electrónico o contraseña incorrectos.");
-  }
+      password: credenciales.contrasena,
+    });
 
-  if (!data.user) {
-    throw new Error("No se ha podido recuperar el usuario autenticado.");
+    if (error) {
+      throw new Error("Correo electrónico o contraseña incorrectos.");
+    }
+
+    if (!data.user) {
+      throw new Error("No se ha podido recuperar el usuario autenticado.");
+    }
+
+    usuarioAuth = data.user;
   }
 
   try {
-    const usuario = await obtenerUsuarioPorSesion(data.user);
+    const usuario = await obtenerUsuarioPorSesion(usuarioAuth);
 
     return {
       usuario,
