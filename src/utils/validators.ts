@@ -3,11 +3,11 @@ export function validarEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
 }
 
-// Valida teléfonos móviles españoles.
+// Valida teléfonos de 9 cifras.
 export function validarTelefono(telefono: string): boolean {
   const telefonoLimpio = telefono.replace(/\D/g, "");
 
-  return /^[67]\d{8}$/.test(telefonoLimpio);
+  return /^\d{9}$/.test(telefonoLimpio);
 }
 
 // Normaliza un DNI o NIE.
