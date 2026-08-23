@@ -9,6 +9,9 @@ export interface SolicitudRegistro {
   formulario: DatosFormularioRegistro;
 }
 
+// Resultado de la comprobación previa.
+type DatoRegistroDuplicado = "dni" | "matricula" | null;
+
 // Función para normalizar la matrícula.
 function normalizarMatricula(matricula: string) {
   return matricula.trim().toUpperCase().replace(/[\s-]/g, "");
@@ -28,6 +31,34 @@ async function crearHashDocumento(documento: string) {
   return Array.from(new Uint8Array(resumen))
     .map((byte) => byte.toString(16).padStart(2, "0"))
     .join("");
+}
+
+// Función para comprobar datos ya registrados.
+async function comprobarDatosRegistro(
+  dniProtegido: string,
+  matricula: string,
+): Promise<void> {
+  const { data, error } = await supabase.rpc(
+    "cargaquer_comprobar_datos_registro",
+    {
+      p_dni: dniProtegido,
+      p_matricula: matricula,
+    },
+  );
+
+  if (error) {
+    throw new Error("No se han podido comprobar los datos del registro.");
+  }
+
+  const datoDuplicado = data as DatoRegistroDuplicado;
+
+  if (datoDuplicado === "dni") {
+    throw new Error("Este DNI o NIE ya está registrado.");
+  }
+
+  if (datoDuplicado === "matricula") {
+    throw new Error("Esta matrícula ya está registrada.");
+  }
 }
 
 // Función para mostrar errores de registro más claros.
@@ -61,6 +92,9 @@ export async function enviarSolicitudRegistro(
   const matricula = normalizarMatricula(formulario.matricula);
 
   const dniProtegido = await crearHashDocumento(usuario.dni);
+
+  // Comprueba que los datos no estén registrados.
+  await comprobarDatosRegistro(dniProtegido, matricula);
 
   // Crea el usuario con acceso directo.
   const { data, error } = await supabase.auth.signUp({
