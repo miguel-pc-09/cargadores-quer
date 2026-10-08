@@ -22,17 +22,11 @@ function LoginPage() {
     useAuth();
 
   const [email, setEmail] = useState("");
-
   const [contrasena, setContrasena] = useState("");
-
   const [mostrarContrasena, setMostrarContrasena] = useState(false);
-
   const [recordarme, setRecordarme] = useState(false);
-
   const [error, setError] = useState("");
-
   const [enviando, setEnviando] = useState(false);
-
   const [tema, setTema] = useState<Tema>(() => {
     const temaGuardado = localStorage.getItem(TEMA_GUARDADO);
 
@@ -162,7 +156,7 @@ function LoginPage() {
                 Servicio de recarga eléctrica
               </span>
 
-              <strong className="login__nombre">CargaQuer</strong>
+              <strong className="login__nombre">Voltalibre</strong>
             </div>
           </div>
 

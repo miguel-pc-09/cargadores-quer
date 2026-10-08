@@ -112,7 +112,7 @@ function plantillaCorreo(titulo: string, contenido: string) {
                 margin-bottom:4px;
               "
             >
-              ⚡ CargaQuer
+              ⚡ Voltalibre
             </div>
 
             <div
@@ -157,7 +157,7 @@ function plantillaCorreo(titulo: string, contenido: string) {
               margin:18px 0 0;
             "
           >
-            Este es un aviso automático de CargaQuer.
+            Este es un aviso automático de Voltalibre.
           </p>
 
         </div>
@@ -443,7 +443,7 @@ Deno.serve(async (request) => {
   try {
     // Obtiene los accesos aprobados pendientes de aviso.
     const aprobados = await obtenerRpc<UsuarioAprobado>(
-      "cargaquer_usuarios_aprobados_aviso",
+      "Voltalibre_usuarios_aprobados_aviso",
     );
 
     // Envía los avisos de acceso aprobado.
@@ -455,10 +455,10 @@ Deno.serve(async (request) => {
 
         usuario.email,
 
-        "CargaQuer · Tu acceso ha sido aprobado",
+        "Voltalibre · Tu acceso ha sido aprobado",
 
         plantillaCorreo(
-          "Tu acceso a CargaQuer ha sido aprobado",
+          "Tu acceso a Voltalibre ha sido aprobado",
 
           `
             <p>
@@ -470,7 +470,7 @@ Deno.serve(async (request) => {
             </p>
 
             <p>
-              Ya puedes iniciar sesión en CargaQuer y utilizar el servicio
+              Ya puedes iniciar sesión en Voltalibre y utilizar el servicio
               de reservas y carga eléctrica municipal.
             </p>
           `,
@@ -485,7 +485,7 @@ Deno.serve(async (request) => {
     if (llamadaCron) {
       // Caduca reservas no iniciadas.
       const { data: totalCaducadas, error: errorCaducidad } =
-        await supabase.rpc("cargaquer_caducar_reservas_no_iniciadas");
+        await supabase.rpc("Voltalibre_caducar_reservas_no_iniciadas");
 
       if (errorCaducidad) {
         throw new Error(errorCaducidad.message);
@@ -495,7 +495,7 @@ Deno.serve(async (request) => {
 
       // Finaliza cargas que han alcanzado su hora prevista.
       const { data: totalFinalizadas, error: errorFinalizacion } =
-        await supabase.rpc("cargaquer_finalizar_cargas_vencidas");
+        await supabase.rpc("Voltalibre_finalizar_cargas_vencidas");
 
       if (errorFinalizacion) {
         throw new Error(errorFinalizacion.message);
@@ -505,7 +505,7 @@ Deno.serve(async (request) => {
 
       // Obtiene reservas próximas a comenzar.
       const reservas = await obtenerRpc<ReservaAviso>(
-        "cargaquer_reservas_aviso_inicio",
+        "Voltalibre_reservas_aviso_inicio",
       );
 
       // Envía los avisos previos de reserva.
@@ -517,7 +517,7 @@ Deno.serve(async (request) => {
 
           reserva.email,
 
-          "CargaQuer · Tu reserva comienza en 15 minutos",
+          "Voltalibre · Tu reserva comienza en 15 minutos",
 
           plantillaCorreo(
             "Tu reserva comienza en 15 minutos",
@@ -561,7 +561,9 @@ Deno.serve(async (request) => {
       }
 
       // Obtiene cargas próximas a finalizar.
-      const cargas = await obtenerRpc<CargaAviso>("cargaquer_cargas_aviso_fin");
+      const cargas = await obtenerRpc<CargaAviso>(
+        "Voltalibre_cargas_aviso_fin",
+      );
 
       // Envía los avisos de fin de carga.
       for (const carga of cargas) {
@@ -572,7 +574,7 @@ Deno.serve(async (request) => {
 
           carga.email,
 
-          "CargaQuer · Tu carga finalizará en 15 minutos",
+          "Voltalibre · Tu carga finalizará en 15 minutos",
 
           plantillaCorreo(
             "Tu carga finalizará en 15 minutos",

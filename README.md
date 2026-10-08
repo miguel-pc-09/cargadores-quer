@@ -12,7 +12,7 @@ La aplicación plantea una solución sencilla para que los vecinos puedan consul
 
 La aplicación está desplegada en Netlify y puede probarse desde:
 
-👉 **[Abrir CargaQuer](https://cargaquer.netlify.app/)**
+👉 **[Abrir Voltalibre](https://voltalibre.netlify.app/)**
 
 ---
 

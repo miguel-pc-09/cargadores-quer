@@ -70,7 +70,7 @@ function BarraSuperior({
             </span>
 
             <div className="barra-superior__marca-texto">
-              <strong>CargaQuer</strong>
+              <strong>Voltalibre</strong>
 
               <span>Carga eléctrica municipal</span>
             </div>

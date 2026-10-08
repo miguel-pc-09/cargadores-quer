@@ -93,7 +93,7 @@ function plantillaCorreo(titulo: string, contenido: string) {
                 margin-bottom:4px;
               "
             >
-              ⚡ CargaQuer
+              ⚡ Voltalibre
             </div>
 
             <div
@@ -138,7 +138,7 @@ function plantillaCorreo(titulo: string, contenido: string) {
               margin:18px 0 0;
             "
           >
-            Este es un aviso automático de CargaQuer.
+            Este es un aviso automático de Voltalibre.
           </p>
 
         </div>
@@ -412,7 +412,7 @@ Deno.serve(async (request) => {
 
       solicitud.email,
 
-      "CargaQuer · Hemos recibido tu solicitud",
+      "Voltalibre · Hemos recibido tu solicitud",
 
       plantillaCorreo(
         "Solicitud recibida",
@@ -423,7 +423,7 @@ Deno.serve(async (request) => {
           </p>
 
           <p>
-            Hemos recibido correctamente tu solicitud de acceso a CargaQuer.
+            Hemos recibido correctamente tu solicitud de acceso a Voltalibre.
           </p>
 
           <p>
@@ -465,14 +465,14 @@ Deno.serve(async (request) => {
 
       ADMIN_EMAIL,
 
-      "CargaQuer · Nueva solicitud pendiente",
+      "Voltalibre · Nueva solicitud pendiente",
 
       plantillaCorreo(
         "Nueva solicitud pendiente de aprobación",
 
         `
           <p>
-            Se ha registrado una nueva solicitud de acceso a CargaQuer.
+            Se ha registrado una nueva solicitud de acceso a Voltalibre.
           </p>
 
           <p>

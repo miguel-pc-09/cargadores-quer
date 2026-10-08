@@ -132,7 +132,7 @@ function AdminLayout() {
               </div>
 
               <div className="admin-layout__marca-texto">
-                <strong>CargaQuer</strong>
+                <strong>Voltalibre</strong>
 
                 <span>Gestión municipal</span>
               </div>

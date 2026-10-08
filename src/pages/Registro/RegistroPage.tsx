@@ -384,7 +384,7 @@ function RegistroPage() {
                 Servicio de recarga eléctrica
               </span>
 
-              <strong className="registro__nombre">CargaQuer</strong>
+              <strong className="registro__nombre">Voltalibre</strong>
             </div>
           </div>
         </header>

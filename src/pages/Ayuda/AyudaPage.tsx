@@ -476,7 +476,7 @@ function AyudaPage() {
             <div>
               <span className="ayuda__etiqueta">Acceso rápido</span>
 
-              <h2>Añadir CargaQuer al móvil</h2>
+              <h2>Añadir Voltalibre al móvil</h2>
             </div>
           </header>
 
@@ -484,7 +484,7 @@ function AyudaPage() {
             <details className="ayuda__pregunta">
               <summary>
                 <span>
-                  ¿Cómo puedo añadir CargaQuer a la pantalla de inicio en
+                  ¿Cómo puedo añadir Voltalibre a la pantalla de inicio en
                   Android?
                 </span>
 
@@ -495,7 +495,7 @@ function AyudaPage() {
 
               <div className="ayuda__respuesta">
                 <p>
-                  Abre CargaQuer desde <strong>Google Chrome</strong> en tu
+                  Abre Voltalibre desde <strong>Google Chrome</strong> en tu
                   teléfono Android.
                 </p>
 
@@ -511,7 +511,7 @@ function AyudaPage() {
                 </p>
 
                 <p>
-                  Confirma la operación y aparecerá un icono de CargaQuer en la
+                  Confirma la operación y aparecerá un icono de Voltalibre en la
                   pantalla de inicio de tu teléfono. A partir de ese momento
                   podrás abrir el servicio directamente desde ese icono.
                 </p>
@@ -521,7 +521,7 @@ function AyudaPage() {
             <details className="ayuda__pregunta">
               <summary>
                 <span>
-                  ¿Cómo puedo añadir CargaQuer a la pantalla de inicio en
+                  ¿Cómo puedo añadir Voltalibre a la pantalla de inicio en
                   iPhone?
                 </span>
 
@@ -532,7 +532,7 @@ function AyudaPage() {
 
               <div className="ayuda__respuesta">
                 <p>
-                  Abre CargaQuer desde <strong>Safari</strong> en tu iPhone.
+                  Abre Voltalibre desde <strong>Safari</strong> en tu iPhone.
                 </p>
 
                 <p>
@@ -546,8 +546,8 @@ function AyudaPage() {
 
                 <p>
                   Confirma el nombre y pulsa <strong>Añadir</strong>. Se creará
-                  un icono de CargaQuer en la pantalla de inicio y podrás entrar
-                  al servicio directamente desde él.
+                  un icono de Voltalibre en la pantalla de inicio y podrás
+                  entrar al servicio directamente desde él.
                 </p>
               </div>
             </details>
@@ -565,7 +565,7 @@ function AyudaPage() {
 
               <div className="ayuda__respuesta">
                 <p>
-                  No. CargaQuer es una <strong>aplicación web</strong> que se
+                  No. Voltalibre es una <strong>aplicación web</strong> que se
                   utiliza desde el navegador.
                 </p>
 

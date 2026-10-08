@@ -6,7 +6,7 @@ import "../../styles/RecuperarContrasena/RecuperarContrasenaPage.css";
 
 type Tema = "oscuro" | "claro";
 
-const TEMA_GUARDADO = "cargaquer-tema";
+const TEMA_GUARDADO = "Voltalibre-tema";
 
 function RecuperarContrasenaPage() {
   const [email, setEmail] = useState("");
@@ -83,7 +83,7 @@ function RecuperarContrasenaPage() {
           <div>
             <span>Servicio de recarga eléctrica</span>
 
-            <strong>CargaQuer</strong>
+            <strong>Voltalibre</strong>
           </div>
         </header>
 
