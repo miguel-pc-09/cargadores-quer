@@ -262,8 +262,6 @@ function LoginPage() {
         </section>
 
         <footer className="login__pie">
-          <span>Ayuntamiento de Quer</span>
-
           <span>Servicio de recarga eléctrica</span>
         </footer>
       </section>
