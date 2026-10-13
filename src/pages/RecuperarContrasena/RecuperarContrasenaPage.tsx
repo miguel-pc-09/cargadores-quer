@@ -77,7 +77,11 @@ function RecuperarContrasenaPage() {
       <section className="recuperar__contenido">
         <header className="recuperar__marca">
           <div className="recuperar__logo" aria-hidden="true">
-            ⚡
+            <img
+              src="/logo-voltalibre.png"
+              alt="Logo de Voltalibre"
+              className="login__logo"
+            />
           </div>
 
           <div>

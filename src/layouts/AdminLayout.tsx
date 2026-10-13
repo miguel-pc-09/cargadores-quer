@@ -6,7 +6,7 @@ import useAuth from "../hooks/useAuth";
 import "../styles/Administracion/AdminLayout.css";
 
 /*
- Los dos temas disponibles actualmente en CargaQuer.
+ Los dos temas disponibles actualmente en Voltalibre.
  */
 type Tema = "oscuro" | "claro";
 
@@ -125,10 +125,10 @@ function AdminLayout() {
               ☰
             </button>
 
-            {/* Identidad de CargaQuer dentro de administración */}
+            {/* Identidad de Voltalibre dentro de administración */}
             <div className="admin-layout__marca">
               <div className="admin-layout__logo" aria-hidden="true">
-                ⚡
+                <img src="/logo-voltalibre.png" alt="" />
               </div>
 
               <div className="admin-layout__marca-texto">
@@ -267,7 +267,9 @@ function AdminLayout() {
                 }`
               }
             >
-              <span className="admin-layout__enlace-icono">⚡</span>
+              <span className="admin-layout__enlace-icono" aria-hidden="true">
+                ⚡
+              </span>
 
               <span>Cargadores</span>
             </NavLink>

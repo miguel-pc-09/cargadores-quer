@@ -66,7 +66,7 @@ function BarraSuperior({
           {/* Logo y nombre de la aplicación. */}
           <div className="barra-superior__marca">
             <span className="barra-superior__logo" aria-hidden="true">
-              ⚡
+              <img src="/logo-voltalibre.png" alt="Logo de Voltalibre" />
             </span>
 
             <div className="barra-superior__marca-texto">

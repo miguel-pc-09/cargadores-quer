@@ -93,7 +93,11 @@ function plantillaCorreo(titulo: string, contenido: string) {
                 margin-bottom:4px;
               "
             >
-              ⚡ Voltalibre
+              <img
+                src="/logo-voltalibre.png"
+                alt="Logo de Voltalibre"
+                className="login__logo"
+                /> Voltalibre
             </div>
 
             <div

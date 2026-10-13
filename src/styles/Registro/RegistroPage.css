@@ -89,6 +89,13 @@
   background: rgba(17, 37, 68, 0.8);
   font-size: 1.45rem;
 }
+/* Imagen del logo de registro. */
+.registro__icono img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
 
 .registro__ayuntamiento,
 .registro__nombre {

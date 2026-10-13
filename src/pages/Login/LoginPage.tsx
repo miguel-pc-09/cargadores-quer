@@ -148,7 +148,11 @@ function LoginPage() {
         <header className="login__cabecera">
           <div className="login__marca">
             <div className="login__icono" aria-hidden="true">
-              ⚡
+              <img
+                src="/logo-voltalibre.png"
+                alt="Logo de Voltalibre"
+                className="login__logo"
+              />
             </div>
 
             <div>

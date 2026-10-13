@@ -72,6 +72,14 @@
   font-size: 21px;
 }
 
+/* Imagen del logo de la barra superior. */
+.barra-superior__logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .barra-superior__marca-texto {
   min-width: 0;
   display: flex;
@@ -538,4 +546,54 @@ html[data-tema="claro"] .menu-lateral__enlace--activo {
 
 html[data-tema="claro"] .menu-lateral__icono {
   color: #0d8a73;
+}
+
+/* Colores de los iconos del menú de usuario. */
+.menu-lateral__enlace[href="/panel"] .menu-lateral__icono {
+  color: #4ade80;
+}
+
+.menu-lateral__enlace[href="/panel/cargadores"] .menu-lateral__icono {
+  color: #fbbf24;
+}
+
+.menu-lateral__enlace[href="/panel/mis-cargas"] .menu-lateral__icono {
+  color: #38bdf8;
+}
+
+.menu-lateral__enlace[href="/panel/mis-reservas"] .menu-lateral__icono {
+  color: #fcd34d;
+}
+
+.menu-lateral__enlace[href="/panel/ayuda"] .menu-lateral__icono {
+  color: #c084fc;
+}
+
+.menu-lateral__enlace[href="/panel/perfil"] .menu-lateral__icono {
+  color: #cbd5e1;
+}
+
+/* Colores de los iconos en modo claro. */
+html[data-tema="claro"] .menu-lateral__enlace[href="/panel"] .menu-lateral__icono {
+  color: #15803d;
+}
+
+html[data-tema="claro"] .menu-lateral__enlace[href="/panel/cargadores"] .menu-lateral__icono {
+  color: #b45309;
+}
+
+html[data-tema="claro"] .menu-lateral__enlace[href="/panel/mis-cargas"] .menu-lateral__icono {
+  color: #0369a1;
+}
+
+html[data-tema="claro"] .menu-lateral__enlace[href="/panel/mis-reservas"] .menu-lateral__icono {
+  color: #a16207;
+}
+
+html[data-tema="claro"] .menu-lateral__enlace[href="/panel/ayuda"] .menu-lateral__icono {
+  color: #7e22ce;
+}
+
+html[data-tema="claro"] .menu-lateral__enlace[href="/panel/perfil"] .menu-lateral__icono {
+  color: #475569;
 }

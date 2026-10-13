@@ -376,7 +376,7 @@ function RegistroPage() {
 
           <div className="registro__marca">
             <span className="registro__icono" aria-hidden="true">
-              ⚡
+              <img src="/logo-voltalibre.png" alt="" />
             </span>
 
             <div>
